@@ -18,10 +18,10 @@ const experienceEntries = await getCollection("experience");
 
 const projects = resolveLocalized(projectEntries, lang)
   .filter((p) => p.data.featured)
-  .sort((a, b) => (a.data.order as number) - (b.data.order as number));
+  .sort((a, b) => a.data.order - b.data.order);
 
 const experience = resolveLocalized(experienceEntries, lang).sort(
-  (a, b) => (a.data.order as number) - (b.data.order as number),
+  (a, b) => a.data.order - b.data.order,
 );
 ---
 
@@ -31,7 +31,7 @@ const experience = resolveLocalized(experienceEntries, lang).sort(
   <p class="intro">{RESUME.intro[lang]}</p>
   <nav class="links" aria-label="profile links">
     {RESUME.links.map((l) => (
-      <a href={l.href} target={l.href.startsWith("http") ? "_blank" : null} rel="noopener">
+      <a href={l.href} target={l.href.startsWith("http") ? "_blank" : null} rel="noopener noreferrer">
         {l.label} ↗
       </a>
     ))}
@@ -45,10 +45,10 @@ const experience = resolveLocalized(experienceEntries, lang).sort(
   ) : (
     experience.map((x) => (
       <ExperienceItem
-        org={x.data.org as string}
-        role={x.data.role as string}
-        period={x.data.period as string}
-        tech={(x.data.tech as string[]) ?? []}
+        org={x.data.org}
+        role={x.data.role}
+        period={x.data.period}
+        tech={x.data.tech}
       />
     ))
   )}
@@ -76,11 +76,11 @@ const experience = resolveLocalized(experienceEntries, lang).sort(
     {projects.map((p) => (
       <ProjectCard
         href={`${base}/projects/${p.slug}`}
-        title={p.data.title as string}
-        role={p.data.role as string | undefined}
-        period={p.data.period as string | undefined}
-        tech={(p.data.tech as string[]) ?? []}
-        cover={p.data.cover as string | undefined}
+        title={p.data.title}
+        role={p.data.role}
+        period={p.data.period}
+        tech={p.data.tech}
+        cover={p.data.cover}
         fallbackLabel={p.fallback ? t.fallback : undefined}
       />
     ))}

@@ -38,7 +38,7 @@ const meta = [d.role, d.org, d.period].filter(Boolean).join(" · ");
       {d.links.length > 0 && (
         <nav class="links">
           {d.links.map((l) => (
-            <a href={l.href} target="_blank" rel="noopener">
+            <a href={l.href} target="_blank" rel="noopener noreferrer">
               {l.label} ↗
             </a>
           ))}

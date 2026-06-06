@@ -10,18 +10,10 @@ const enHref = "/en" + (path === "/" ? "" : path);
 ---
 
 <nav class="lang" aria-label="language">
-  <a href={zhHref} class={lang === "zh" ? "on" : ""} hreflang="zh" data-lang="zh">中</a>
+  <a href={zhHref} class={lang === "zh" ? "on" : ""} hreflang="zh">中</a>
   <span class="sep">/</span>
-  <a href={enHref} class={lang === "en" ? "on" : ""} hreflang="en" data-lang="en">EN</a>
+  <a href={enHref} class={lang === "en" ? "on" : ""} hreflang="en">EN</a>
 </nav>
-
-<script>
-  document.querySelectorAll(".lang a").forEach((a) =>
-    a.addEventListener("click", () =>
-      localStorage.setItem("lang", (a as HTMLElement).dataset.lang ?? "zh"),
-    ),
-  );
-</script>
 
 <style>
   .lang {
