@@ -6,7 +6,7 @@ compatibility_date = "2025-09-06"
 [[d1_databases]]
 binding = "DB"
 database_name = "devbox"
-database_id = "PLACEHOLDER_FILL_AFTER_d1_create"
+database_id = "fe0a2a4d-e1f5-4365-b9ac-90774d68dfe1"
 
 # Analytics Engine — 點擊事件指標。
 [[analytics_engine_datasets]]
