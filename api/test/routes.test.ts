@@ -54,6 +54,7 @@ describe("GET /api/stats", () => {
   it("回傳連結總數 JSON", async () => {
     const res = await SELF.fetch("https://x/api/stats");
     expect(res.status).toBe(200);
+    expect(res.headers.get("access-control-allow-origin")).toBe("*");
     const body = await res.json<{ links: number }>();
     expect(typeof body.links).toBe("number");
   });

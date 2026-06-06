@@ -41,11 +41,15 @@ export default {
     }
 
     // 統計(MVP:先回連結總數;點擊聚合於 Phase 6 接 Analytics Engine SQL API)
+    // 加 CORS:儀表板頁在 pages.dev,跨網域讀此端點。
     if (req.method === "GET" && path === "/api/stats") {
       const total = await env.DB.prepare(
         "SELECT count(*) AS n FROM links",
       ).first<{ n: number }>();
-      return Response.json({ links: total?.n ?? 0 });
+      return Response.json(
+        { links: total?.n ?? 0 },
+        { headers: { "access-control-allow-origin": "*" } },
+      );
     }
 
     // 轉址
