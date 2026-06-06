@@ -1,0 +1,92 @@
+---
+interface Props {
+  href: string;
+  title: string;
+  role?: string;
+  period?: string;
+  tech?: string[];
+  cover?: string;
+  fallbackLabel?: string;
+}
+const { href, title, role, period, tech = [], cover, fallbackLabel } =
+  Astro.props;
+---
+
+<a class="card" href={href}>
+  {cover && (
+    <div class="thumb">
+      <img src={cover} alt={title} loading="lazy" decoding="async" />
+    </div>
+  )}
+  <div class="body">
+    <div class="top">
+      <h3>{title}</h3>
+      {fallbackLabel && <span class="fb">{fallbackLabel}</span>}
+    </div>
+    {(role || period) && (
+      <p class="meta">{[role, period].filter(Boolean).join(" · ")}</p>
+    )}
+    {tech.length > 0 && (
+      <ul class="tech">
+        {tech.slice(0, 5).map((x) => (
+          <li>{x}</li>
+        ))}
+      </ul>
+    )}
+  </div>
+</a>
+
+<style>
+  .card {
+    display: block;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    overflow: hidden;
+    background: var(--bg-elev);
+    color: inherit;
+    transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+  }
+  .card:hover {
+    text-decoration: none;
+    border-color: color-mix(in srgb, var(--accent) 35%, var(--line));
+    transform: translateY(-2px);
+    box-shadow: 0 12px 30px -22px rgba(35, 71, 214, 0.55);
+  }
+  .thumb {
+    aspect-ratio: 16 / 9;
+    background: var(--bg);
+    border-bottom: 1px solid var(--line);
+    overflow: hidden;
+  }
+  .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .body { padding: 1rem 1.1rem 1.1rem; }
+  .top { display: flex; align-items: baseline; gap: 0.6rem; }
+  .top h3 { margin: 0; font-size: 1.05rem; color: var(--ink); }
+  .fb {
+    margin-left: auto;
+    font-family: var(--mono);
+    font-size: 0.62rem;
+    color: var(--muted);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 0.05rem 0.35rem;
+  }
+  .meta { margin: 0.3rem 0 0; font-size: 0.85rem; color: var(--muted); }
+  .tech {
+    list-style: none;
+    margin: 0.7rem 0 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+  .tech li {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    color: var(--ink-soft);
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 5px;
+    padding: 0.15rem 0.45rem;
+  }
+</style>

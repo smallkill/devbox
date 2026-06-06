@@ -1,0 +1,65 @@
+---
+interface Props {
+  org: string;
+  role: string;
+  period: string;
+  tech?: string[];
+}
+const { org, role, period, tech = [] } = Astro.props;
+---
+
+<article class="xp">
+  <div class="period">{period}</div>
+  <div class="detail">
+    <h3>{role} <span class="at">·</span> <span class="org">{org}</span></h3>
+    <div class="slot"><slot /></div>
+    {tech.length > 0 && (
+      <ul class="tech">
+        {tech.map((x) => (
+          <li>{x}</li>
+        ))}
+      </ul>
+    )}
+  </div>
+</article>
+
+<style>
+  .xp {
+    display: grid;
+    grid-template-columns: 7.5rem 1fr;
+    gap: 1.2rem;
+    padding: 1.3rem 0;
+    border-top: 1px solid var(--line);
+  }
+  @media (max-width: 560px) {
+    .xp { grid-template-columns: 1fr; gap: 0.4rem; }
+  }
+  .period {
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    color: var(--muted);
+    padding-top: 0.2rem;
+  }
+  .detail h3 { margin: 0 0 0.3rem; font-size: 1.02rem; color: var(--ink); }
+  .detail .at { color: var(--line); }
+  .detail .org { color: var(--accent); }
+  .slot { color: var(--ink-soft); font-size: 0.95rem; }
+  .slot :global(p) { margin: 0.2rem 0; }
+  .tech {
+    list-style: none;
+    margin: 0.7rem 0 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+  .tech li {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    color: var(--ink-soft);
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 5px;
+    padding: 0.15rem 0.45rem;
+  }
+</style>

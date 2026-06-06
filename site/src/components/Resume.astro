@@ -1,0 +1,121 @@
+---
+import { getCollection } from "astro:content";
+import { resolveLocalized } from "../i18n/content";
+import { UI, type Locale } from "../i18n/ui";
+import { RESUME } from "../lib/resume";
+import ProjectCard from "./ProjectCard.astro";
+import ExperienceItem from "./ExperienceItem.astro";
+
+interface Props {
+  lang: Locale;
+}
+const { lang } = Astro.props;
+const t = UI[lang];
+const base = lang === "en" ? "/en" : "";
+
+const projectEntries = await getCollection("projects");
+const experienceEntries = await getCollection("experience");
+
+const projects = resolveLocalized(projectEntries, lang)
+  .filter((p) => p.data.featured)
+  .sort((a, b) => a.data.order - b.data.order);
+
+const experience = resolveLocalized(experienceEntries, lang).sort(
+  (a, b) => a.data.order - b.data.order,
+);
+---
+
+<section class="hero reveal">
+  <span class="eyebrow">// {t.role}</span>
+  <h1>{RESUME.name}</h1>
+  <p class="intro">{RESUME.intro[lang]}</p>
+  <nav class="links" aria-label="profile links">
+    {RESUME.links.map((l) => (
+      <a href={l.href} target={l.href.startsWith("http") ? "_blank" : null} rel="noopener noreferrer">
+        {l.label} ↗
+      </a>
+    ))}
+  </nav>
+</section>
+
+<section class="block reveal" style="animation-delay: 90ms">
+  <h2>{t.experience}</h2>
+  {experience.length === 0 ? (
+    <p class="soon">{t.experience_soon}</p>
+  ) : (
+    experience.map((x) => (
+      <ExperienceItem
+        org={x.data.org}
+        role={x.data.role}
+        period={x.data.period}
+        tech={x.data.tech}
+      />
+    ))
+  )}
+</section>
+
+<section class="block reveal" style="animation-delay: 150ms">
+  <h2>{t.skills}</h2>
+  <div class="skills">
+    {RESUME.skills.map((g) => (
+      <div class="sgroup">
+        <div class="sgroup-name">{g.group}</div>
+        <ul>
+          {g.items.map((it) => (
+            <li>{it}</li>
+          ))}
+        </ul>
+      </div>
+    ))}
+  </div>
+</section>
+
+<section id="projects" class="block reveal" style="animation-delay: 210ms">
+  <h2>{t.projects}</h2>
+  <div class="grid">
+    {projects.map((p) => (
+      <ProjectCard
+        href={`${base}/projects/${p.slug}`}
+        title={p.data.title}
+        role={p.data.role}
+        period={p.data.period}
+        tech={p.data.tech}
+        cover={p.data.cover}
+        fallbackLabel={p.fallback ? t.fallback : undefined}
+      />
+    ))}
+  </div>
+</section>
+
+<style>
+  .hero { padding: 2.5rem 0 1rem; }
+  .hero h1 { font-size: clamp(2.2rem, 7vw, 3.2rem); font-weight: 800; margin: 0.5rem 0 0.7rem; }
+  .intro { font-size: 1.1rem; color: var(--ink-soft); max-width: 56ch; margin: 0 0 1.2rem; }
+  .links { display: flex; flex-wrap: wrap; gap: 1.1rem; font-family: var(--mono); font-size: 0.85rem; }
+
+  .block { padding: 1.8rem 0; }
+  .block h2 {
+    font-size: 0.95rem;
+    font-family: var(--mono);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 0.5rem;
+    margin: 0 0 0.6rem;
+  }
+  .soon { color: var(--muted); font-style: italic; }
+
+  .skills { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; }
+  @media (max-width: 560px) { .skills { grid-template-columns: 1fr; } }
+  .sgroup-name { font-family: var(--mono); font-size: 0.75rem; color: var(--accent); margin-bottom: 0.4rem; }
+  .sgroup ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 0.4rem; }
+  .sgroup li {
+    font-size: 0.85rem; color: var(--ink-soft);
+    background: var(--bg-elev); border: 1px solid var(--line);
+    border-radius: 6px; padding: 0.2rem 0.6rem;
+  }
+
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.1rem; }
+  @media (max-width: 620px) { .grid { grid-template-columns: 1fr; } }
+</style>
