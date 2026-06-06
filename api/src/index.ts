@@ -3,21 +3,29 @@ import { makeSlug, isValidUrl } from "./slug";
 export interface Env {
   DB: D1Database;
   CLICKS: AnalyticsEngineDataset;
+  // 建立短網址所需的 bearer token,用 `wrangler secret put CREATE_TOKEN` 設。
+  CREATE_TOKEN: string;
 }
 
 const SLUG_RE = /^\/[0-9a-zA-Z]{6}$/;
+const MAX_URL_LEN = 2048;
 
 export default {
   async fetch(req: Request, env: Env): Promise<Response> {
     const url = new URL(req.url);
     const path = url.pathname;
 
-    // 建立短網址
+    // 建立短網址 — 需 bearer 鑑權,擋掉公開濫用(open-redirect 釣魚)。
     if (req.method === "POST" && path === "/api/links") {
+      const auth = req.headers.get("authorization");
+      // fail-closed:未設 CREATE_TOKEN 或 token 不符一律拒絕。
+      if (!env.CREATE_TOKEN || auth !== `Bearer ${env.CREATE_TOKEN}`) {
+        return Response.json({ error: "unauthorized" }, { status: 401 });
+      }
       const { url: target } = await req
         .json<{ url?: string }>()
         .catch(() => ({ url: undefined }));
-      if (!target || !isValidUrl(target)) {
+      if (!target || target.length > MAX_URL_LEN || !isValidUrl(target)) {
         return Response.json({ error: "invalid url" }, { status: 400 });
       }
       const slug = makeSlug();

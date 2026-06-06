@@ -12,3 +12,6 @@ database_id = "PLACEHOLDER_FILL_AFTER_d1_create"
 [[analytics_engine_datasets]]
 binding = "CLICKS"
 dataset = "devbox_clicks"
+
+# 必要 secret(勿寫在此檔,用指令設定):
+#   wrangler secret put CREATE_TOKEN   # 建立短網址的 bearer token

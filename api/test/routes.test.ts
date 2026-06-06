@@ -7,12 +7,14 @@ beforeAll(async () => {
   );
 });
 
+const AUTH = { authorization: "Bearer test-token" };
+
 describe("POST /api/links", () => {
   it("建立短網址回傳 slug", async () => {
     const res = await SELF.fetch("https://x/api/links", {
       method: "POST",
       body: JSON.stringify({ url: "https://example.com" }),
-      headers: { "content-type": "application/json" },
+      headers: { "content-type": "application/json", ...AUTH },
     });
     expect(res.status).toBe(201);
     const body = await res.json<{ slug: string }>();
@@ -23,9 +25,28 @@ describe("POST /api/links", () => {
     const res = await SELF.fetch("https://x/api/links", {
       method: "POST",
       body: JSON.stringify({ url: "nope" }),
-      headers: { "content-type": "application/json" },
+      headers: { "content-type": "application/json", ...AUTH },
     });
     expect(res.status).toBe(400);
+  });
+
+  it("超長 URL 回 400", async () => {
+    const longUrl = "https://example.com/" + "a".repeat(2100);
+    const res = await SELF.fetch("https://x/api/links", {
+      method: "POST",
+      body: JSON.stringify({ url: longUrl }),
+      headers: { "content-type": "application/json", ...AUTH },
+    });
+    expect(res.status).toBe(400);
+  });
+
+  it("無 token 回 401", async () => {
+    const res = await SELF.fetch("https://x/api/links", {
+      method: "POST",
+      body: JSON.stringify({ url: "https://example.com" }),
+      headers: { "content-type": "application/json" },
+    });
+    expect(res.status).toBe(401);
   });
 });
 

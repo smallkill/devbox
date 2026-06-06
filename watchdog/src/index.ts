@@ -25,7 +25,7 @@ async function fetchMetrics(): Promise<Metrics> {
 }
 
 async function notify(env: Env, text: string): Promise<void> {
-  await fetch(
+  const res = await fetch(
     `https://api.telegram.org/bot${env.TELEGRAM_TOKEN}/sendMessage`,
     {
       method: "POST",
@@ -33,6 +33,10 @@ async function notify(env: Env, text: string): Promise<void> {
       body: JSON.stringify({ chat_id: env.TELEGRAM_CHAT_ID, text }),
     },
   );
+  // 告警管道本身靜默失敗最諷刺 — 失敗時留 log(Workers tail 看得到)。
+  if (!res.ok) {
+    console.error(`Telegram notify failed: ${res.status} ${await res.text()}`);
+  }
 }
 
 export default {
