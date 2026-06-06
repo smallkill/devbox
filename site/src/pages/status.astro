@@ -4,14 +4,14 @@ import Base from "../layouts/Base.astro";
 const apiUrl = import.meta.env.PUBLIC_API_URL ?? "";
 ---
 
-<Base title="devbox — 系統狀態 / status">
+<Base title="devbox — 系統狀態 / status" path="status">
   <section class="head reveal" style="animation-delay: 80ms">
     <div>
       <span class="label">// observability console</span>
       <h1 class="title">SYSTEM<span class="thin"> / </span>STATUS</h1>
     </div>
-    <div class="livebox">
-      <span class="live" id="live"><span class="pulse"></span>LIVE</span>
+    <div class="livebox" aria-live="polite">
+      <span class="live" id="live"><span class="pulse"></span><span id="live-text">LIVE</span></span>
       <span class="sync" id="sync">syncing…</span>
     </div>
   </section>
@@ -164,25 +164,40 @@ const apiUrl = import.meta.env.PUBLIC_API_URL ?? "";
       }));
     }
 
-    async function refresh() {
+    const OK_MS = 15000;
+    const MAX_MS = 60000;
+    let delay = OK_MS;
+    let timer = null;
+
+    function schedule(ms) {
+      clearTimeout(timer);
+      timer = setTimeout(tick, ms);
+    }
+
+    async function tick() {
       try {
-        const r = await fetch(`${apiUrl}/api/stats`);
+        // 逾時 < 刷新間隔,半開連線會乾淨落入 catch 而非無限掛起。
+        const r = await fetch(`${apiUrl}/api/stats`, {
+          signal: AbortSignal.timeout(10000),
+        });
+        if (!r.ok) throw new Error(String(r.status));
         const d = await r.json();
         countTo($("links"), Number(d.links) || 0);
         countTo($("clicks"), Number(d.clicks24h) || 0);
         renderTop(d.topLinks);
         $("live").classList.remove("off");
-        $("live").childNodes[1].nodeValue = "LIVE";
+        $("live-text").textContent = "LIVE";
         $("sync").textContent = "last sync · " + new Date().toLocaleTimeString();
+        delay = OK_MS; // 成功 → 間隔歸位
       } catch {
-        const live = $("live");
-        live.classList.add("off");
-        live.childNodes[1].nodeValue = "OFFLINE";
+        $("live").classList.add("off");
+        $("live-text").textContent = "OFFLINE";
         $("sync").textContent = "connection failed";
+        delay = Math.min(delay * 2, MAX_MS); // 失敗 → 指數退避
       }
+      schedule(delay); // 遞迴排程,天然序列化、不重入
     }
 
-    refresh();
-    setInterval(refresh, 15000);
+    tick();
   </script>
 </Base>

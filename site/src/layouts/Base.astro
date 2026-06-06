@@ -1,8 +1,9 @@
 ---
 interface Props {
   title: string;
+  path?: string;
 }
-const { title } = Astro.props;
+const { title, path = "derek" } = Astro.props;
 ---
 
 <!doctype html>
@@ -24,7 +25,7 @@ const { title } = Astro.props;
         --line: rgba(74, 222, 128, 0.09);
         --line-strong: rgba(74, 222, 128, 0.18);
         --fg: #d4ded6;
-        --muted: #647067;
+        --muted: #7f8c82;
         --accent: #4ade80;
         --accent-dim: #2f9e5d;
         --cyan: #38bdf8;
@@ -86,6 +87,12 @@ const { title } = Astro.props;
 
       a { color: var(--accent); text-decoration: none; }
 
+      :focus-visible {
+        outline: 1px solid var(--accent);
+        outline-offset: 3px;
+        border-radius: 4px;
+      }
+
       ::selection { background: var(--accent); color: #06080b; }
 
       /* 終端機 chrome 列 */
@@ -144,7 +151,7 @@ const { title } = Astro.props;
       <div class="chrome reveal" style="animation-delay: 0ms">
         <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
         <span style="margin-left:.4rem">devbox</span>
-        <span class="path">~/{title.includes("status") || title.includes("狀態") ? "status" : "derek"}</span>
+        <span class="path">~/{path}</span>
       </div>
       <slot />
     </main>
