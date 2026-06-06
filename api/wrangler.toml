@@ -1,0 +1,14 @@
+name = "devbox-api"
+main = "src/index.ts"
+compatibility_date = "2025-09-06"
+
+# D1 — 短網址儲存。部署前用 `wrangler d1 create devbox` 取得 database_id 後填入。
+[[d1_databases]]
+binding = "DB"
+database_name = "devbox"
+database_id = "PLACEHOLDER_FILL_AFTER_d1_create"
+
+# Analytics Engine — 點擊事件指標。
+[[analytics_engine_datasets]]
+binding = "CLICKS"
+dataset = "devbox_clicks"
