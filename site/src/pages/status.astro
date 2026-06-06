@@ -12,33 +12,64 @@ const apiUrl = import.meta.env.PUBLIC_API_URL ?? "";
     <style>
       body {
         font-family: ui-sans-serif, system-ui, sans-serif;
-        max-width: 720px; margin: 0 auto; padding: 3rem 1.5rem;
+        max-width: 760px; margin: 0 auto; padding: 3rem 1.5rem;
       }
+      .grid { display: flex; gap: 1rem; flex-wrap: wrap; }
       .card {
-        border: 1px solid #e5e7eb; border-radius: 12px;
-        padding: 1.5rem; margin: 1rem 0;
+        flex: 1; min-width: 200px;
+        border: 1px solid #e5e7eb; border-radius: 12px; padding: 1.5rem;
       }
       .metric { font-size: 2.5rem; font-weight: 700; }
       .label { color: #6b7280; }
+      table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+      th, td { text-align: left; padding: 0.6rem 0.4rem; border-bottom: 1px solid #f0f0f0; }
+      th { color: #6b7280; font-weight: 600; font-size: 0.85rem; }
+      code { background: #f3f4f6; padding: 0.1rem 0.4rem; border-radius: 4px; }
       a { font-weight: 600; }
+      .muted { color: #9ca3af; }
     </style>
   </head>
   <body>
     <p><a href="/">← 回履歷</a></p>
     <h1>devbox 系統狀態</h1>
-    <div class="card">
-      <div class="metric" id="links">…</div>
-      <div class="label">短網址連結總數</div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="metric" id="links">…</div>
+        <div class="label">短網址連結總數</div>
+      </div>
+      <div class="card">
+        <div class="metric" id="clicks">…</div>
+        <div class="label">近 24 小時點擊</div>
+      </div>
     </div>
+
+    <h2>Top 連結(近 24h)</h2>
+    <table>
+      <thead><tr><th>Slug</th><th>點擊</th></tr></thead>
+      <tbody id="top"><tr><td colspan="2" class="muted">載入中…</td></tr></tbody>
+    </table>
 
     <script define:vars={{ apiUrl }}>
       fetch(`${apiUrl}/api/stats`)
         .then((r) => r.json())
         .then((d) => {
-          document.getElementById("links").textContent = d.links;
+          document.getElementById("links").textContent = d.links ?? "—";
+          document.getElementById("clicks").textContent =
+            d.clicks24h ?? "—";
+          const top = document.getElementById("top");
+          if (Array.isArray(d.topLinks) && d.topLinks.length) {
+            top.innerHTML = d.topLinks
+              .map((l) => `<tr><td><code>${l.slug}</code></td><td>${l.clicks}</td></tr>`)
+              .join("");
+          } else {
+            top.innerHTML =
+              '<tr><td colspan="2" class="muted">尚無點擊資料</td></tr>';
+          }
         })
         .catch(() => {
           document.getElementById("links").textContent = "離線";
+          document.getElementById("clicks").textContent = "離線";
         });
     </script>
   </body>

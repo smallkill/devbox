@@ -13,5 +13,10 @@ database_id = "fe0a2a4d-e1f5-4365-b9ac-90774d68dfe1"
 binding = "CLICKS"
 dataset = "devbox_clicks"
 
+# 非機密變數。
+[vars]
+CF_ACCOUNT_ID = "a2d451e426b01a6f9d56333c4f7af4b8"
+
 # 必要 secret(勿寫在此檔,用指令設定):
 #   wrangler secret put CREATE_TOKEN   # 建立短網址的 bearer token
+#   wrangler secret put AE_API_TOKEN   # 查 Analytics Engine SQL API(需 Account Analytics Read)

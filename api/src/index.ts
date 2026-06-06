@@ -1,11 +1,17 @@
 import { makeSlug, isValidUrl } from "./slug";
+import { fetchClickStats } from "./stats";
 
 export interface Env {
   DB: D1Database;
   CLICKS: AnalyticsEngineDataset;
   // 建立短網址所需的 bearer token,用 `wrangler secret put CREATE_TOKEN` 設。
   CREATE_TOKEN: string;
+  // Analytics Engine SQL API 用(account id 是 var,token 是 secret)。
+  CF_ACCOUNT_ID?: string;
+  AE_API_TOKEN?: string;
 }
+
+const CLICKS_DATASET = "devbox_clicks";
 
 const SLUG_RE = /^\/[0-9a-zA-Z]{6}$/;
 const MAX_URL_LEN = 2048;
@@ -48,8 +54,14 @@ export default {
       const total = await env.DB.prepare(
         "SELECT count(*) AS n FROM links",
       ).first<{ n: number }>();
+      // 真實點擊指標;AE 未設定或查詢失敗時為 null,前端自行降級。
+      const clicks = await fetchClickStats(env, CLICKS_DATASET);
       return Response.json(
-        { links: total?.n ?? 0 },
+        {
+          links: total?.n ?? 0,
+          clicks24h: clicks?.clicks24h ?? null,
+          topLinks: clicks?.topLinks ?? [],
+        },
         { headers: { "access-control-allow-origin": "*" } },
       );
     }
