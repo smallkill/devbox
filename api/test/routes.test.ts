@@ -29,6 +29,15 @@ describe("POST /api/links", () => {
   });
 });
 
+describe("GET /api/stats", () => {
+  it("回傳連結總數 JSON", async () => {
+    const res = await SELF.fetch("https://x/api/stats");
+    expect(res.status).toBe(200);
+    const body = await res.json<{ links: number }>();
+    expect(typeof body.links).toBe("number");
+  });
+});
+
 describe("GET /:slug", () => {
   it("已知 slug 回 302", async () => {
     await env.DB.prepare("INSERT INTO links VALUES (?,?,?)")

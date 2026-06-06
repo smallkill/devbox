@@ -32,6 +32,14 @@ export default {
       );
     }
 
+    // 統計(MVP:先回連結總數;點擊聚合於 Phase 6 接 Analytics Engine SQL API)
+    if (req.method === "GET" && path === "/api/stats") {
+      const total = await env.DB.prepare(
+        "SELECT count(*) AS n FROM links",
+      ).first<{ n: number }>();
+      return Response.json({ links: total?.n ?? 0 });
+    }
+
     // 轉址
     if (req.method === "GET" && SLUG_RE.test(path)) {
       const slug = path.slice(1);
