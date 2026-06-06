@@ -3,7 +3,7 @@
 自架短網址 SaaS — 從 `git push` 經 CI/CD 自動部署到 Cloudflare,附即時監控儀表板、Telegram 告警與履歷頁。展示「自架 SaaS + DevOps + Observability」一條龍能力。
 
 **🟢 Live**
-- 履歷 + 儀表板:https://devbox-57a.pages.dev(`/status` 為即時監控)
+- 履歷 + 儀表板:https://derek-cheng.pages.dev(`/status` 為即時監控)
 - API:https://devbox-api.chinte-cheng.workers.dev
 
 ## 架構
