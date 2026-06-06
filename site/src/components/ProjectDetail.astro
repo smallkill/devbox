@@ -1,0 +1,89 @@
+---
+import { render, type CollectionEntry } from "astro:content";
+import Base from "../layouts/Base.astro";
+import Figure from "./Figure.astro";
+import { UI, type Locale } from "../i18n/ui";
+
+interface Props {
+  entry: CollectionEntry<"projects">;
+  lang: Locale;
+  slug: string;
+  fallback: boolean;
+}
+const { entry, lang, slug, fallback } = Astro.props;
+const { Content } = await render(entry);
+const d = entry.data;
+const t = UI[lang];
+const base = lang === "en" ? "/en" : "";
+const meta = [d.role, d.org, d.period].filter(Boolean).join(" · ");
+---
+
+<Base title={`${d.title} — Derek Chen`} lang={lang} path={`/projects/${slug}`}>
+  <article class="proj">
+    <a class="back" href={base + "/"}>{t.back}</a>
+
+    <header>
+      <div class="titleline">
+        <h1>{d.title}</h1>
+        {fallback && <span class="fb">{t.fallback}</span>}
+      </div>
+      {meta && <p class="meta">{meta}</p>}
+      {d.tech.length > 0 && (
+        <ul class="tech">
+          {d.tech.map((x) => (
+            <li>{x}</li>
+          ))}
+        </ul>
+      )}
+      {d.links.length > 0 && (
+        <nav class="links">
+          {d.links.map((l) => (
+            <a href={l.href} target="_blank" rel="noopener">
+              {l.label} ↗
+            </a>
+          ))}
+        </nav>
+      )}
+    </header>
+
+    <div class="prose">
+      <Content />
+    </div>
+
+    {d.gallery.length > 0 && (
+      <div class="gallery">
+        {d.gallery.map((g) => (
+          <Figure src={g.src} caption={g.caption} alt={d.title} />
+        ))}
+      </div>
+    )}
+  </article>
+
+  <style>
+    .proj { padding: 1.5rem 0 1rem; }
+    .back { font-family: var(--mono); font-size: 0.8rem; color: var(--muted); }
+    .back:hover { color: var(--accent); text-decoration: none; }
+    .titleline { display: flex; align-items: baseline; gap: 0.7rem; margin-top: 1rem; }
+    h1 { font-size: clamp(1.8rem, 6vw, 2.6rem); font-weight: 800; margin: 0; }
+    .fb {
+      font-family: var(--mono); font-size: 0.65rem; color: var(--muted);
+      border: 1px solid var(--line); border-radius: 4px; padding: 0.1rem 0.4rem;
+    }
+    .meta { color: var(--muted); margin: 0.4rem 0 0.8rem; }
+    .tech { list-style: none; padding: 0; margin: 0 0 0.9rem; display: flex; flex-wrap: wrap; gap: 0.4rem; }
+    .tech li {
+      font-family: var(--mono); font-size: 0.72rem; color: var(--ink-soft);
+      background: var(--bg-elev); border: 1px solid var(--line);
+      border-radius: 5px; padding: 0.15rem 0.5rem;
+    }
+    .links { display: flex; flex-wrap: wrap; gap: 1.1rem; font-family: var(--mono); font-size: 0.85rem; margin-bottom: 1rem; }
+    .prose { font-size: 1.02rem; color: var(--ink-soft); border-top: 1px solid var(--line); padding-top: 1.4rem; }
+    .prose :global(p) { margin: 0 0 1rem; }
+    .prose :global(code) {
+      font-family: var(--mono); font-size: 0.86em;
+      background: var(--bg-elev); border: 1px solid var(--line);
+      border-radius: 4px; padding: 0.05rem 0.35rem;
+    }
+    .gallery { margin-top: 1rem; }
+  </style>
+</Base>

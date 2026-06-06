@@ -1,0 +1,26 @@
+---
+import { getCollection } from "astro:content";
+import ProjectDetail from "../../../components/ProjectDetail.astro";
+
+export async function getStaticPaths() {
+  const all = await getCollection("projects");
+  const en = new Map(
+    all.filter((e) => e.id.startsWith("en/")).map((e) => [e.id.slice(3), e]),
+  );
+  return all
+    .filter((e) => e.id.startsWith("zh/"))
+    .map((zhEntry) => {
+      const slug = zhEntry.id.slice(3);
+      const enEntry = en.get(slug);
+      return {
+        params: { slug },
+        props: { entry: enEntry ?? zhEntry, fallback: !enEntry },
+      };
+    });
+}
+
+const { entry, fallback } = Astro.props;
+const slug = entry.id.slice(entry.id.indexOf("/") + 1);
+---
+
+<ProjectDetail entry={entry} lang="en" slug={slug} fallback={fallback} />
