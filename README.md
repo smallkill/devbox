@@ -76,7 +76,7 @@ cd site && npm install && npm run dev   # 前端
    `api/wrangler.toml` 的 `[vars] CF_ACCOUNT_ID` 填你的 account id。
 6. **部署 Workers**:`npx wrangler deploy`(在 `api/` 與 `watchdog/` 各跑一次)
 7. **GitHub Secret**:repo Settings → Secrets → 新增 `CLOUDFLARE_API_TOKEN`(用 *Edit Cloudflare Workers* 範本)。之後 push 到 `main` 即自動部署。
-8. **Pages**:`cd site && PUBLIC_API_URL=<api 網域> npm run build && npx wrangler pages deploy dist --project-name devbox --branch main`
+8. **Pages**:`cd site && PUBLIC_API_URL=<api 網域> npm run build && npx wrangler pages deploy dist --project-name derek-chen --branch main`
 
 ## 安全與可靠性設計
 
