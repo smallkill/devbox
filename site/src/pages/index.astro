@@ -1,0 +1,56 @@
+---
+const name = "Derek Cheng";
+const tagline = "Software / DevOps Engineer";
+const summary =
+  "自架生產級 SaaS:從 git push 到 CI/CD 自動部署到即時監控,全棧打通。以 Cloudflare Workers + Pages 為核心,Infrastructure as Code 與可觀測性優先。";
+const skills = [
+  "TypeScript",
+  "Cloudflare Workers / Pages / D1",
+  "CI/CD (GitHub Actions)",
+  "Observability & Alerting",
+  "Terraform / IaC",
+  "Test-Driven Development",
+];
+const links = [
+  { label: "GitHub", href: "https://github.com/smallkill" },
+  { label: "即時系統狀態 →", href: "/status" },
+];
+---
+
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{name} — {tagline}</title>
+    <style>
+      :root { color-scheme: light dark; }
+      body {
+        font-family: ui-sans-serif, system-ui, "Noto Sans TC", sans-serif;
+        max-width: 720px;
+        margin: 0 auto;
+        padding: 3rem 1.5rem;
+        line-height: 1.6;
+      }
+      h1 { margin-bottom: 0.2rem; }
+      .tagline { color: #6b7280; margin-top: 0; font-size: 1.1rem; }
+      ul.skills { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: 0.5rem; }
+      ul.skills li {
+        background: #f3f4f6; color: #111;
+        padding: 0.3rem 0.7rem; border-radius: 999px; font-size: 0.9rem;
+      }
+      nav a { margin-right: 1.2rem; font-weight: 600; }
+    </style>
+  </head>
+  <body>
+    <h1>{name}</h1>
+    <p class="tagline">{tagline}</p>
+    <p>{summary}</p>
+
+    <h2>核心技能</h2>
+    <ul class="skills">{skills.map((s) => <li>{s}</li>)}</ul>
+
+    <h2>連結</h2>
+    <nav>{links.map((l) => <a href={l.href}>{l.label}</a>)}</nav>
+  </body>
+</html>

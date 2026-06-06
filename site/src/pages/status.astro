@@ -1,0 +1,45 @@
+---
+// API 網域於部署時用環境變數 PUBLIC_API_URL 注入(本機留空 → 同源)。
+const apiUrl = import.meta.env.PUBLIC_API_URL ?? "";
+---
+
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>devbox — 系統即時狀態</title>
+    <style>
+      body {
+        font-family: ui-sans-serif, system-ui, sans-serif;
+        max-width: 720px; margin: 0 auto; padding: 3rem 1.5rem;
+      }
+      .card {
+        border: 1px solid #e5e7eb; border-radius: 12px;
+        padding: 1.5rem; margin: 1rem 0;
+      }
+      .metric { font-size: 2.5rem; font-weight: 700; }
+      .label { color: #6b7280; }
+      a { font-weight: 600; }
+    </style>
+  </head>
+  <body>
+    <p><a href="/">← 回履歷</a></p>
+    <h1>devbox 系統狀態</h1>
+    <div class="card">
+      <div class="metric" id="links">…</div>
+      <div class="label">短網址連結總數</div>
+    </div>
+
+    <script define:vars={{ apiUrl }}>
+      fetch(`${apiUrl}/api/stats`)
+        .then((r) => r.json())
+        .then((d) => {
+          document.getElementById("links").textContent = d.links;
+        })
+        .catch(() => {
+          document.getElementById("links").textContent = "離線";
+        });
+    </script>
+  </body>
+</html>
