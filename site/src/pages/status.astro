@@ -4,11 +4,12 @@ import Base from "../layouts/Base.astro";
 const apiUrl = import.meta.env.PUBLIC_API_URL ?? "";
 ---
 
-<Base title="devbox — 系統狀態 / status" path="status">
-  <section class="head reveal" style="animation-delay: 80ms">
+<Base title="System Status — devbox" lang="zh" path="/">
+  <section class="head">
     <div>
-      <span class="label">// observability console</span>
-      <h1 class="title">SYSTEM<span class="thin"> / </span>STATUS</h1>
+      <span class="eyebrow">// observability console</span>
+      <h1>System status</h1>
+      <p class="sub">devbox — live URL-shortener metrics, sourced from Cloudflare Analytics Engine.</p>
     </div>
     <div class="livebox" aria-live="polite">
       <span class="live" id="live"><span class="pulse"></span><span id="live-text">LIVE</span></span>
@@ -16,106 +17,80 @@ const apiUrl = import.meta.env.PUBLIC_API_URL ?? "";
     </div>
   </section>
 
-  <div class="grid reveal" style="animation-delay: 180ms">
+  <div class="grid">
     <div class="metric">
-      <span class="m-label">短網址連結</span>
+      <span class="m-label">Short links</span>
       <span class="m-val" id="links" data-v="0">—</span>
       <span class="m-unit">links total</span>
     </div>
     <div class="metric accent">
-      <span class="m-label">近 24h 點擊</span>
+      <span class="m-label">Clicks · 24h</span>
       <span class="m-val" id="clicks" data-v="0">—</span>
       <span class="m-unit">clicks / 24h</span>
     </div>
   </div>
 
-  <section class="reveal" style="animation-delay: 260ms">
-    <span class="label">// top links --since 24h</span>
+  <section class="topwrap">
+    <h2>Top links · last 24h</h2>
     <div class="console">
-      <div class="console-bar">
-        <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
-        <span class="console-cmd">SELECT slug, count() ORDER BY clicks DESC</span>
-      </div>
+      <div class="console-bar"><code>SELECT slug, count() ORDER BY clicks DESC</code></div>
       <table>
         <thead><tr><th>#</th><th>slug</th><th>clicks</th><th>share</th></tr></thead>
-        <tbody id="top"><tr><td colspan="4" class="muted">查詢中…</td></tr></tbody>
+        <tbody id="top"><tr><td colspan="4" class="muted">querying…</td></tr></tbody>
       </table>
     </div>
   </section>
 
-  <p class="foot reveal" style="animation-delay: 340ms">
-    <a href="/">← cd ~/derek</a>
-    <span class="src">data · cloudflare analytics engine · auto-refresh 15s</span>
-  </p>
-
   <style>
-    .head { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; flex-wrap: wrap; margin-bottom: 2.4rem; }
-    .title { font-family: var(--display); font-weight: 700; font-size: clamp(1.8rem, 6vw, 3rem); letter-spacing: 0.02em; margin: 0.4rem 0 0; color: #f3faf5; }
-    .title .thin { color: var(--accent-dim); font-weight: 500; }
-    .livebox { display: flex; flex-direction: column; align-items: flex-end; gap: 0.4rem; }
-    .live { display: inline-flex; align-items: center; gap: 0.45rem; font-size: 0.66rem; letter-spacing: 0.18em; color: var(--accent); border: 1px solid var(--accent-dim); border-radius: 999px; padding: 0.2rem 0.6rem; }
-    .live.off { color: #ff5f56; border-color: #ff5f56; }
-    .live.off .pulse { background: #ff5f56; animation: none; }
-    .pulse { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); animation: pulse 1.8s infinite; }
-    @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(74,222,128,0.55);} 70% { box-shadow: 0 0 0 7px rgba(74,222,128,0);} 100% { box-shadow: 0 0 0 0 rgba(74,222,128,0);} }
-    .sync { font-size: 0.68rem; color: var(--muted); }
+    .head { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; flex-wrap: wrap; padding: 1.6rem 0 0.5rem; }
+    .head h1 { font-size: clamp(1.8rem, 6vw, 2.6rem); font-weight: 800; margin: 0.4rem 0 0.4rem; }
+    .head .sub { color: var(--muted); margin: 0; max-width: 48ch; font-size: 0.95rem; }
+    .livebox { display: flex; flex-direction: column; align-items: flex-end; gap: 0.35rem; }
+    .live { display: inline-flex; align-items: center; gap: 0.45rem; font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.06em; color: #15803d; border: 1px solid #bbf7d0; background: #f0fdf4; border-radius: 999px; padding: 0.2rem 0.6rem; }
+    .live.off { color: #b91c1c; border-color: #fecaca; background: #fef2f2; }
+    .live.off .pulse { background: #ef4444; animation: none; }
+    .pulse { width: 7px; height: 7px; border-radius: 50%; background: #22c55e; animation: pulse 1.8s infinite; }
+    @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(34,197,94,0.5);} 70% { box-shadow: 0 0 0 6px rgba(34,197,94,0);} 100% { box-shadow: 0 0 0 0 rgba(34,197,94,0);} }
+    .sync { font-family: var(--mono); font-size: 0.68rem; color: var(--muted); }
 
-    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 3rem; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1.5rem 0 2.5rem; }
     @media (max-width: 540px) { .grid { grid-template-columns: 1fr; } }
-    .metric {
-      position: relative;
-      background: var(--bg-elev);
-      border: 1px solid var(--line-strong);
-      border-radius: 12px;
-      padding: 1.4rem 1.5rem 1.2rem;
-      overflow: hidden;
-    }
-    .metric::after { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--line-strong); }
-    .metric.accent::after { background: var(--accent); box-shadow: 0 0 18px var(--accent); }
-    .m-label { font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
-    .m-val {
-      display: block;
-      font-family: var(--display);
-      font-weight: 700;
-      font-size: clamp(2.6rem, 9vw, 3.6rem);
-      line-height: 1.05;
-      color: #f3faf5;
-      font-variant-numeric: tabular-nums;
-      margin: 0.3rem 0 0.1rem;
-    }
-    .metric.accent .m-val { color: var(--accent); text-shadow: 0 0 24px rgba(74,222,128,0.4); }
-    .m-unit { font-size: 0.72rem; color: var(--accent-dim); letter-spacing: 0.05em; }
+    .metric { position: relative; background: var(--bg-elev); border: 1px solid var(--line); border-radius: 12px; padding: 1.3rem 1.4rem; overflow: hidden; }
+    .metric::after { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--line); }
+    .metric.accent::after { background: var(--accent); }
+    .m-label { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.04em; color: var(--muted); }
+    .m-val { display: block; font-weight: 800; font-size: clamp(2.4rem, 8vw, 3.2rem); line-height: 1.05; color: var(--ink); font-variant-numeric: tabular-nums; margin: 0.25rem 0 0.1rem; }
+    .metric.accent .m-val { color: var(--accent); }
+    .m-unit { font-family: var(--mono); font-size: 0.7rem; color: var(--muted); }
 
-    .console { border: 1px solid var(--line-strong); border-radius: 12px; overflow: hidden; margin-top: 0.9rem; background: var(--bg-elev); }
-    .console-bar { display: flex; align-items: center; gap: 0.5rem; padding: 0.7rem 0.9rem; border-bottom: 1px solid var(--line-strong); }
-    .console-cmd { margin-left: 0.5rem; font-size: 0.74rem; color: var(--accent-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
-    .foot { display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; margin-top: 2.5rem; border-top: 1px solid var(--line); padding-top: 1rem; }
-    .foot .src { font-size: 0.68rem; color: var(--muted); letter-spacing: 0.04em; }
+    .topwrap h2 { font-family: var(--mono); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin: 0 0 0.7rem; }
+    .console { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: var(--bg-elev); }
+    .console-bar { padding: 0.6rem 0.9rem; border-bottom: 1px solid var(--line); background: var(--bg); }
+    .console-bar code { font-family: var(--mono); font-size: 0.74rem; color: var(--muted); }
   </style>
 
   <!-- 表格列由 JS 動態產生,拿不到 Astro scoped 屬性,故用 is:global(以 .console 前綴避免外洩) -->
   <style is:global>
     .console table { width: 100%; border-collapse: collapse; }
-    .console th, .console td { text-align: left; padding: 0.7rem 0.9rem; font-size: 0.86rem; }
-    .console th { font-size: 0.66rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); border-bottom: 1px solid var(--line); }
-    .console tbody tr { border-bottom: 1px solid var(--line); transition: background 0.15s; }
-    .console tbody tr:hover { background: rgba(74, 222, 128, 0.05); }
-    .console td .rank { color: var(--accent-dim); }
-    .console td code { color: var(--accent); }
-    .console .bar { display: inline-block; height: 9px; min-width: 6px; border-radius: 4px; background: linear-gradient(90deg, var(--accent-dim), var(--accent)); box-shadow: 0 0 12px rgba(74, 222, 128, 0.55); vertical-align: middle; }
+    .console th, .console td { text-align: left; padding: 0.65rem 0.9rem; font-size: 0.88rem; }
+    .console th { font-family: var(--mono); font-size: 0.66rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); border-bottom: 1px solid var(--line); }
+    .console tbody tr { border-bottom: 1px solid var(--line); }
+    .console tbody tr:last-child { border-bottom: none; }
+    .console tbody tr:hover { background: var(--accent-soft); }
+    .console td .rank { font-family: var(--mono); color: var(--muted); }
+    .console td code { font-family: var(--mono); color: var(--accent); }
+    .console .bar { display: inline-block; height: 8px; min-width: 6px; border-radius: 4px; background: var(--accent); vertical-align: middle; }
     .console .muted { color: var(--muted); }
   </style>
 
   <script define:vars={{ apiUrl }}>
     const $ = (id) => document.getElementById(id);
 
-    // 數字 count-up(易讀、tabular-nums)
     function countTo(el, target) {
       const from = Number(el.dataset.v || 0);
       if (from === target) { el.textContent = String(target); return; }
       const start = performance.now();
-      const dur = 700;
+      const dur = 650;
       function step(t) {
         const p = Math.min(1, (t - start) / dur);
         const eased = 1 - Math.pow(1 - p, 3);
@@ -131,34 +106,28 @@ const apiUrl = import.meta.env.PUBLIC_API_URL ?? "";
       if (!Array.isArray(rows) || rows.length === 0) {
         const tr = document.createElement("tr");
         const td = document.createElement("td");
-        td.colSpan = 4; td.className = "muted"; td.textContent = "尚無點擊資料";
+        td.colSpan = 4; td.className = "muted"; td.textContent = "no clicks yet";
         tr.append(td); top.replaceChildren(tr);
         return;
       }
       const max = Math.max(...rows.map((r) => Number(r.clicks) || 0), 1);
-      // DOM API + textContent:XSS-safe(slug 為伺服器產生英數,仍以 DOM 渲染為防線)
       top.replaceChildren(...rows.map((l, i) => {
         const tr = document.createElement("tr");
-
         const rank = document.createElement("td");
         const rs = document.createElement("span");
         rs.className = "rank"; rs.textContent = String(i + 1).padStart(2, "0");
         rank.append(rs);
-
         const slug = document.createElement("td");
         const code = document.createElement("code");
         code.textContent = l.slug;
         slug.append(code);
-
         const clicks = document.createElement("td");
         clicks.textContent = String(l.clicks);
-
         const share = document.createElement("td");
         const bar = document.createElement("span");
         bar.className = "bar";
         bar.style.width = Math.max(6, (Number(l.clicks) / max) * 90) + "px";
         share.append(bar);
-
         tr.append(rank, slug, clicks, share);
         return tr;
       }));
@@ -169,17 +138,11 @@ const apiUrl = import.meta.env.PUBLIC_API_URL ?? "";
     let delay = OK_MS;
     let timer = null;
 
-    function schedule(ms) {
-      clearTimeout(timer);
-      timer = setTimeout(tick, ms);
-    }
+    function schedule(ms) { clearTimeout(timer); timer = setTimeout(tick, ms); }
 
     async function tick() {
       try {
-        // 逾時 < 刷新間隔,半開連線會乾淨落入 catch 而非無限掛起。
-        const r = await fetch(`${apiUrl}/api/stats`, {
-          signal: AbortSignal.timeout(10000),
-        });
+        const r = await fetch(`${apiUrl}/api/stats`, { signal: AbortSignal.timeout(10000) });
         if (!r.ok) throw new Error(String(r.status));
         const d = await r.json();
         countTo($("links"), Number(d.links) || 0);
@@ -188,14 +151,14 @@ const apiUrl = import.meta.env.PUBLIC_API_URL ?? "";
         $("live").classList.remove("off");
         $("live-text").textContent = "LIVE";
         $("sync").textContent = "last sync · " + new Date().toLocaleTimeString();
-        delay = OK_MS; // 成功 → 間隔歸位
+        delay = OK_MS;
       } catch {
         $("live").classList.add("off");
         $("live-text").textContent = "OFFLINE";
         $("sync").textContent = "connection failed";
-        delay = Math.min(delay * 2, MAX_MS); // 失敗 → 指數退避
+        delay = Math.min(delay * 2, MAX_MS);
       }
-      schedule(delay); // 遞迴排程,天然序列化、不重入
+      schedule(delay);
     }
 
     tick();
