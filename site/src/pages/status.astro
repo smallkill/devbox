@@ -59,12 +59,28 @@ const apiUrl = import.meta.env.PUBLIC_API_URL ?? "";
             d.clicks24h ?? "—";
           const top = document.getElementById("top");
           if (Array.isArray(d.topLinks) && d.topLinks.length) {
-            top.innerHTML = d.topLinks
-              .map((l) => `<tr><td><code>${l.slug}</code></td><td>${l.clicks}</td></tr>`)
-              .join("");
+            // 用 DOM API + textContent,自動轉義、免 XSS。
+            top.replaceChildren(
+              ...d.topLinks.map((l) => {
+                const tr = document.createElement("tr");
+                const tdSlug = document.createElement("td");
+                const code = document.createElement("code");
+                code.textContent = l.slug;
+                tdSlug.append(code);
+                const tdClicks = document.createElement("td");
+                tdClicks.textContent = String(l.clicks);
+                tr.append(tdSlug, tdClicks);
+                return tr;
+              }),
+            );
           } else {
-            top.innerHTML =
-              '<tr><td colspan="2" class="muted">尚無點擊資料</td></tr>';
+            const tr = document.createElement("tr");
+            const td = document.createElement("td");
+            td.colSpan = 2;
+            td.className = "muted";
+            td.textContent = "尚無點擊資料";
+            tr.append(td);
+            top.replaceChildren(tr);
           }
         })
         .catch(() => {

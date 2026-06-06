@@ -68,6 +68,9 @@ async function runQuery(
       method: "POST",
       headers: { authorization: `Bearer ${env.AE_API_TOKEN}` },
       body: sql,
+      // 逾時 → throw → 落入 fetchClickStats 的 catch → 回 null 降級,
+      // 不讓 AE 不健康時拖垮 /api/stats。
+      signal: AbortSignal.timeout(3000),
     },
   );
   if (!res.ok) throw new Error(`AE SQL API ${res.status}`);
