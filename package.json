@@ -1,6 +1,7 @@
 {
   "name": "devbox",
   "private": true,
+  "type": "module",
   "version": "0.1.0",
   "description": "Self-hosted URL-shortener SaaS — CI/CD + monitoring portfolio on Cloudflare",
   "workspaces": [
@@ -9,7 +10,7 @@
   ],
   "scripts": {
     "lint": "eslint .",
-    "typecheck": "tsc -b --pretty",
+    "typecheck": "tsc -p api/tsconfig.json && tsc -p watchdog/tsconfig.json",
     "test": "npm run test --workspaces --if-present"
   },
   "devDependencies": {
