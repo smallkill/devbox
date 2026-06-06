@@ -42,6 +42,8 @@ export default {
 
     // 統計(MVP:先回連結總數;點擊聚合於 Phase 6 接 Analytics Engine SQL API)
     // 加 CORS:儀表板頁在 pages.dev,跨網域讀此端點。
+    // wildcard `*` 刻意:此端點 public 唯讀(僅連結數),且 pages.dev preview
+    // 每次部署 origin 都不同,固定 origin 反而會壞。勿改成具名 origin。
     if (req.method === "GET" && path === "/api/stats") {
       const total = await env.DB.prepare(
         "SELECT count(*) AS n FROM links",
