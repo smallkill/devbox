@@ -1,0 +1,49 @@
+---
+// path 為不含 locale 前綴的純路徑(如 "/"、"/projects/devbox")。
+interface Props {
+  lang: "zh" | "en";
+  path: string;
+}
+const { lang, path } = Astro.props;
+const zhHref = path;
+const enHref = "/en" + (path === "/" ? "" : path);
+---
+
+<nav class="lang" aria-label="language">
+  <a href={zhHref} class={lang === "zh" ? "on" : ""} hreflang="zh" data-lang="zh">中</a>
+  <span class="sep">/</span>
+  <a href={enHref} class={lang === "en" ? "on" : ""} hreflang="en" data-lang="en">EN</a>
+</nav>
+
+<script>
+  document.querySelectorAll(".lang a").forEach((a) =>
+    a.addEventListener("click", () =>
+      localStorage.setItem("lang", (a as HTMLElement).dataset.lang ?? "zh"),
+    ),
+  );
+</script>
+
+<style>
+  .lang {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-family: var(--mono);
+    font-size: 0.78rem;
+  }
+  .lang a {
+    color: var(--muted);
+    text-decoration: none;
+    padding: 0.1rem 0.1rem;
+  }
+  .lang a.on {
+    color: var(--accent);
+    font-weight: 700;
+  }
+  .lang a:hover {
+    color: var(--ink);
+  }
+  .sep {
+    color: var(--line);
+  }
+</style>
