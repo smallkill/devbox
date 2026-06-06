@@ -1,0 +1,152 @@
+---
+interface Props {
+  title: string;
+}
+const { title } = Astro.props;
+---
+
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=JetBrains+Mono:ital,wght@0,400;0,500;0,700;0,800;1,400&family=Noto+Sans+TC:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <style is:global>
+      :root {
+        --bg: #06080b;
+        --bg-elev: #0b0f14;
+        --line: rgba(74, 222, 128, 0.09);
+        --line-strong: rgba(74, 222, 128, 0.18);
+        --fg: #d4ded6;
+        --muted: #647067;
+        --accent: #4ade80;
+        --accent-dim: #2f9e5d;
+        --cyan: #38bdf8;
+        --amber: #fbbf24;
+        --mono: "JetBrains Mono", "Noto Sans TC", ui-monospace, monospace;
+        --display: "Chakra Petch", var(--mono);
+      }
+
+      * { box-sizing: border-box; }
+
+      html { scroll-behavior: smooth; }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background: var(--bg);
+        color: var(--fg);
+        font-family: var(--mono);
+        font-size: 15px;
+        line-height: 1.6;
+        -webkit-font-smoothing: antialiased;
+        position: relative;
+        overflow-x: hidden;
+      }
+
+      /* 網格底紋 + 頂部磷光暈 */
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        background-image:
+          linear-gradient(var(--line) 1px, transparent 1px),
+          linear-gradient(90deg, var(--line) 1px, transparent 1px);
+        background-size: 44px 44px;
+        mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, #000 35%, transparent 80%);
+        pointer-events: none;
+        z-index: 0;
+      }
+
+      /* 磷光暈光 + 微噪點 */
+      body::after {
+        content: "";
+        position: fixed;
+        inset: 0;
+        background:
+          radial-gradient(60% 40% at 50% -5%, rgba(74, 222, 128, 0.10), transparent 70%),
+          radial-gradient(40% 30% at 90% 10%, rgba(56, 189, 248, 0.06), transparent 70%);
+        pointer-events: none;
+        z-index: 0;
+      }
+
+      main {
+        position: relative;
+        z-index: 1;
+        max-width: 880px;
+        margin: 0 auto;
+        padding: clamp(2rem, 6vw, 5rem) clamp(1.2rem, 4vw, 2rem) 5rem;
+      }
+
+      a { color: var(--accent); text-decoration: none; }
+
+      ::selection { background: var(--accent); color: #06080b; }
+
+      /* 終端機 chrome 列 */
+      .chrome {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        font-size: 0.7rem;
+        letter-spacing: 0.12em;
+        color: var(--muted);
+        text-transform: uppercase;
+        margin-bottom: 2.5rem;
+        border-bottom: 1px solid var(--line-strong);
+        padding-bottom: 0.8rem;
+      }
+      .dot { width: 9px; height: 9px; border-radius: 50%; }
+      .dot.r { background: #ff5f56; }
+      .dot.y { background: #ffbd2e; }
+      .dot.g { background: #27c93f; }
+      .chrome .path { margin-left: auto; color: var(--accent-dim); }
+
+      .blink {
+        display: inline-block;
+        width: 0.6ch;
+        height: 1.05em;
+        background: var(--accent);
+        margin-left: 0.15em;
+        translate: 0 0.15em;
+        animation: blink 1.05s steps(1) infinite;
+      }
+      @keyframes blink { 50% { opacity: 0; } }
+
+      /* 開機式逐項浮現 */
+      .reveal {
+        opacity: 0;
+        transform: translateY(14px);
+        animation: rise 0.6s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+      }
+      @keyframes rise { to { opacity: 1; transform: none; } }
+
+      @media (prefers-reduced-motion: reduce) {
+        .reveal { animation: none; opacity: 1; transform: none; }
+        .blink { animation: none; }
+      }
+
+      .label {
+        font-size: 0.68rem;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--accent-dim);
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <div class="chrome reveal" style="animation-delay: 0ms">
+        <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+        <span style="margin-left:.4rem">devbox</span>
+        <span class="path">~/{title.includes("status") || title.includes("狀態") ? "status" : "derek"}</span>
+      </div>
+      <slot />
+    </main>
+  </body>
+</html>
