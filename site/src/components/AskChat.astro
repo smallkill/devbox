@@ -1,0 +1,353 @@
+---
+import { UI, type Locale } from "../i18n/ui";
+
+interface Props {
+  lang: Locale;
+  projectSlugs: string[];
+}
+const { lang, projectSlugs } = Astro.props;
+const t = UI[lang];
+const base = lang === "en" ? "/en" : "";
+// ask Worker 網域於部署時用環境變數 PUBLIC_ASK_URL 注入,否則用預設值。
+const askUrl =
+  import.meta.env.PUBLIC_ASK_URL ??
+  "https://devbox-ask.chinte-cheng.workers.dev";
+
+// 傳給 client script 的本地化字串。
+const txt = {
+  loading: t.ask_loading,
+  sources: t.ask_sources,
+  errTooLong: t.ask_err_too_long,
+  errEmpty: t.ask_err_empty,
+  errCap: t.ask_err_cap,
+  errGeneric: t.ask_err_generic,
+  errHome: t.ask_err_home,
+};
+---
+
+<section class="head">
+  <span class="eyebrow">{t.ask_eyebrow}</span>
+  <h1>{t.ask_title}</h1>
+  <p class="sub">{t.ask_intro}</p>
+</section>
+
+<section class="examples">
+  <span class="ex-label">{t.ask_examples_label}</span>
+  <div class="chips">
+    {
+      t.ask_examples.map((q) => (
+        <button type="button" class="chip ex" data-q={q}>
+          {q}
+        </button>
+      ))
+    }
+  </div>
+</section>
+
+<form class="ask-form" id="ask-form" autocomplete="off">
+  <textarea
+    id="ask-input"
+    class="ask-input"
+    rows="2"
+    placeholder={t.ask_placeholder}
+    aria-label={t.ask_title}></textarea>
+  <button type="submit" class="ask-send" id="ask-send">{t.ask_send}</button>
+</form>
+
+<section class="answer-wrap" id="answer-wrap" aria-live="polite"></section>
+
+<style>
+  .head { padding: 1.6rem 0 0.5rem; }
+  .head h1 { font-size: clamp(1.8rem, 6vw, 2.6rem); font-weight: 800; margin: 0.4rem 0 0.5rem; }
+  .head .sub { color: var(--ink-soft); margin: 0 0 0.6rem; max-width: 56ch; font-size: 0.96rem; line-height: 1.6; }
+
+  .examples { margin: 1.2rem 0 0.8rem; }
+  .ex-label { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.04em; color: var(--muted); display: block; margin-bottom: 0.5rem; }
+  .chips { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  .chip.ex {
+    font-family: var(--sans); font-size: 0.84rem; color: var(--ink-soft);
+    background: var(--bg-elev); border: 1px solid var(--line); border-radius: 999px;
+    padding: 0.35rem 0.85rem; cursor: pointer; transition: border-color 0.15s, color 0.15s, background 0.15s;
+  }
+  .chip.ex:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+  .chip.ex:disabled { opacity: 0.5; cursor: default; }
+
+  .ask-form { display: flex; gap: 0.6rem; align-items: stretch; margin: 0.6rem 0 0; }
+  .ask-input {
+    flex: 1; resize: vertical; min-height: 2.8rem;
+    font-family: var(--sans); font-size: 0.96rem; line-height: 1.5; color: var(--ink);
+    background: var(--bg-elev); border: 1px solid var(--line); border-radius: 12px;
+    padding: 0.7rem 0.9rem;
+  }
+  .ask-input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+  .ask-send {
+    font-family: var(--mono); font-size: 0.82rem; font-weight: 700; letter-spacing: 0.02em;
+    color: #fff; background: var(--accent); border: none; border-radius: 12px;
+    padding: 0 1.3rem; cursor: pointer; white-space: nowrap; transition: opacity 0.15s;
+  }
+  .ask-send:hover { opacity: 0.9; }
+  .ask-send:disabled { opacity: 0.5; cursor: default; }
+</style>
+
+<!-- 答案區與來源 chip 由 JS 動態建立,拿不到 Astro scoped 屬性,故用 is:global(以 .answer-wrap 前綴避免外洩) -->
+<style is:global>
+  .answer-wrap { margin: 1.6rem 0 0; }
+  .answer-wrap .answer-card {
+    background: var(--bg-elev); border: 1px solid var(--line); border-radius: 12px;
+    padding: 1.1rem 1.3rem; position: relative; overflow: hidden;
+  }
+  .answer-wrap .answer-card::after {
+    content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--accent);
+  }
+  .answer-wrap .answer-q {
+    font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.04em; color: var(--muted);
+    margin: 0 0 0.6rem;
+  }
+  .answer-wrap .answer-body {
+    color: var(--ink); font-size: 0.98rem; line-height: 1.65; white-space: pre-wrap; margin: 0;
+  }
+  .answer-wrap .answer-body.loading { color: var(--muted); font-family: var(--mono); font-size: 0.84rem; }
+  /* 串流游標 */
+  .answer-wrap .answer-body.streaming::after {
+    content: "▋"; color: var(--accent); animation: ask-blink 1s steps(2) infinite; margin-left: 1px;
+  }
+  @keyframes ask-blink { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
+  @media (prefers-reduced-motion: reduce) {
+    .answer-wrap .answer-body.streaming::after { animation: none; }
+  }
+
+  .answer-wrap .sources { margin-top: 1rem; }
+  .answer-wrap .sources .s-label {
+    font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.04em; text-transform: uppercase;
+    color: var(--muted); margin-right: 0.5rem;
+  }
+  .answer-wrap .src-chip {
+    display: inline-block; font-family: var(--mono); font-size: 0.76rem;
+    background: var(--accent-soft); color: var(--accent); border: 1px solid transparent;
+    border-radius: 999px; padding: 0.2rem 0.7rem; margin: 0.25rem 0.4rem 0 0;
+  }
+  a.src-chip:hover { text-decoration: none; border-color: var(--accent); }
+  .answer-wrap span.src-chip { color: var(--ink-soft); background: var(--bg); border-color: var(--line); }
+
+  .answer-wrap .ask-error {
+    color: var(--ink-soft); font-size: 0.94rem; line-height: 1.6;
+  }
+  .answer-wrap .ask-error a { font-family: var(--mono); font-size: 0.82rem; display: inline-block; margin-top: 0.5rem; }
+</style>
+
+<script define:vars={{ askUrl, base, projectSlugs, txt }}>
+  const form = document.getElementById("ask-form");
+  const input = document.getElementById("ask-input");
+  const sendBtn = document.getElementById("ask-send");
+  const wrap = document.getElementById("answer-wrap");
+  const exButtons = Array.from(document.querySelectorAll(".chip.ex"));
+
+  let busy = false;
+
+  function setBusy(state) {
+    busy = state;
+    sendBtn.disabled = state;
+    input.disabled = state;
+    exButtons.forEach((b) => (b.disabled = state));
+  }
+
+  // 建立答案卡片骨架,回傳其中的 body 元素供串流寫入。
+  function buildCard(question) {
+    wrap.replaceChildren();
+    const card = document.createElement("div");
+    card.className = "answer-card";
+
+    const q = document.createElement("p");
+    q.className = "answer-q";
+    q.textContent = "Q: " + question;
+
+    const body = document.createElement("p");
+    body.className = "answer-body loading";
+    body.textContent = txt.loading;
+
+    card.append(q, body);
+    wrap.append(card);
+    return { card, body };
+  }
+
+  function showError(message, withHome) {
+    wrap.replaceChildren();
+    const card = document.createElement("div");
+    card.className = "answer-card";
+    const p = document.createElement("p");
+    p.className = "ask-error";
+    p.textContent = message;
+    card.append(p);
+    if (withHome) {
+      const a = document.createElement("a");
+      a.href = base + "/";
+      a.textContent = txt.errHome;
+      const br = document.createElement("br");
+      card.append(br, a);
+    }
+    wrap.append(card);
+  }
+
+  function renderSources(card, sources) {
+    if (!Array.isArray(sources) || sources.length === 0) return;
+    const box = document.createElement("div");
+    box.className = "sources";
+    const label = document.createElement("span");
+    label.className = "s-label";
+    label.textContent = txt.sources;
+    box.append(label);
+    sources.forEach((s) => {
+      if (!s || typeof s.source !== "string") return;
+      const text = s.title || s.source;
+      if (projectSlugs.includes(s.source)) {
+        const a = document.createElement("a");
+        a.className = "src-chip";
+        a.href = base + "/projects/" + s.source;
+        a.textContent = text;
+        box.append(a);
+      } else {
+        const span = document.createElement("span");
+        span.className = "src-chip";
+        span.textContent = text;
+        box.append(span);
+      }
+    });
+    card.append(box);
+  }
+
+  async function ask(question) {
+    const q = (question || "").trim();
+    if (!q) {
+      showError(txt.errEmpty, false);
+      return;
+    }
+    if (busy) return;
+    setBusy(true);
+
+    const { card, body } = buildCard(q);
+
+    let res;
+    try {
+      res = await fetch(askUrl + "/api/ask", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ question: q }),
+      });
+    } catch {
+      showError(txt.errGeneric, true);
+      setBusy(false);
+      return;
+    }
+
+    if (!res.ok) {
+      let code = "";
+      try {
+        const j = await res.json();
+        code = j && j.error ? j.error : "";
+      } catch {
+        // 忽略解析失敗,走通用錯誤。
+      }
+      if (res.status === 400 && code === "too_long") showError(txt.errTooLong, false);
+      else if (res.status === 400 && code === "empty") showError(txt.errEmpty, false);
+      else if (res.status === 429) showError(txt.errCap, true);
+      else showError(txt.errGeneric, true);
+      setBusy(false);
+      return;
+    }
+
+    // 先抓來源 header(成功回應才有)。
+    let sources = [];
+    try {
+      const raw = res.headers.get("x-sources");
+      if (raw) sources = JSON.parse(raw);
+    } catch {
+      sources = [];
+    }
+
+    if (!res.body) {
+      showError(txt.errGeneric, true);
+      setBusy(false);
+      return;
+    }
+
+    // 切換到串流狀態。
+    body.classList.remove("loading");
+    body.classList.add("streaming");
+    body.textContent = "";
+
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = "";
+    let done = false;
+
+    function handleLine(line) {
+      const trimmed = line.trim();
+      if (!trimmed.startsWith("data:")) return;
+      const payload = trimmed.slice(5).trim();
+      if (payload === "[DONE]") {
+        done = true;
+        return;
+      }
+      try {
+        const obj = JSON.parse(payload);
+        if (typeof obj.response === "string") {
+          body.appendChild(document.createTextNode(obj.response));
+        }
+      } catch {
+        // 非 JSON 的 data 行忽略。
+      }
+    }
+
+    try {
+      while (true) {
+        const { value, done: streamDone } = await reader.read();
+        if (value) {
+          buffer += decoder.decode(value, { stream: true });
+          let idx;
+          while ((idx = buffer.indexOf("\n")) !== -1) {
+            const line = buffer.slice(0, idx);
+            buffer = buffer.slice(idx + 1);
+            handleLine(line);
+            if (done) break;
+          }
+        }
+        if (done || streamDone) break;
+      }
+      // 處理結尾殘留(無換行)。
+      if (!done && buffer) handleLine(buffer);
+    } catch {
+      // 串流中斷:若已有內容就保留,否則顯示通用錯誤。
+      if (!body.textContent) {
+        showError(txt.errGeneric, true);
+        setBusy(false);
+        return;
+      }
+    }
+
+    body.classList.remove("streaming");
+    renderSources(card, sources);
+    setBusy(false);
+  }
+
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    ask(input.value);
+  });
+
+  // Enter 送出,Shift+Enter 換行。
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      form.requestSubmit();
+    }
+  });
+
+  exButtons.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      if (busy) return;
+      const q = btn.dataset.q || "";
+      input.value = q;
+      ask(q);
+    });
+  });
+</script>
