@@ -43,9 +43,80 @@ describe("/api/ask guardrails", () => {
   it("answers OPTIONS preflight with CORS headers", async () => {
     const res = await SELF.fetch(ASK_URL, { method: "OPTIONS" });
     expect(res.status).toBe(200);
-    expect(res.headers.get("access-control-allow-origin")).toBe("*");
     expect(res.headers.get("access-control-allow-headers")).toBe(
       "content-type",
     );
+    expect(res.headers.get("access-control-allow-methods")).toBe(
+      "POST, OPTIONS",
+    );
+  });
+
+  it("rejects an over-large body with 413 (content-length)", async () => {
+    const res = await SELF.fetch(ASK_URL, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        "content-length": "9000",
+      },
+      body: JSON.stringify({ question: "a".repeat(9000) }),
+    });
+    expect(res.status).toBe(413);
+    expect(await res.json()).toEqual({ error: "too_large" });
+  });
+});
+
+describe("CORS allowlist", () => {
+  it("does not echo a disallowed Origin", async () => {
+    const res = await SELF.fetch(ASK_URL, {
+      method: "OPTIONS",
+      headers: { origin: "https://evil.com" },
+    });
+    expect(res.headers.get("access-control-allow-origin")).toBeNull();
+    // still returns the static CORS headers
+    expect(res.headers.get("access-control-allow-headers")).toBe(
+      "content-type",
+    );
+  });
+
+  it("echoes an allowed pages.dev Origin", async () => {
+    const origin = "https://derek-chen.pages.dev";
+    const res = await SELF.fetch(ASK_URL, {
+      method: "OPTIONS",
+      headers: { origin },
+    });
+    expect(res.headers.get("access-control-allow-origin")).toBe(origin);
+  });
+
+  it("echoes an allowed preview subdomain Origin", async () => {
+    const origin = "https://abc123.derek-chen.pages.dev";
+    const res = await SELF.fetch(ASK_URL, {
+      method: "OPTIONS",
+      headers: { origin },
+    });
+    expect(res.headers.get("access-control-allow-origin")).toBe(origin);
+  });
+
+  it("echoes the allowed Origin on a 400 json response", async () => {
+    const origin = "https://derek-chen.pages.dev";
+    const res = await SELF.fetch(ASK_URL, {
+      method: "POST",
+      headers: { "content-type": "application/json", origin },
+      body: JSON.stringify({ question: " " }),
+    });
+    expect(res.status).toBe(400);
+    expect(res.headers.get("access-control-allow-origin")).toBe(origin);
+  });
+
+  it("does not echo a disallowed Origin on a 400 json response", async () => {
+    const res = await SELF.fetch(ASK_URL, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        origin: "https://evil.com",
+      },
+      body: JSON.stringify({ question: " " }),
+    });
+    expect(res.status).toBe(400);
+    expect(res.headers.get("access-control-allow-origin")).toBeNull();
   });
 });
