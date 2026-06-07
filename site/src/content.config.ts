@@ -28,7 +28,9 @@ const experience = defineCollection({
     org: z.string(),
     role: z.string(),
     period: z.string(),
+    location: z.string().optional(),
     tech: z.array(z.string()).default([]),
+    highlights: z.array(z.string()).default([]),
     order: z.number().default(99),
   }),
 });

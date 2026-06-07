@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 460" font-family="monospace" role="img" aria-labelledby="t d">
+  <title id="t">GitLab CI/CD pipeline</title>
+  <desc id="d">流程:git commit(husky pre-commit)→ 品質關卡 ESLint、Prettier、Jest → 全部通過 → 透過 GitLab API 自動建立 Merge/Pull Request。後端為 Node.js + Express 分層服務。</desc>
+  <rect width="1200" height="460" fill="#faf9f6"/>
+  <text x="48" y="64" font-size="26" font-weight="bold" fill="#18181b" font-family="sans-serif">GitLab CI/CD — commit → checks → auto MR/PR</text>
+  <text x="48" y="92" font-size="16" fill="#6b7280">每次 push 自動觸發,通過所有關卡才建立合併請求</text>
+
+  <!-- stages -->
+  <g>
+    <!-- 1 commit -->
+    <rect x="48" y="170" width="180" height="120" rx="12" fill="#ffffff" stroke="#e7e4dd"/>
+    <text x="138" y="222" font-size="18" fill="#18181b" text-anchor="middle" font-family="sans-serif" font-weight="bold">git commit</text>
+    <text x="138" y="248" font-size="13" fill="#6b7280" text-anchor="middle">husky pre-commit</text>
+
+    <!-- arrow -->
+    <line x1="228" y1="230" x2="288" y2="230" stroke="#2347d6" stroke-width="2"/>
+    <polygon points="288,224 300,230 288,236" fill="#2347d6"/>
+
+    <!-- 2 checks -->
+    <rect x="300" y="140" width="240" height="180" rx="12" fill="#eef1fd" stroke="#2347d6"/>
+    <text x="420" y="170" font-size="14" fill="#2347d6" text-anchor="middle" font-weight="bold">QUALITY GATE</text>
+    <rect x="320" y="186" width="200" height="34" rx="7" fill="#ffffff" stroke="#cdd7f7"/>
+    <text x="420" y="209" font-size="15" fill="#18181b" text-anchor="middle">ESLint · Linter</text>
+    <rect x="320" y="228" width="200" height="34" rx="7" fill="#ffffff" stroke="#cdd7f7"/>
+    <text x="420" y="251" font-size="15" fill="#18181b" text-anchor="middle">Prettier · Format</text>
+    <rect x="320" y="270" width="200" height="34" rx="7" fill="#ffffff" stroke="#cdd7f7"/>
+    <text x="420" y="293" font-size="15" fill="#18181b" text-anchor="middle">Jest · API Test</text>
+
+    <!-- arrow -->
+    <line x1="540" y1="230" x2="600" y2="230" stroke="#2347d6" stroke-width="2"/>
+    <polygon points="600,224 612,230 600,236" fill="#2347d6"/>
+
+    <!-- 3 gate pass -->
+    <rect x="612" y="170" width="180" height="120" rx="12" fill="#ffffff" stroke="#e7e4dd"/>
+    <text x="702" y="222" font-size="18" fill="#18181b" text-anchor="middle" font-family="sans-serif" font-weight="bold">全部通過 ✓</text>
+    <text x="702" y="248" font-size="13" fill="#6b7280" text-anchor="middle">否則 fail · 擋下</text>
+
+    <!-- arrow -->
+    <line x1="792" y1="230" x2="852" y2="230" stroke="#2347d6" stroke-width="2"/>
+    <polygon points="852,224 864,230 852,236" fill="#2347d6"/>
+
+    <!-- 4 auto MR -->
+    <rect x="864" y="170" width="288" height="120" rx="12" fill="#18181b"/>
+    <text x="1008" y="216" font-size="18" fill="#ffffff" text-anchor="middle" font-family="sans-serif" font-weight="bold">自動建立 MR / PR</text>
+    <text x="1008" y="244" font-size="13" fill="#9aa3ab" text-anchor="middle">GitLab API · 含查重</text>
+  </g>
+
+  <text x="48" y="396" font-size="14" fill="#6b7280">Node.js · Express(MVC + Service 分層) · /health · /api/hello · /api/items</text>
+</svg>
