@@ -1,0 +1,14 @@
+name = "devbox-ask"
+main = "src/index.ts"
+compatibility_date = "2025-09-06"
+
+[ai]
+binding = "AI"
+
+[[vectorize]]
+binding = "VECTORIZE"
+index_name = "resume"
+
+[[kv_namespaces]]
+binding = "ASK_KV"
+id = "53c0380e24f649b9ac940f3d1bd29eac"

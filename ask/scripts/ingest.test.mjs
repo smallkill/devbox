@@ -1,0 +1,158 @@
+import { describe, it, expect } from "vitest";
+import {
+  chunkText,
+  buildRecords,
+  describeFile,
+  splitFrontmatter,
+  slugFromFilename,
+  fmField,
+} from "./ingest.mjs";
+
+describe("chunkText", () => {
+  it("returns single element for short text", () => {
+    expect(chunkText("短短一句話。")).toEqual(["短短一句話。"]);
+  });
+
+  it("splits on blank lines into paragraphs", () => {
+    expect(chunkText("第一段。\n\n第二段。")).toEqual(["第一段。", "第二段。"]);
+  });
+
+  it("respects the max bound by splitting long paragraphs at sentence ends", () => {
+    // 三句各約 40 字,max=50 → 應切成多段,每段不超過(允許略超一句)。
+    const sentence = "這是一個長長的句子用來測試切分上限是否生效喔。"; // ~23 chars
+    const text = sentence.repeat(5); // ~115 chars, 5 sentences, no blank line
+    const chunks = chunkText(text, 50);
+    expect(chunks.length).toBeGreaterThan(1);
+    // 每個 chunk 都是一或多句貪婪打包,單句長度 < max,故不會超過 max + 單句。
+    for (const c of chunks) {
+      expect(c.length).toBeLessThanOrEqual(50 + sentence.length);
+    }
+  });
+
+  it("handles English sentence splitting", () => {
+    const s = "This is sentence one. This is sentence two. This is sentence three.";
+    const chunks = chunkText(s, 30);
+    expect(chunks.length).toBeGreaterThan(1);
+  });
+});
+
+describe("splitFrontmatter", () => {
+  it("extracts frontmatter and body", () => {
+    const raw = "---\ntitle: Hi\norg: ACME\n---\nbody line one\n\nbody line two";
+    const { frontmatter, body } = splitFrontmatter(raw);
+    expect(frontmatter).toContain("title: Hi");
+    expect(body).toBe("body line one\n\nbody line two");
+  });
+
+  it("returns empty frontmatter when none present", () => {
+    const { frontmatter, body } = splitFrontmatter("just a body");
+    expect(frontmatter).toBe("");
+    expect(body).toBe("just a body");
+  });
+});
+
+describe("slugFromFilename", () => {
+  it("strips .md and numeric prefix", () => {
+    expect(slugFromFilename("2-moxa.md")).toBe("moxa");
+    expect(slugFromFilename("avm-3d.md")).toBe("avm-3d");
+    expect(slugFromFilename("about.zh.md")).toBe("about.zh");
+  });
+});
+
+describe("fmField", () => {
+  it("reads a field and strips quotes", () => {
+    expect(fmField('period: "2026"', "period")).toBe("2026");
+    expect(fmField("org: Moxa", "org")).toBe("Moxa");
+    expect(fmField("org: Moxa", "title")).toBe("");
+  });
+});
+
+describe("describeFile", () => {
+  it("uses title from frontmatter for projects", () => {
+    const d = describeFile({
+      filename: "devbox.md",
+      lang: "en",
+      type: "project",
+      raw: "---\ntitle: devbox SaaS\nrole: Personal\nperiod: 2026\n---\nBody text here.",
+    });
+    expect(d.source).toBe("devbox");
+    expect(d.lang).toBe("en");
+    expect(d.title).toBe("devbox SaaS");
+    expect(d.type).toBe("project");
+    expect(d.text).toContain("devbox SaaS");
+    expect(d.text).toContain("Body text here.");
+  });
+
+  it("falls back to org as title for experience (no title field)", () => {
+    const d = describeFile({
+      filename: "2-moxa.md",
+      lang: "zh",
+      type: "experience",
+      raw: "---\norg: Moxa\nrole: SSE\nperiod: 2023\n---\nDid CI/CD.",
+    });
+    expect(d.source).toBe("moxa");
+    expect(d.title).toBe("Moxa");
+    expect(d.text).toContain("Moxa");
+  });
+
+  it("uses 'about' source for seed files", () => {
+    const d = describeFile({
+      filename: "about.zh.md",
+      lang: "zh",
+      type: "about",
+      raw: "---\ntitle: 關於我\n---\n自我介紹內容。",
+    });
+    expect(d.source).toBe("about");
+    expect(d.type).toBe("about");
+    expect(d.title).toBe("關於我");
+  });
+});
+
+describe("buildRecords", () => {
+  const files = [
+    {
+      filename: "2-moxa.md",
+      lang: "zh",
+      type: "experience",
+      raw: "---\norg: Moxa\nrole: SSE\nperiod: 2023\n---\n第一段內容。\n\n第二段內容。",
+    },
+    {
+      filename: "devbox.md",
+      lang: "en",
+      type: "project",
+      raw: "---\ntitle: devbox\nperiod: 2026\n---\nProject body.",
+    },
+  ];
+
+  it("produces correct metadata source/lang/type", () => {
+    const records = buildRecords(files);
+    const moxa = records.find((r) => r.metadata.source === "moxa");
+    expect(moxa.metadata.lang).toBe("zh");
+    expect(moxa.metadata.type).toBe("experience");
+    expect(moxa.metadata.title).toBe("Moxa");
+
+    const devbox = records.find((r) => r.metadata.source === "devbox");
+    expect(devbox.metadata.lang).toBe("en");
+    expect(devbox.metadata.type).toBe("project");
+  });
+
+  it("uses id format `${source}-${lang}-${index}`", () => {
+    const records = buildRecords(files);
+    const moxaIds = records
+      .filter((r) => r.metadata.source === "moxa")
+      .map((r) => r.id);
+    expect(moxaIds[0]).toBe("moxa-zh-0");
+    // 兩段 → 至少兩個 chunk → moxa-zh-1 存在
+    expect(moxaIds).toContain("moxa-zh-1");
+
+    const devbox = records.find((r) => r.metadata.source === "devbox");
+    expect(devbox.id).toBe("devbox-en-0");
+  });
+
+  it("stores chunk text in metadata.text", () => {
+    const records = buildRecords(files);
+    for (const r of records) {
+      expect(r.metadata.text).toBe(r.text);
+    }
+  });
+});

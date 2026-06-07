@@ -6,6 +6,7 @@
 
 **🟢 Live**
 - 履歷 + 儀表板:https://derek-chen.pages.dev(`/status` 為即時監控)
+- 履歷 RAG 問答:https://derek-chen.pages.dev/ask(`/ask` 用自然語言查我的履歷)
 - API:https://devbox-api.chinte-cheng.workers.dev
 
 ## 架構
@@ -29,7 +30,8 @@
 |---|---|---|
 | `api/` | 建短網址、302 轉址、出真實統計 | Cloudflare Workers + D1 + Analytics Engine |
 | `watchdog/` | 定時查指標、異常告警 | Cron Trigger Worker → Telegram |
-| `site/` | 履歷 + 公開狀態儀表板(clicks24h、Top 連結) | Astro(靜態)on Pages |
+| `ask/` | 履歷 RAG 問答:embed → 檢索 → 防幻覺生成(串流) | Workers AI(bge-m3 + Llama 3.3)+ Vectorize |
+| `site/` | 履歷 + 公開狀態儀表板(clicks24h、Top 連結)+ `/ask` 問答頁 | Astro(靜態)on Pages |
 | `.github/workflows/ci.yml` | lint / typecheck / test → 自動 deploy | GitHub Actions + Wrangler |
 
 ## API
@@ -39,6 +41,7 @@
 | `POST` | `/api/links` | 建短網址。需 `Authorization: Bearer <CREATE_TOKEN>`。body:`{"url":"https://…"}` |
 | `GET` | `/:slug` | 302 轉址,並寫一筆點擊事件到 Analytics Engine |
 | `GET` | `/api/stats` | 回 `{links, clicks24h, topLinks}`(public 唯讀,CORS 開放) |
+| `POST` | `/api/ask`(`devbox-ask`) | 履歷 RAG 問答。body `{"question":"…"}`,回 SSE 串流答案 + `x-sources` 來源。每日上限 + per-IP 限流 + 防幻覺 grounding |
 
 建一個短網址:
 

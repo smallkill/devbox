@@ -1,0 +1,15 @@
+---
+import { getCollection } from "astro:content";
+import Base from "../../layouts/Base.astro";
+import AskChat from "../../components/AskChat.astro";
+
+// content collection 條目 id 形如 "zh/moxa-cicd";取乾淨的 project slug。
+const all = await getCollection("projects");
+const projectSlugs = [
+  ...new Set(all.map((e) => e.id.replace(/^(zh|en)\//, ""))),
+];
+---
+
+<Base title="Ask me about Derek — devbox" lang="en" path="/ask">
+  <AskChat lang="en" projectSlugs={projectSlugs} />
+</Base>

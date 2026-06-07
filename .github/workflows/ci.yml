@@ -18,6 +18,11 @@ jobs:
       - run: npm run lint
       - run: npm run typecheck
       - run: npm test
+        env:
+          # ask/ tests use @cloudflare/vitest-pool-workers, which sets up the
+          # AI/Vectorize bindings (declared in ask/wrangler.toml) at load time.
+          # Guardrail tests never call them, but binding setup may need auth.
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
 
   deploy:
     needs: quality
@@ -36,5 +41,9 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       - name: Deploy watchdog
         run: npx wrangler deploy --config watchdog/wrangler.toml
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      - name: Deploy ask
+        run: npx wrangler deploy --config ask/wrangler.toml
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
