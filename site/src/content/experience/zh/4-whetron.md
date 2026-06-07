@@ -6,7 +6,7 @@ location: 新北
 logo: /logos/whetron.png
 tech: [OpenCV, OpenGL ES, ROS, C++, Nvidia, Fujitsu]
 highlights:
-  - 開發 3D Around View Monitoring(3D AVM)演算法,以技術轉移交付中國輝創(Whetron 中國子公司),再由其交付終端客戶(車規量產級交付)。
+  - 開發 3D Around View Monitoring(3D AVM)演算法:富士通平台版交付泰國車廠、進入 Tier 1 供應鏈;自主研發版以技術轉移交付中國輝創(Whetron 蘇州子公司)(皆車規量產級交付)。
   - 基於 3D AVM 的停車格偵測,整合進自動停車產品。
   - 以 OpenCV + OpenGL ES 建構完整 3D AVM 系統,設計成可跨任意嵌入式平台(Fujitsu / Nvidia)。
   - 實作魚眼鏡頭校正、定位與對齊;以 ROS 整合自駕高爾夫球車的 HMI 與車輛感知。
