@@ -11,6 +11,9 @@ export const UI = {
     back: "← 回首頁",
     view: "查看",
     download_pdf: "下載 PDF",
+    copy: "複製",
+    copied: "已複製 ✓",
+    copy_aria: "複製信箱",
   },
   en: {
     role: "Software / DevOps Engineer",
@@ -24,6 +27,9 @@ export const UI = {
     back: "← Home",
     view: "View",
     download_pdf: "Download PDF",
+    copy: "Copy",
+    copied: "Copied ✓",
+    copy_aria: "Copy email",
   },
 } as const;
 

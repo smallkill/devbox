@@ -32,7 +32,15 @@ const experience = resolveLocalized(experienceEntries, lang).sort(
 
   <div class="email">
     <span class="addr">{RESUME.email}</span>
-    <button class="copy" type="button" data-copy={RESUME.email} aria-label="複製信箱">複製</button>
+    <button
+      class="copy"
+      type="button"
+      data-copy={RESUME.email}
+      data-copied={t.copied}
+      aria-label={t.copy_aria}
+    >
+      {t.copy}
+    </button>
   </div>
 
   <nav class="links" aria-label="profile links">
@@ -46,13 +54,15 @@ const experience = resolveLocalized(experienceEntries, lang).sort(
 
   <script>
     document.querySelectorAll("[data-copy]").forEach((btn) => {
+      const el = btn as HTMLElement;
+      const original = btn.textContent; // 一次捕捉原始標籤,避免連點卡住
+      let timer: ReturnType<typeof setTimeout>;
       btn.addEventListener("click", async () => {
-        const text = (btn as HTMLElement).dataset.copy ?? "";
         try {
-          await navigator.clipboard.writeText(text);
-          const prev = btn.textContent;
-          btn.textContent = "已複製 ✓";
-          setTimeout(() => { btn.textContent = prev; }, 1500);
+          await navigator.clipboard.writeText(el.dataset.copy ?? "");
+          btn.textContent = el.dataset.copied ?? "✓";
+          clearTimeout(timer);
+          timer = setTimeout(() => { btn.textContent = original; }, 1500);
         } catch {
           /* clipboard 不可用時,使用者仍可手動選取地址 */
         }
