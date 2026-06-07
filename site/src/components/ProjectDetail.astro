@@ -46,6 +46,12 @@ const meta = [d.role, d.org, d.period].filter(Boolean).join(" · ");
       )}
     </header>
 
+    {d.cover && (
+      <div class="hero">
+        <Figure src={d.cover} alt={d.title} />
+      </div>
+    )}
+
     <div class="prose">
       <Content />
     </div>
