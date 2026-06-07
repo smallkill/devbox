@@ -1,5 +1,5 @@
 // 履歷 RAG ingest:讀 repo 內的履歷 md → 切 chunk → Workers AI 算 embedding
-// → 輸出 NDJSON 供 `wrangler vectorize insert resume` 寫入 Vectorize(1024 維)。
+// → 輸出 NDJSON 供 `wrangler vectorize upsert resume` 寫入 Vectorize(1024 維)。
 //
 // 本檔的純函式(chunkText / buildRecords)不碰 IO/網路,可單元測試。
 // 所有檔案系統 / 網路只在 main() 流程裡,且 node builtin 用動態 import,
@@ -315,8 +315,8 @@ async function main() {
 
   console.log(`\n完成。總 chunk 數:${records.length}`);
   console.log(`輸出:${outPath}`);
-  console.log("下一步:");
-  console.log("  cd ask && npx wrangler vectorize insert resume --file .cache/vectors.ndjson");
+  console.log("下一步(用 upsert 才會覆蓋既有 id;insert 會跳過已存在的 id):");
+  console.log("  cd ask && npx wrangler vectorize upsert resume --file .cache/vectors.ndjson");
 }
 
 // 只有「直接執行」才跑 main;被 import(測試)時不執行。
