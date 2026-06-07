@@ -68,14 +68,14 @@ cd site && npm install && npm run dev   # 前端
 2. **建 D1**:`cd api && npx wrangler d1 create devbox` → 把 `database_id` 填進 `api/wrangler.toml`
 3. **套 schema**:`npx wrangler d1 execute devbox --remote --file schema.sql`
 4. **啟用 Analytics Engine**:Dashboard → Workers → Analytics Engine,建 dataset `devbox_clicks`(binding `CLICKS`)
-5. **設 Worker secrets**:
+5. **設 Worker secrets**(都不進 git):
    ```bash
-   cd api      && npx wrangler secret put CREATE_TOKEN   # 建短網址的 bearer
-                  npx wrangler secret put AE_API_TOKEN    # 查 AE 統計(僅需 Account Analytics: Read)
+   cd api      && npx wrangler secret put CREATE_TOKEN    # 建短網址的 bearer
+                  npx wrangler secret put AE_API_TOKEN     # 查 AE 統計(僅需 Account Analytics: Read)
+                  npx wrangler secret put CF_ACCOUNT_ID    # 你的 Cloudflare account id,例如 <YOUR_ACCOUNT_ID>
    cd watchdog && npx wrangler secret put TELEGRAM_TOKEN
                   npx wrangler secret put TELEGRAM_CHAT_ID
    ```
-   `api/wrangler.toml` 的 `[vars] CF_ACCOUNT_ID` 填你的 account id。
 6. **部署 Workers**:`npx wrangler deploy`(在 `api/` 與 `watchdog/` 各跑一次)
 7. **GitHub Secret**:repo Settings → Secrets → 新增 `CLOUDFLARE_API_TOKEN`(用 *Edit Cloudflare Workers* 範本)。之後 push 到 `main` 即自動部署。
 8. **Pages**:`cd site && PUBLIC_API_URL=<api 網域> npm run build && npx wrangler pages deploy dist --project-name derek-chen --branch main`
