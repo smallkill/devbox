@@ -22,5 +22,5 @@ Core techniques include fisheye-camera calibration, image projection and seam st
 rendering on embedded platforms (Fujitsu, Nvidia) using OpenCV and OpenGL ES. The system was designed to run on any embedded
 platform and extended to parking-space detection integrated into automatic-parking products.
 
-The algorithm was ultimately adopted by a Thai car manufacturer, entering its supply chain as a Tier 1 supplier — demonstrating
-mass-production-grade software delivery that meets strict automotive requirements.
+The algorithm was ultimately handed off via technology transfer to Whetron China (the Suzhou subsidiary), who integrated and
+delivered it to their end customer — demonstrating mass-production-grade software delivery that transfers cleanly across teams and regions.
