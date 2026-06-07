@@ -19,6 +19,7 @@ const LLM_MODEL = "@cf/meta/llama-3.3-70b-instruct-fp8-fast";
 const CORS = {
   "access-control-allow-origin": "*",
   "access-control-allow-headers": "content-type",
+  "access-control-expose-headers": "x-sources",
 };
 
 export default {
