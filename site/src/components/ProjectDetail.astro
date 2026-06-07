@@ -1,8 +1,10 @@
 ---
-import { render, type CollectionEntry } from "astro:content";
+import { getCollection, render, type CollectionEntry } from "astro:content";
 import Base from "../layouts/Base.astro";
 import Figure from "./Figure.astro";
 import Slideshow from "./Slideshow.astro";
+import ProjectCard from "./ProjectCard.astro";
+import { resolveLocalized } from "../i18n/content";
 import { UI, type Locale } from "../i18n/ui";
 
 interface Props {
@@ -17,11 +19,17 @@ const d = entry.data;
 const t = UI[lang];
 const base = lang === "en" ? "/en" : "";
 const meta = [d.role, d.org, d.period].filter(Boolean).join(" · ");
+
+// 其他專案(排除目前這個),依 order 排序,給底部「更多專案」。
+const allProjects = await getCollection("projects");
+const others = resolveLocalized(allProjects, lang)
+  .filter((p) => p.slug !== slug && p.data.featured)
+  .sort((a, b) => a.data.order - b.data.order);
 ---
 
 <Base title={`${d.title} — Derek Chen`} lang={lang} path={`/projects/${slug}`}>
   <article class="proj">
-    <a class="back" href={base + "/"}>{t.back}</a>
+    <a class="back" href={base + "/#projects"}>{t.back}</a>
 
     <header>
       <div class="titleline">
@@ -70,6 +78,25 @@ const meta = [d.role, d.org, d.period].filter(Boolean).join(" · ");
         ))}
       </div>
     )}
+
+    {others.length > 0 && (
+      <section class="more">
+        <h2>{t.more_projects}</h2>
+        <div class="more-grid">
+          {others.map((p) => (
+            <ProjectCard
+              href={`${base}/projects/${p.slug}`}
+              title={p.data.title}
+              role={p.data.role}
+              period={p.data.period}
+              tech={p.data.tech}
+              cover={p.data.cover}
+              fallbackLabel={p.fallback ? t.fallback : undefined}
+            />
+          ))}
+        </div>
+      </section>
+    )}
   </article>
 
   <style>
@@ -102,5 +129,13 @@ const meta = [d.role, d.org, d.period].filter(Boolean).join(" · ");
       border-radius: 4px; padding: 0.05rem 0.35rem;
     }
     .gallery { margin-top: 1rem; }
+
+    .more { margin-top: 3rem; border-top: 1px solid var(--line); padding-top: 1.6rem; }
+    .more h2 {
+      font-family: var(--mono); font-size: 0.9rem; text-transform: uppercase;
+      letter-spacing: 0.06em; color: var(--muted); margin: 0 0 0.9rem;
+    }
+    .more-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    @media (max-width: 620px) { .more-grid { grid-template-columns: 1fr; } }
   </style>
 </Base>
