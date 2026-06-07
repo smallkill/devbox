@@ -5,9 +5,16 @@ org: 輝創電子 WHETRON
 period: 2015 – 2020
 tech: [OpenCV, OpenGL ES, 3D 重建, 魚眼校正, C++, Nvidia, Fujitsu]
 cover: /projects/avm-3d/cover.png
+slideshow:
+  caption: 富士通平台版(交付泰國車廠)— 環景鳥瞰 + 後鏡頭,含停車偵測、導引線與距離標記等多種模式
+  images:
+    - /projects/avm-3d/thai/1.jpg
+    - /projects/avm-3d/thai/2.jpg
+    - /projects/avm-3d/thai/3.jpg
+    - /projects/avm-3d/thai/4.jpg
 gallery:
-  - { src: /projects/avm-3d/perspective-1.jpg, caption: 3D 環景視角 — 四顆魚眼鏡頭去畸變後投影、融合重建出車輛周圍的立體環境 }
-  - { src: /projects/avm-3d/perspective-2.png, caption: 不同視角的 3D 環景渲染,提供駕駛直覺化的周圍感知 }
+  - { src: /projects/avm-3d/perspective-1.jpg, caption: 自主研發版 — 3D 環景視角,四顆魚眼去畸變後投影融合,重建車輛周圍立體環境 }
+  - { src: /projects/avm-3d/perspective-2.png, caption: 自主研發版 — 不同視角的 3D 環景渲染,提供駕駛直覺化的周圍感知 }
 links:
   - { label: GitHub 參考實作, href: "https://github.com/smallkill" }
 featured: true

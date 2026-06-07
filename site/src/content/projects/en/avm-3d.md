@@ -5,9 +5,16 @@ org: WHETRON
 period: 2015 – 2020
 tech: [OpenCV, OpenGL ES, 3D Reconstruction, Fisheye Calibration, C++, Nvidia, Fujitsu]
 cover: /projects/avm-3d/cover.png
+slideshow:
+  caption: Fujitsu-platform version (delivered to Thai OEM) — bird's-eye surround + rear camera, with parking detection, guidelines, and distance markers across modes
+  images:
+    - /projects/avm-3d/thai/1.jpg
+    - /projects/avm-3d/thai/2.jpg
+    - /projects/avm-3d/thai/3.jpg
+    - /projects/avm-3d/thai/4.jpg
 gallery:
-  - { src: /projects/avm-3d/perspective-1.jpg, caption: 3D surround view — four fisheye cameras de-warped, projected, and fused into a 3D model of the vehicle's surroundings }
-  - { src: /projects/avm-3d/perspective-2.png, caption: 3D surround rendering from a different angle for intuitive driver awareness }
+  - { src: /projects/avm-3d/perspective-1.jpg, caption: "Self-developed version — 3D surround view: four fisheye cameras de-warped, projected, and fused into a 3D model of the vehicle's surroundings" }
+  - { src: /projects/avm-3d/perspective-2.png, caption: Self-developed version — 3D surround rendering from a different angle for intuitive driver awareness }
 links:
   - { label: GitHub reference, href: "https://github.com/smallkill" }
 featured: true

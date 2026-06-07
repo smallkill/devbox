@@ -14,6 +14,13 @@ const projects = defineCollection({
     gallery: z
       .array(z.object({ src: z.string(), caption: z.string().optional() }))
       .default([]),
+    // 自動輪播圖組(例如同一系統的多個畫面/模式)。
+    slideshow: z
+      .object({
+        caption: z.string().optional(),
+        images: z.array(z.string()).default([]),
+      })
+      .optional(),
     links: z
       .array(z.object({ label: z.string(), href: z.string() }))
       .default([]),

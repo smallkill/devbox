@@ -1,0 +1,127 @@
+---
+interface Props {
+  images: string[];
+  caption?: string;
+  alt?: string;
+}
+const { images, caption, alt } = Astro.props;
+---
+
+<figure class="slideshow" data-slideshow data-interval="3500">
+  <div class="frame">
+    {images.map((src, i) => (
+      <img
+        src={src}
+        alt={alt ?? caption ?? ""}
+        class={i === 0 ? "on" : ""}
+        loading={i === 0 ? "eager" : "lazy"}
+        decoding="async"
+      />
+    ))}
+    <button class="nav prev" type="button" data-prev aria-label="上一張">‹</button>
+    <button class="nav next" type="button" data-next aria-label="下一張">›</button>
+  </div>
+  <div class="dots">
+    {images.map((_, i) => (
+      <button
+        class={i === 0 ? "dot on" : "dot"}
+        type="button"
+        data-dot={i}
+        aria-label={`第 ${i + 1} 張`}
+      />
+    ))}
+  </div>
+  {caption && <figcaption>{caption}</figcaption>}
+</figure>
+
+<script>
+  document.querySelectorAll("[data-slideshow]").forEach((sl) => {
+    const imgs = Array.from(sl.querySelectorAll("img"));
+    const dots = Array.from(sl.querySelectorAll(".dot"));
+    if (imgs.length < 2) return;
+    const interval = Number((sl as HTMLElement).dataset.interval) || 3500;
+    const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    let cur = 0;
+    let timer: ReturnType<typeof setInterval> | undefined;
+
+    const show = (n: number) => {
+      cur = (n + imgs.length) % imgs.length;
+      imgs.forEach((im, i) => im.classList.toggle("on", i === cur));
+      dots.forEach((d, i) => d.classList.toggle("on", i === cur));
+    };
+    const stop = () => clearInterval(timer);
+    const start = () => {
+      if (reduce) return;
+      stop();
+      timer = setInterval(() => show(cur + 1), interval);
+    };
+
+    sl.querySelector("[data-next]")?.addEventListener("click", () => { show(cur + 1); start(); });
+    sl.querySelector("[data-prev]")?.addEventListener("click", () => { show(cur - 1); start(); });
+    dots.forEach((d, i) => d.addEventListener("click", () => { show(i); start(); }));
+    sl.addEventListener("mouseenter", stop);
+    sl.addEventListener("mouseleave", start);
+    start();
+  });
+</script>
+
+<style>
+  .slideshow { margin: 1.6rem 0; }
+  .frame {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    overflow: hidden;
+    background: #0b0d10;
+    box-shadow: 0 1px 2px rgba(24, 24, 27, 0.04), 0 8px 24px -16px rgba(24, 24, 27, 0.25);
+  }
+  .frame img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;
+    transition: opacity 0.6s ease;
+  }
+  .frame img.on { opacity: 1; }
+
+  .nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255, 255, 255, 0.82);
+    color: #18181b;
+    font-size: 1.3rem;
+    line-height: 1;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.2s;
+    display: grid;
+    place-items: center;
+  }
+  .slideshow:hover .nav, .nav:focus-visible { opacity: 1; }
+  .nav.prev { left: 0.6rem; }
+  .nav.next { right: 0.6rem; }
+  .nav:hover { background: #fff; }
+
+  .dots { display: flex; justify-content: center; gap: 0.4rem; margin-top: 0.7rem; }
+  .dot {
+    width: 8px; height: 8px; border-radius: 50%; border: none; padding: 0;
+    background: var(--line); cursor: pointer; transition: background 0.2s, transform 0.2s;
+  }
+  .dot.on { background: var(--accent); transform: scale(1.25); }
+
+  figcaption {
+    margin-top: 0.6rem;
+    font-family: var(--mono);
+    font-size: 0.74rem;
+    color: var(--muted);
+    text-align: center;
+  }
+</style>

@@ -2,6 +2,7 @@
 import { render, type CollectionEntry } from "astro:content";
 import Base from "../layouts/Base.astro";
 import Figure from "./Figure.astro";
+import Slideshow from "./Slideshow.astro";
 import { UI, type Locale } from "../i18n/ui";
 
 interface Props {
@@ -55,6 +56,14 @@ const meta = [d.role, d.org, d.period].filter(Boolean).join(" · ");
     <div class="prose">
       <Content />
     </div>
+
+    {d.slideshow && d.slideshow.images.length > 0 && (
+      <Slideshow
+        images={d.slideshow.images}
+        caption={d.slideshow.caption}
+        alt={d.title}
+      />
+    )}
 
     {d.gallery.length > 0 && (
       <div class="gallery">
