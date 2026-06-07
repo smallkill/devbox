@@ -11,7 +11,6 @@ slideshows:
       - /projects/avm-3d/self/1.jpg
       - /projects/avm-3d/self/2.jpg
       - /projects/avm-3d/self/3.jpg
-      - /projects/avm-3d/self/4.jpg
       - /projects/avm-3d/self/5.jpg
   - caption: Fujitsu-platform version (delivered to Thai OEM) — bird's-eye surround + rear camera, with parking detection, guidelines, and distance markers across modes
     images:
@@ -23,7 +22,7 @@ gallery:
   - { src: /projects/avm-3d/perspective-1.jpg, caption: "Self-developed version — 3D surround view: fisheye cameras de-warped, projected, and fused into a 3D model of the surroundings" }
   - { src: /projects/avm-3d/perspective-2.png, caption: Self-developed version — 3D surround rendering from a different angle }
 links:
-  - { label: avm_pld repo, href: "https://github.com/smallkill/avm_pld" }
+  - { label: AVM+PLD showcase, href: "https://smallkill.github.io/avm-pld-showcase/" }
 featured: true
 order: 8
 ---
@@ -41,4 +40,4 @@ The technology shipped through two delivery tracks:
 - A **Fujitsu-platform** version delivered to a **Thai car manufacturer**, entering its supply chain as a Tier 1, automotive mass-production-grade delivery.
 - A **self-developed** version with **Parking-Lot Detection (PLD)** — flagging available parking spaces on the bird's-eye view in real time to support automatic parking; this version was handed off via **technology transfer to Whetron China** (the Suzhou subsidiary), who integrated and delivered it to their end customer.
 
-Together they demonstrate mass-production-grade software delivery that meets strict automotive requirements and transfers cleanly across platforms and teams. (Self-developed AVM+PLD code in the `avm_pld` repo below.)
+Together they demonstrate mass-production-grade software delivery that meets strict automotive requirements and transfers cleanly across platforms and teams. (See the self-developed AVM+PLD showcase linked below; source code is private.)
