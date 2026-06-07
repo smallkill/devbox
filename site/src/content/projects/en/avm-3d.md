@@ -11,16 +11,16 @@ slideshows:
       - /projects/avm-3d/self/1.jpg
       - /projects/avm-3d/self/2.jpg
       - /projects/avm-3d/self/3.jpg
+      - /projects/avm-3d/self/4.jpg
       - /projects/avm-3d/self/5.jpg
+      - /projects/avm-3d/perspective-2.png
   - caption: Fujitsu-platform version (delivered to Thai OEM) — bird's-eye surround + rear camera, with parking detection, guidelines, and distance markers across modes
     images:
       - /projects/avm-3d/thai/1.jpg
       - /projects/avm-3d/thai/2.jpg
       - /projects/avm-3d/thai/3.jpg
       - /projects/avm-3d/thai/4.jpg
-gallery:
-  - { src: /projects/avm-3d/perspective-1.jpg, caption: "Self-developed version — 3D surround view: fisheye cameras de-warped, projected, and fused into a 3D model of the surroundings" }
-  - { src: /projects/avm-3d/perspective-2.png, caption: Self-developed version — 3D surround rendering from a different angle }
+gallery: []
 links:
   - { label: AVM+PLD showcase, href: "https://smallkill.github.io/avm-pld-showcase/" }
 featured: true

@@ -11,16 +11,16 @@ slideshows:
       - /projects/avm-3d/self/1.jpg
       - /projects/avm-3d/self/2.jpg
       - /projects/avm-3d/self/3.jpg
+      - /projects/avm-3d/self/4.jpg
       - /projects/avm-3d/self/5.jpg
+      - /projects/avm-3d/perspective-2.png
   - caption: 富士通平台版(交付泰國車廠)— 環景鳥瞰 + 後鏡頭,含停車偵測、導引線與距離標記等多種模式
     images:
       - /projects/avm-3d/thai/1.jpg
       - /projects/avm-3d/thai/2.jpg
       - /projects/avm-3d/thai/3.jpg
       - /projects/avm-3d/thai/4.jpg
-gallery:
-  - { src: /projects/avm-3d/perspective-1.jpg, caption: 自主研發版 — 3D 環景視角,四顆魚眼去畸變後投影融合,重建車輛周圍立體環境 }
-  - { src: /projects/avm-3d/perspective-2.png, caption: 自主研發版 — 不同視角的 3D 環景渲染 }
+gallery: []
 links:
   - { label: AVM+PLD 展示頁, href: "https://smallkill.github.io/avm-pld-showcase/" }
 featured: true
