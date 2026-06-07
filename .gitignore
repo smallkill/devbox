@@ -5,3 +5,7 @@ dist/
 .astro/
 *.log
 .DS_Store
+
+# RAG ingest artifacts (vectors, chunk previews) — never commit
+ask/.cache/
+.cf_ingest_token
