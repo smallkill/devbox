@@ -1,4 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 460" font-family="monospace">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 460" font-family="monospace" role="img" aria-labelledby="t d">
+  <title id="t">GitLab CI/CD pipeline</title>
+  <desc id="d">流程:git commit(husky pre-commit)→ 品質關卡 ESLint、Prettier、Jest → 全部通過 → 透過 GitLab API 自動建立 Merge/Pull Request。後端為 Node.js + Express 分層服務。</desc>
   <rect width="1200" height="460" fill="#faf9f6"/>
   <text x="48" y="64" font-size="26" font-weight="bold" fill="#18181b" font-family="sans-serif">GitLab CI/CD — commit → checks → auto MR/PR</text>
   <text x="48" y="92" font-size="16" fill="#6b7280">每次 push 自動觸發,通過所有關卡才建立合併請求</text>
