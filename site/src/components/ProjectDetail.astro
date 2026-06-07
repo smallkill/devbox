@@ -81,8 +81,8 @@ const others = resolveLocalized(allProjects, lang)
 
     {others.length > 0 && (
       <section class="more">
-        <h2>{t.more_projects}</h2>
-        <div class="more-grid">
+        <h2>{t.more_projects} <span class="hint">←→</span></h2>
+        <div class="more-row">
           {others.map((p) => (
             <ProjectCard
               href={`${base}/projects/${p.slug}`}
@@ -130,12 +130,31 @@ const others = resolveLocalized(allProjects, lang)
     }
     .gallery { margin-top: 1rem; }
 
-    .more { margin-top: 3rem; border-top: 1px solid var(--line); padding-top: 1.6rem; }
+    /* 更多專案:獨立區塊 + 橫向滑動 strip */
+    .more {
+      margin-top: 3.5rem;
+      border-top: 2px solid var(--line);
+      padding-top: 1.4rem;
+    }
     .more h2 {
       font-family: var(--mono); font-size: 0.9rem; text-transform: uppercase;
-      letter-spacing: 0.06em; color: var(--muted); margin: 0 0 0.9rem;
+      letter-spacing: 0.06em; color: var(--muted); margin: 0 0 1rem;
+      display: flex; align-items: center; gap: 0.5rem;
     }
-    .more-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-    @media (max-width: 620px) { .more-grid { grid-template-columns: 1fr; } }
+    .more h2 .hint { color: var(--accent); font-size: 0.8rem; letter-spacing: 0; }
+    .more-row {
+      display: flex;
+      gap: 0.9rem;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      padding-bottom: 0.7rem;
+      scrollbar-width: thin;
+    }
+    .more-row > :global(a) {
+      flex: 0 0 248px;
+      scroll-snap-align: start;
+    }
+    .more-row::-webkit-scrollbar { height: 6px; }
+    .more-row::-webkit-scrollbar-thumb { background: var(--line); border-radius: 3px; }
   </style>
 </Base>
