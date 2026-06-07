@@ -5,11 +5,24 @@ org: 輝創電子 WHETRON
 period: 2015 – 2020
 tech: [OpenCV, OpenGL ES, 3D 重建, 魚眼校正, C++, Nvidia, Fujitsu]
 cover: /projects/avm-3d/cover.png
-gallery:
-  - { src: /projects/avm-3d/perspective-1.jpg, caption: 3D 環景視角 — 四顆魚眼鏡頭去畸變後投影、融合重建出車輛周圍的立體環境 }
-  - { src: /projects/avm-3d/perspective-2.png, caption: 不同視角的 3D 環景渲染,提供駕駛直覺化的周圍感知 }
+slideshows:
+  - caption: 自主研發版(含 PLD 停車格偵測)— 環景鳥瞰,紅框即時標示偵測到的可用停車格,支援自動停車
+    images:
+      - /projects/avm-3d/self/1.jpg
+      - /projects/avm-3d/self/2.jpg
+      - /projects/avm-3d/self/3.jpg
+      - /projects/avm-3d/self/4.jpg
+      - /projects/avm-3d/self/5.jpg
+      - /projects/avm-3d/perspective-2.png
+  - caption: 富士通平台版(交付泰國車廠)— 環景鳥瞰 + 後鏡頭,含導引線與距離標記等多種模式
+    images:
+      - /projects/avm-3d/thai/1.jpg
+      - /projects/avm-3d/thai/2.jpg
+      - /projects/avm-3d/thai/3.jpg
+      - /projects/avm-3d/thai/4.jpg
+gallery: []
 links:
-  - { label: GitHub 參考實作, href: "https://github.com/smallkill" }
+  - { label: AVM+PLD 技術說明, href: "https://smallkill.github.io/avm-pld-showcase/" }
 featured: true
 order: 8
 ---
@@ -21,4 +34,9 @@ order: 8
 OpenCV 與 OpenGL ES 完成即時 3D 重建與渲染。系統設計成可跨任意嵌入式平台,並延伸出**停車格偵測**功能,
 整合進自動停車產品。
 
-此演算法最終**被泰國車廠採用、進入其供應鏈成為 Tier 1 供應商**,展現符合車規嚴格要求的量產級軟體交付能力。
+此技術有兩條交付成果:
+
+- **富士通(Fujitsu)系統平台**版本,交付**泰國車廠**並進入其供應鏈,達 Tier 1 車規量產級交付。
+- **自主研發**版本,整合**停車格偵測(PLD)**——在環景鳥瞰上即時標示可用停車格、支援自動停車;此版以**技術轉移**交付**中國輝創(Whetron 蘇州子公司)**,再由其整合並交付終端客戶。
+
+展現符合車規嚴格要求、且能跨平台與跨團隊移轉的量產級軟體交付能力。(自主研發 AVM+PLD 的技術說明見上方連結;原始碼不公開。)

@@ -15,7 +15,35 @@ export const RESUME = {
     en: "I build the bridge between edge systems and the cloud — across three industries. From automotive computer vision (3D AVM, ADAS) to autonomous-fleet cloud platforms to firmware CI/CD and DevSecOps, the through-line stays the same: take messy edge systems — cars, routers, sensors — and make them observable, secure, and shippable at scale.",
   },
   skills: [
-    { group: "Cloud / Infra", items: ["Cloudflare Workers", "Pages", "D1", "GCP", "Terraform"] },
-    { group: "Engineering", items: ["TypeScript", "CI/CD · GitHub Actions", "TDD", "Observability"] },
+    {
+      group: "Cloud / Infra",
+      items: ["AWS", "GCP", "Cloudflare Workers", "Terraform / IaC", "MQTT"],
+    },
+    {
+      group: "DevOps / CI-CD",
+      items: [
+        "GitLab CI/CD",
+        "GitHub Actions",
+        "Jenkins",
+        "DevSecOps · Coverity / Nessus",
+        "TDD",
+        "Observability",
+      ],
+    },
+    {
+      group: "Languages",
+      items: ["C/C++", "Python", "JavaScript / Node.js", "TypeScript", "Shell"],
+    },
+    {
+      group: "CV / Embedded / Robotics",
+      items: [
+        "OpenCV",
+        "OpenGL ES",
+        "ROS / Autoware",
+        "YOLO",
+        "3D Reconstruction",
+        "Nvidia NX / Arm64",
+      ],
+    },
   ] as SkillGroup[],
 };
