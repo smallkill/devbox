@@ -36,7 +36,7 @@ const base = lang === "en" ? "/en" : "";
         --accent: #2347d6;
         --accent-soft: #eef1fd;
         --sans: "Hanken Grotesk", "Noto Sans TC", system-ui, sans-serif;
-        --mono: "Space Mono", ui-monospace, monospace;
+        --mono: "Space Mono", "Noto Sans TC", ui-monospace, monospace;
         --maxw: 760px;
       }
 
@@ -132,7 +132,7 @@ const base = lang === "en" ? "/en" : "";
 
       /* 列印 / 存成 PDF:去掉導覽列、頁尾、PDF 按鈕,展開動畫,印滿背景 */
       @media print {
-        .site-head, .site-foot, .pdf-btn { display: none !important; }
+        .site-head, .site-foot, .pdf-btn, .email .copy { display: none !important; }
         .reveal { opacity: 1 !important; transform: none !important; }
         body { background: #fff; }
         main { padding-top: 0.5rem; }
