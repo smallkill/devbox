@@ -3,7 +3,7 @@ org: WHETRON
 role: Software Engineer (Computer Vision / ADAS)
 period: Jun 2015 – Jun 2020
 location: New Taipei
-logo: /logos/whetron.svg
+logo: /logos/whetron.png
 tech: [OpenCV, OpenGL ES, ROS, C++, Nvidia, Fujitsu]
 highlights:
   - Developed a 3D Around View Monitoring (3D AVM) algorithm adopted by a Thai car manufacturer, entering its supply chain as a Tier 1 supplier (automotive mass-production grade).

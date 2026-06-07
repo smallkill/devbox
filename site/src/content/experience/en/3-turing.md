@@ -3,7 +3,7 @@ org: TURING DRIVE
 role: Principal Engineer
 period: Jul 2020 – Jun 2023
 location: New Taipei
-logo: /logos/turing.svg
+logo: /logos/turing.png
 tech: [AWS, MQTT, ROS, Autoware, Node.js, Vue]
 highlights:
   - Built a Vehicle Monitoring System on AWS (EC2 / S3 / Lambda) from scratch, integrating 13 autonomous vehicles (4 types) for real-time tracking and remote control.

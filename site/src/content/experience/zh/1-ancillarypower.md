@@ -3,7 +3,7 @@ org: 安瑟樂威 AncillaryPower
 role: DevOps 工程師
 period: 2026.04 – 現在
 location: 新北
-logo: /logos/ancillarypower.svg
+logo: /logos/ancillarypower.png
 tech: [GCP, Terraform, CI/CD, DevSecOps, Cloud Run]
 highlights:
   - 主導運維與部署自動化:設計並維護高效能 CI/CD 管線,自動化網站與雲端服務上線,達成零中斷(Zero-Downtime)更新。

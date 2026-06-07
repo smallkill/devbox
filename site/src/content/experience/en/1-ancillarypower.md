@@ -3,7 +3,7 @@ org: AncillaryPower
 role: DevOps Engineer
 period: Apr 2026 – Present
 location: New Taipei
-logo: /logos/ancillarypower.svg
+logo: /logos/ancillarypower.png
 tech: [GCP, Terraform, CI/CD, DevSecOps, Cloud Run]
 highlights:
   - Own deployment automation — design and maintain high-throughput CI/CD pipelines that automate website and cloud-service releases with zero-downtime updates.

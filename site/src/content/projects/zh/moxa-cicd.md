@@ -4,7 +4,7 @@ role: 資深軟體工程師 · CI/CD & DevSecOps
 org: 四零四科技 Moxa
 period: 2023 – 2026
 tech: [GitLab CI/CD, Coverity, Nessus, SAST, DAST, Shell, Python]
-cover: /projects/moxa-cicd/cover.png
+cover: /projects/moxa-cicd/cover.svg
 gallery:
   - { src: /projects/moxa-cicd/automation.png, caption: 部署後串接 RDLAB(BVT)與 SQA(Regression)自動化測試,並整合 Nessus 安全掃描 }
 links: []

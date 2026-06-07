@@ -4,7 +4,7 @@ role: Senior Software Engineer · CI/CD & DevSecOps
 org: Moxa
 period: 2023 – 2026
 tech: [GitLab CI/CD, Coverity, Nessus, SAST, DAST, Shell, Python]
-cover: /projects/moxa-cicd/cover.png
+cover: /projects/moxa-cicd/cover.svg
 gallery:
   - { src: /projects/moxa-cicd/automation.png, caption: Post-deploy RDLAB (BVT) and SQA (Regression) automated testing, integrated with Nessus security scanning }
 links: []
