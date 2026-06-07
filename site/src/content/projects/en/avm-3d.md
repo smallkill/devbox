@@ -14,7 +14,7 @@ slideshows:
       - /projects/avm-3d/self/4.jpg
       - /projects/avm-3d/self/5.jpg
       - /projects/avm-3d/perspective-2.png
-  - caption: Fujitsu-platform version (delivered to Thai OEM) — bird's-eye surround + rear camera, with parking detection, guidelines, and distance markers across modes
+  - caption: Fujitsu-platform version (delivered to Thai OEM) — bird's-eye surround + rear camera, with guidelines and distance markers across modes
     images:
       - /projects/avm-3d/thai/1.jpg
       - /projects/avm-3d/thai/2.jpg
@@ -40,4 +40,4 @@ The technology shipped through two delivery tracks:
 - A **Fujitsu-platform** version delivered to a **Thai car manufacturer**, entering its supply chain as a Tier 1, automotive mass-production-grade delivery.
 - A **self-developed** version with **Parking-Lot Detection (PLD)** — flagging available parking spaces on the bird's-eye view in real time to support automatic parking; this version was handed off via **technology transfer to Whetron China** (the Suzhou subsidiary), who integrated and delivered it to their end customer.
 
-Together they demonstrate mass-production-grade software delivery that meets strict automotive requirements and transfers cleanly across platforms and teams. (See the self-developed AVM+PLD showcase linked below; source code is private.)
+Together they demonstrate mass-production-grade software delivery that meets strict automotive requirements and transfers cleanly across platforms and teams. (A technical write-up of the self-developed AVM+PLD is linked above; source code is private.)
