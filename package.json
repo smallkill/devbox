@@ -6,11 +6,12 @@
   "description": "Self-hosted URL-shortener SaaS — CI/CD + monitoring portfolio on Cloudflare",
   "workspaces": [
     "api",
+    "ask",
     "watchdog"
   ],
   "scripts": {
     "lint": "eslint .",
-    "typecheck": "tsc -p api/tsconfig.json && tsc -p watchdog/tsconfig.json",
+    "typecheck": "tsc -p api/tsconfig.json && tsc -p ask/tsconfig.json && tsc -p watchdog/tsconfig.json",
     "test": "npm run test --workspaces --if-present"
   },
   "devDependencies": {
