@@ -19,7 +19,7 @@ const { org, role, period, location, logo, tech = [], highlights = [] } =
   </div>
   <div class="detail">
     <h3>
-      {logo && <img class="logo" src={logo} alt={`${org} logo`} loading="lazy" />}
+      {logo && <img class="logo" src={logo} alt="" loading="lazy" />}
       {role} <span class="at">·</span> <span class="org">{org}</span>
     </h3>
     {highlights.length > 0 && (

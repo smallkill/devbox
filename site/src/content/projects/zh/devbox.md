@@ -8,7 +8,7 @@ cover: /projects/devbox/cover.png
 gallery:
   - { src: /projects/devbox/status.png, caption: 即時監控儀表板 }
 links:
-  - { label: Live, href: "https://derek-chen.pages.dev" }
+  - { label: Live, href: "https://derek-chen.pages.dev/status" }
   - { label: GitHub, href: "https://github.com/smallkill/devbox" }
 featured: true
 order: 1

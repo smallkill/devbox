@@ -7,7 +7,7 @@ cover: /projects/devbox/cover.png
 gallery:
   - { src: /projects/devbox/status.png, caption: Live monitoring dashboard }
 links:
-  - { label: Live, href: "https://derek-chen.pages.dev" }
+  - { label: Live, href: "https://derek-chen.pages.dev/status" }
   - { label: GitHub, href: "https://github.com/smallkill/devbox" }
 featured: true
 order: 1

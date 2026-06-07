@@ -138,6 +138,8 @@ const base = lang === "en" ? "/en" : "";
         main { padding-top: 0.5rem; }
         a { color: var(--ink); }
         .card, .metric, .console, .fig img { box-shadow: none !important; }
+        .card, .xp, .metric, .fig { break-inside: avoid; }
+        h2 { break-after: avoid; }
         * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
       }
     </style>

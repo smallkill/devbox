@@ -35,13 +35,8 @@ const experience = resolveLocalized(experienceEntries, lang).sort(
         {l.label} ↗
       </a>
     ))}
-    <button class="pdf-btn" type="button" data-print>{t.download_pdf} ↓</button>
+    <button class="pdf-btn" type="button" onclick="window.print()">{t.download_pdf} ↓</button>
   </nav>
-  <script>
-    document
-      .querySelector("[data-print]")
-      ?.addEventListener("click", () => window.print());
-  </script>
 </section>
 
 <section class="block reveal" style="animation-delay: 90ms">
