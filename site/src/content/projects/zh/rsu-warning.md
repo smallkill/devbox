@@ -7,7 +7,9 @@ tech: [Nvidia NX, YOLO, AWS KVS, Lambda, S3, MQTT, V2X]
 cover: /projects/rsu-warning/cover.png
 gallery:
   - { src: /projects/rsu-warning/cam.png, caption: 路口攝影機畫面與偵測區域標定 }
-links: []
+links:
+  - { label: 計畫頁 · Turing Drive, href: "https://turing-drive.com/featured_item/%E6%A1%83%E5%9C%92%E5%B8%82%E9%9D%92%E5%9F%94%E5%9C%B0%E5%8D%80%E8%87%AA%E9%A7%95%E5%B7%B4%E5%A3%AB%E5%89%B5%E6%96%B0%E5%AF%A6%E9%A9%97%E8%A8%88%E7%95%AB/" }
+  - { label: 媒體報導 · INSIDE, href: "https://www.inside.com.tw/article/25555-2021-taoyuan-smart-city" }
 featured: true
 order: 5
 ---
