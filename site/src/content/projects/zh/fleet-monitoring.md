@@ -9,7 +9,7 @@ gallery:
   - { src: /projects/fleet-monitoring/dashboard.png, caption: 車隊總覽 — 各車輛租借/運行狀態與地圖即時定位 }
 links: []
 featured: true
-order: 3
+order: 4
 ---
 
 從零在 **AWS** 上設計並建置的自駕車隊**即時監控與遠端遙控平台**,整合 **13 台自駕車(4 種車型)**——

@@ -10,6 +10,7 @@ export const UI = {
     fallback: "中文",
     back: "← 回首頁",
     view: "查看",
+    download_pdf: "下載 PDF",
   },
   en: {
     role: "Software / DevOps Engineer",
@@ -22,6 +23,7 @@ export const UI = {
     fallback: "ZH",
     back: "← Home",
     view: "View",
+    download_pdf: "Download PDF",
   },
 } as const;
 

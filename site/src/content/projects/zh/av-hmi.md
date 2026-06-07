@@ -8,7 +8,7 @@ cover: /projects/av-hmi/cover.jpg
 gallery: []
 links: []
 featured: true
-order: 7
+order: 6
 ---
 
 為自駕接駁車開發的**即時人機介面(HMI)**,實際部署於**泰國**場域運行。

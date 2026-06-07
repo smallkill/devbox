@@ -3,6 +3,7 @@ org: 台灣智慧駕駛 TURING DRIVE
 role: 主任工程師 Principal Engineer
 period: 2020.07 – 2023.06
 location: 新北
+logo: /logos/turing.svg
 tech: [AWS, MQTT, ROS, Autoware, Node.js, Vue]
 highlights:
   - 從零在 AWS(EC2 / S3 / Lambda)建置車輛監控系統,整合 13 台自駕車(4 種車型)的即時追蹤與遠端控制。

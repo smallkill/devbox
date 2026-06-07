@@ -11,7 +11,7 @@ gallery:
 links:
   - { label: GitHub 參考實作, href: "https://github.com/smallkill" }
 featured: true
-order: 2
+order: 8
 ---
 
 自主研發的 **3D Around View Monitoring(3D AVM)** 系統,將前、後、左、右四顆魚眼攝影機的影像,

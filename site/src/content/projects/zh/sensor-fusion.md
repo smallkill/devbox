@@ -8,7 +8,7 @@ cover: /projects/sensor-fusion/cover.png
 gallery: []
 links: []
 featured: true
-order: 5
+order: 7
 ---
 
 即時的**感測器融合與障礙物視覺化**系統,結合**超音波雷達**與**電腦視覺**,偵測車輛周圍的行人與車輛。
