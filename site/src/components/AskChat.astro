@@ -258,8 +258,10 @@ const txt = {
     // 先抓來源 header(成功回應才有)。
     let sources = [];
     try {
+      // x-sources 經 encodeURIComponent 傳輸(HTTP header 走 latin1,
+      // 直接放中文會 mojibake),這裡 decode 回 UTF-8 再 parse。
       const raw = res.headers.get("x-sources");
-      if (raw) sources = JSON.parse(raw);
+      if (raw) sources = JSON.parse(decodeURIComponent(raw));
     } catch {
       sources = [];
     }

@@ -133,7 +133,9 @@ export default {
       headers: {
         ...cors(req),
         "content-type": "text/event-stream",
-        "x-sources": JSON.stringify(sources),
+        // encodeURIComponent:HTTP header 只可靠承載 latin1,來源標題含中文
+        // 直接放會 mojibake;前端 decodeURIComponent 還原。
+        "x-sources": encodeURIComponent(JSON.stringify(sources)),
       },
     });
   },
