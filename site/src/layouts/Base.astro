@@ -108,6 +108,7 @@ const base = lang === "en" ? "/en" : "";
         font-family: var(--mono);
         font-size: 0.76rem;
       }
+      .site-foot .oss { margin-top: 0.4rem; }
 
       h1, h2, h3 { line-height: 1.2; letter-spacing: -0.015em; }
 
@@ -161,7 +162,13 @@ const base = lang === "en" ? "/en" : "";
     </main>
 
     <footer class="site-foot">
-      <div class="wrap">© 2026 Derek Chen · built with Astro on Cloudflare</div>
+      <div class="wrap">
+        <div>© 2026 Derek Chen · built with Astro on Cloudflare</div>
+        <div class="oss">
+          {t.footer_oss}
+          <a href="https://github.com/smallkill/devbox" target="_blank" rel="noopener noreferrer">github.com/smallkill/devbox ↗</a>
+        </div>
+      </div>
     </footer>
   </body>
 </html>

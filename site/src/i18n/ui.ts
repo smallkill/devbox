@@ -28,6 +28,7 @@ export const UI = {
     st_syncing: "同步中…",
     st_last_sync: "最後同步",
     st_conn_failed: "連線失敗",
+    footer_oss: "本站與其 SaaS 後端皆開源於",
   },
   en: {
     role: "Software / DevOps Engineer",
@@ -58,6 +59,7 @@ export const UI = {
     st_syncing: "syncing…",
     st_last_sync: "last sync",
     st_conn_failed: "connection failed",
+    footer_oss: "this site & its SaaS backend are open source at",
   },
 } as const;
 
