@@ -26,8 +26,13 @@ const experience = resolveLocalized(experienceEntries, lang).sort(
 ---
 
 <section class="hero reveal">
-  <span class="eyebrow">// {t.role}</span>
-  <h1>{RESUME.name}</h1>
+  <div class="hero-top">
+    <img class="avatar" src={RESUME.avatar} alt={RESUME.name} width="84" height="84" />
+    <div>
+      <span class="eyebrow">// {t.role}</span>
+      <h1>{RESUME.name}</h1>
+    </div>
+  </div>
   <p class="intro">{RESUME.intro[lang]}</p>
 
   <ul class="traits">
@@ -129,6 +134,13 @@ const experience = resolveLocalized(experienceEntries, lang).sort(
 
 <style>
   .hero { padding: 2.5rem 0 1rem; }
+  .hero-top { display: flex; align-items: center; gap: 1.1rem; margin-bottom: 0.9rem; }
+  .avatar {
+    width: 84px; height: 84px; border-radius: 50%; object-fit: cover;
+    border: 1px solid var(--line); flex-shrink: 0;
+    box-shadow: 0 4px 16px -10px rgba(24, 24, 27, 0.4);
+  }
+  .hero-top h1 { font-size: clamp(2.2rem, 7vw, 3.2rem); font-weight: 800; margin: 0.3rem 0 0; }
   .hero h1 { font-size: clamp(2.2rem, 7vw, 3.2rem); font-weight: 800; margin: 0.5rem 0 0.7rem; }
   .intro { font-size: 1.1rem; color: var(--ink-soft); max-width: 56ch; margin: 0 0 1.2rem; }
   .traits {

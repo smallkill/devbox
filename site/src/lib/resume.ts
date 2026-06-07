@@ -5,6 +5,7 @@ export interface SkillGroup {
 
 export const RESUME = {
   name: "Derek Chen",
+  avatar: "/derek.jpg",
   email: "chinte.cheng@gmail.com",
   links: [
     { label: "GitHub", href: "https://github.com/smallkill" },
