@@ -3,7 +3,7 @@ title: 路由器韌體 CI/CD Pipeline(GitLab)
 role: 資深軟體工程師 · CI/CD & DevSecOps
 org: 四零四科技 Moxa
 period: 2023 – 2026
-tech: [GitLab CI/CD, Coverity, Nessus, SAST, DAST, Shell, Python]
+tech: [GitLab CI/CD, ISO 26262, Coverity, Nessus, SAST, DAST, Shell, Python]
 cover: /projects/moxa-cicd/cover.svg
 gallery:
   - { src: /projects/moxa-cicd/automation.png, caption: 部署後串接 RDLAB(BVT)與 SQA(Regression)自動化測試,並整合 Nessus 安全掃描 }
@@ -21,3 +21,6 @@ Pipeline 自動化:**Build Firmware → 上傳 Artifact 至 SCM → 部署韌體
 
 部署後再串接 **RDLAB(BVT)** 與 **SQA(Regression)** 自動化測試實機驗證。自動化工作流讓團隊
 **比傳統手動流程提前最多 7 天**發現整合問題,顯著提升韌體可靠度。
+
+整體流程依循 **ISO 26262(車用功能安全)** 的軟體開發與支援流程要求建置——以自動化測試、
+靜態分析(Coverity)與可追溯的驗證,確保安全相關韌體達到車規所需的嚴謹度與合規。

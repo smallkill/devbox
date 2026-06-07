@@ -1,8 +1,10 @@
 ---
-import { render, type CollectionEntry } from "astro:content";
+import { getCollection, render, type CollectionEntry } from "astro:content";
 import Base from "../layouts/Base.astro";
 import Figure from "./Figure.astro";
 import Slideshow from "./Slideshow.astro";
+import ProjectCard from "./ProjectCard.astro";
+import { resolveLocalized } from "../i18n/content";
 import { UI, type Locale } from "../i18n/ui";
 
 interface Props {
@@ -17,11 +19,17 @@ const d = entry.data;
 const t = UI[lang];
 const base = lang === "en" ? "/en" : "";
 const meta = [d.role, d.org, d.period].filter(Boolean).join(" · ");
+
+// 其他專案(排除目前這個),依 order 排序,給底部「更多專案」。
+const allProjects = await getCollection("projects");
+const others = resolveLocalized(allProjects, lang)
+  .filter((p) => p.slug !== slug && p.data.featured)
+  .sort((a, b) => a.data.order - b.data.order);
 ---
 
 <Base title={`${d.title} — Derek Chen`} lang={lang} path={`/projects/${slug}`}>
   <article class="proj">
-    <a class="back" href={base + "/"}>{t.back}</a>
+    <a class="back" href={base + "/#projects"}>{t.back}</a>
 
     <header>
       <div class="titleline">
@@ -70,6 +78,25 @@ const meta = [d.role, d.org, d.period].filter(Boolean).join(" · ");
         ))}
       </div>
     )}
+
+    {others.length > 0 && (
+      <section class="more">
+        <h2>{t.more_projects} <span class="hint">←→</span></h2>
+        <div class="more-row">
+          {others.map((p) => (
+            <ProjectCard
+              href={`${base}/projects/${p.slug}`}
+              title={p.data.title}
+              role={p.data.role}
+              period={p.data.period}
+              tech={p.data.tech}
+              cover={p.data.cover}
+              fallbackLabel={p.fallback ? t.fallback : undefined}
+            />
+          ))}
+        </div>
+      </section>
+    )}
   </article>
 
   <style>
@@ -102,5 +129,32 @@ const meta = [d.role, d.org, d.period].filter(Boolean).join(" · ");
       border-radius: 4px; padding: 0.05rem 0.35rem;
     }
     .gallery { margin-top: 1rem; }
+
+    /* 更多專案:獨立區塊 + 橫向滑動 strip */
+    .more {
+      margin-top: 3.5rem;
+      border-top: 2px solid var(--line);
+      padding-top: 1.4rem;
+    }
+    .more h2 {
+      font-family: var(--mono); font-size: 0.9rem; text-transform: uppercase;
+      letter-spacing: 0.06em; color: var(--muted); margin: 0 0 1rem;
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+    .more h2 .hint { color: var(--accent); font-size: 0.8rem; letter-spacing: 0; }
+    .more-row {
+      display: flex;
+      gap: 0.9rem;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      padding-bottom: 0.7rem;
+      scrollbar-width: thin;
+    }
+    .more-row > :global(a) {
+      flex: 0 0 248px;
+      scroll-snap-align: start;
+    }
+    .more-row::-webkit-scrollbar { height: 6px; }
+    .more-row::-webkit-scrollbar-thumb { background: var(--line); border-radius: 3px; }
   </style>
 </Base>
