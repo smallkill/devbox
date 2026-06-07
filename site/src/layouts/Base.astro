@@ -129,6 +129,19 @@ const base = lang === "en" ? "/en" : "";
         .reveal { animation: none; opacity: 1; transform: none; }
         html { scroll-behavior: auto; }
       }
+
+      /* 列印 / 存成 PDF:去掉導覽列、頁尾、PDF 按鈕,展開動畫,印滿背景 */
+      @media print {
+        .site-head, .site-foot, .pdf-btn { display: none !important; }
+        .reveal { opacity: 1 !important; transform: none !important; }
+        body { background: #fff; }
+        main { padding-top: 0.5rem; }
+        a { color: var(--ink); }
+        .card, .metric, .console, .fig img { box-shadow: none !important; }
+        .card, .xp, .metric, .fig { break-inside: avoid; }
+        h2 { break-after: avoid; }
+        * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      }
     </style>
   </head>
   <body>

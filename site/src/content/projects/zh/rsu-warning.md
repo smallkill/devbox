@@ -9,7 +9,7 @@ gallery:
   - { src: /projects/rsu-warning/cam.png, caption: 路口攝影機畫面與偵測區域標定 }
 links: []
 featured: true
-order: 4
+order: 5
 ---
 
 針對**無號誌路口**的自駕車安全方案。路側單元(RSU)架設於路口,在 **Nvidia NX** 邊緣平台上以 **YOLO**

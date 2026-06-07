@@ -9,7 +9,7 @@ gallery:
   - { src: /projects/moxa-cicd/automation.png, caption: 部署後串接 RDLAB(BVT)與 SQA(Regression)自動化測試,並整合 Nessus 安全掃描 }
 links: []
 featured: true
-order: 6
+order: 3
 ---
 
 為路由器韌體開發建置的 **GitLab CI/CD pipeline**,支援 **5 個產品系列共 9 款路由器**,

@@ -9,7 +9,7 @@ gallery: []
 links:
   - { label: GitHub, href: "https://github.com/smallkill/ancillarypower-devops-implement" }
 featured: true
-order: 8
+order: 2
 ---
 
 一套**端到端自動化的 GitLab CI/CD 實作**:以 Node.js + Express 建立分層架構的最小後端服務

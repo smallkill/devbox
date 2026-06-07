@@ -7,8 +7,8 @@ export const RESUME = {
   name: "Derek Chen",
   links: [
     { label: "GitHub", href: "https://github.com/smallkill" },
-    { label: "Live", href: "https://derek-chen.pages.dev" },
-    // LinkedIn 待補:Derek 提供 handle 後加入
+    { label: "LinkedIn", href: "https://www.linkedin.com/in/dereklovetw/" },
+    { label: "Live Demo", href: "https://derek-chen.pages.dev/status" },
   ] as { label: string; href: string }[],
   intro: {
     zh: "以 Cloudflare 為核心的 Software / DevOps 工程師。自架生產級 SaaS:CI/CD 自動部署、Infrastructure-as-Code、可觀測性優先。重視測試紀律與最小權限安全設計。",

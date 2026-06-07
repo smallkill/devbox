@@ -35,6 +35,7 @@ const experience = resolveLocalized(experienceEntries, lang).sort(
         {l.label} ↗
       </a>
     ))}
+    <button class="pdf-btn" type="button" onclick="window.print()">{t.download_pdf} ↓</button>
   </nav>
 </section>
 
@@ -49,6 +50,7 @@ const experience = resolveLocalized(experienceEntries, lang).sort(
         role={x.data.role}
         period={x.data.period}
         location={x.data.location}
+        logo={x.data.logo}
         tech={x.data.tech}
         highlights={x.data.highlights}
       />
@@ -93,7 +95,14 @@ const experience = resolveLocalized(experienceEntries, lang).sort(
   .hero { padding: 2.5rem 0 1rem; }
   .hero h1 { font-size: clamp(2.2rem, 7vw, 3.2rem); font-weight: 800; margin: 0.5rem 0 0.7rem; }
   .intro { font-size: 1.1rem; color: var(--ink-soft); max-width: 56ch; margin: 0 0 1.2rem; }
-  .links { display: flex; flex-wrap: wrap; gap: 1.1rem; font-family: var(--mono); font-size: 0.85rem; }
+  .links { display: flex; flex-wrap: wrap; align-items: center; gap: 1.1rem; font-family: var(--mono); font-size: 0.85rem; }
+  .pdf-btn {
+    font-family: var(--mono); font-size: 0.82rem; cursor: pointer;
+    color: var(--accent); background: var(--accent-soft);
+    border: 1px solid color-mix(in srgb, var(--accent) 30%, var(--line));
+    border-radius: 6px; padding: 0.25rem 0.7rem;
+  }
+  .pdf-btn:hover { background: var(--accent); color: #fff; }
 
   .block { padding: 1.8rem 0; }
   .block h2 {
