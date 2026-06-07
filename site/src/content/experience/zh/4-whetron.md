@@ -3,7 +3,7 @@ org: 輝創電子 WHETRON
 role: 軟體工程師(電腦視覺 / ADAS 演算法)
 period: 2015.06 – 2020.06
 location: 新北
-logo: /logos/whetron.svg
+logo: /logos/whetron.png
 tech: [OpenCV, OpenGL ES, ROS, C++, Nvidia, Fujitsu]
 highlights:
   - 開發 3D Around View Monitoring(3D AVM)演算法,被泰國車廠採用、進入 Tier 1 供應鏈(車規量產級交付)。

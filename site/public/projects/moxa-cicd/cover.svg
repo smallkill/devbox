@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 460" font-family="monospace" role="img" aria-labelledby="t d">
+  <title id="t">Router firmware CI/CD pipeline</title>
+  <desc id="d">流程:Build Firmware → 上傳 Artifact → Deploy → 自動化測試;並行整合 Coverity 靜態掃描(SAST)與 Nessus 動態掃描(DAST)。</desc>
+  <rect width="1200" height="460" fill="#faf9f6"/>
+  <text x="48" y="62" font-size="26" font-weight="bold" fill="#18181b" font-family="sans-serif">Router Firmware CI/CD · Shift-Left Security</text>
+  <text x="48" y="90" font-size="16" fill="#6b7280">9 款路由器 · 5 系列 · 160 commits/月 · build→scan→deploy 全自動</text>
+
+  <!-- main flow -->
+  <g>
+    <rect x="48" y="180" width="170" height="92" rx="12" fill="#ffffff" stroke="#e7e4dd"/>
+    <text x="133" y="232" font-size="17" fill="#18181b" text-anchor="middle" font-family="sans-serif" font-weight="bold">Build</text>
+    <text x="133" y="252" font-size="12" fill="#6b7280" text-anchor="middle">firmware</text>
+
+    <line x1="218" y1="226" x2="270" y2="226" stroke="#2347d6" stroke-width="2"/>
+    <polygon points="270,220 282,226 270,232" fill="#2347d6"/>
+
+    <rect x="282" y="180" width="170" height="92" rx="12" fill="#ffffff" stroke="#e7e4dd"/>
+    <text x="367" y="232" font-size="17" fill="#18181b" text-anchor="middle" font-family="sans-serif" font-weight="bold">Artifact</text>
+    <text x="367" y="252" font-size="12" fill="#6b7280" text-anchor="middle">→ SCM</text>
+
+    <line x1="452" y1="226" x2="504" y2="226" stroke="#2347d6" stroke-width="2"/>
+    <polygon points="504,220 516,226 504,232" fill="#2347d6"/>
+
+    <rect x="516" y="180" width="170" height="92" rx="12" fill="#ffffff" stroke="#e7e4dd"/>
+    <text x="601" y="232" font-size="17" fill="#18181b" text-anchor="middle" font-family="sans-serif" font-weight="bold">Deploy</text>
+    <text x="601" y="252" font-size="12" fill="#6b7280" text-anchor="middle">to device</text>
+
+    <line x1="686" y1="226" x2="738" y2="226" stroke="#2347d6" stroke-width="2"/>
+    <polygon points="738,220 750,226 738,232" fill="#2347d6"/>
+
+    <rect x="750" y="180" width="180" height="92" rx="12" fill="#18181b"/>
+    <text x="840" y="226" font-size="16" fill="#ffffff" text-anchor="middle" font-family="sans-serif" font-weight="bold">Auto Test</text>
+    <text x="840" y="248" font-size="12" fill="#9aa3ab" text-anchor="middle">BVT · Regression</text>
+  </g>
+
+  <!-- security scans -->
+  <g>
+    <rect x="282" y="320" width="200" height="56" rx="10" fill="#eef1fd" stroke="#2347d6"/>
+    <text x="382" y="346" font-size="15" fill="#18181b" text-anchor="middle">Coverity</text>
+    <text x="382" y="364" font-size="12" fill="#2347d6" text-anchor="middle">SAST · 靜態掃描</text>
+    <line x1="367" y1="272" x2="367" y2="320" stroke="#9aa3ab" stroke-width="1.5" stroke-dasharray="4 3"/>
+
+    <rect x="516" y="320" width="200" height="56" rx="10" fill="#ecfdf3" stroke="#15803d"/>
+    <text x="616" y="346" font-size="15" fill="#18181b" text-anchor="middle">Nessus</text>
+    <text x="616" y="364" font-size="12" fill="#15803d" text-anchor="middle">DAST · 動態掃描</text>
+    <line x1="601" y1="272" x2="601" y2="320" stroke="#9aa3ab" stroke-width="1.5" stroke-dasharray="4 3"/>
+  </g>
+</svg>
