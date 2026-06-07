@@ -33,7 +33,13 @@ export const RESUME = {
   skills: [
     {
       group: "Cloud / Infra",
-      items: ["AWS", "GCP", "Cloudflare Workers", "Terraform / IaC", "MQTT"],
+      items: [
+        "AWS · EC2 / S3 / Lambda / IoT Core / API Gateway / KVS",
+        "GCP · Cloud Run / VPC / VM",
+        "Cloudflare Workers",
+        "Terraform / IaC",
+        "MQTT",
+      ],
     },
     {
       group: "DevOps / CI-CD",
@@ -43,7 +49,6 @@ export const RESUME = {
         "Jenkins",
         "DevSecOps · Coverity / Nessus",
         "TDD",
-        "Observability",
       ],
     },
     {

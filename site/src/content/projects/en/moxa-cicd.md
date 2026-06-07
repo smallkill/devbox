@@ -3,7 +3,7 @@ title: Router Firmware CI/CD Pipeline (GitLab)
 role: Senior Software Engineer · CI/CD & DevSecOps
 org: Moxa
 period: 2023 – 2026
-tech: [GitLab CI/CD, Coverity, Nessus, SAST, DAST, Shell, Python]
+tech: [GitLab CI/CD, ISO 26262, Coverity, Nessus, SAST, DAST, Shell, Python]
 cover: /projects/moxa-cicd/cover.svg
 gallery:
   - { src: /projects/moxa-cicd/automation.png, caption: Post-deploy RDLAB (BVT) and SQA (Regression) automated testing, integrated with Nessus security scanning }
@@ -23,3 +23,7 @@ without slowing development.
 
 After deployment, RDLAB (BVT) and SQA (Regression) automated tests validate on real hardware. The automation
 surfaces integration issues up to 7 days earlier than the manual process, markedly improving firmware reliability.
+
+The whole flow is built to the software-development and supporting-process requirements of **ISO 26262 (automotive
+functional safety)** — using automated testing, static analysis (Coverity), and traceable verification to give
+safety-related firmware the rigor and compliance automotive grade demands.
