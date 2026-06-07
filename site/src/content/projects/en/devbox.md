@@ -13,8 +13,18 @@ featured: true
 order: 1
 ---
 
-A URL-shortener SaaS wired end to end — from `git push` through CI/CD to automated deployment and live monitoring.
+A URL-shortener SaaS wired end to end — from `git push` through CI/CD to automated deployment and live monitoring. Built entirely on the **Cloudflare stack**:
 
-Built entirely on Cloudflare: Workers handle creation and redirects, D1 stores the links, and Analytics Engine records clicks. A Cron Worker periodically checks health and alerts via Telegram; GitHub Actions runs lint / typecheck / test on every push and only auto-deploys with `wrangler deploy` when everything is green. The frontend ships a real-time click-monitoring dashboard.
+- **Workers** (API) — link creation and 302 redirects
+- **D1** — link storage
+- **Analytics Engine** — records every click event
+- **Cron Worker** — periodic health checks, alerts via Telegram on anomalies
+- **Pages** (Astro) — real-time click-monitoring dashboard
+- **GitHub Actions** — lint / typecheck / test on every push, auto-`wrangler deploy` only when green
 
-It demonstrates self-hosted SaaS + DevOps + Observability end to end, with reliability touches like bearer auth, least-privilege tokens, graceful degradation, and XSS protection.
+It demonstrates self-hosted SaaS + DevOps + Observability end to end, with deliberate reliability and security design:
+
+- **Bearer auth** — link creation requires authorization, intentionally not open to the public to prevent abuse (open-redirect / phishing relay)
+- **Least-privilege tokens** — the stats token is Analytics-Read only, separate from the deploy token
+- **Graceful degradation** — the stats endpoint degrades on query timeout instead of stalling the page
+- **XSS protection** — the dashboard renders via DOM APIs, not innerHTML

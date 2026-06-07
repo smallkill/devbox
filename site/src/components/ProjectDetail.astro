@@ -85,6 +85,10 @@ const meta = [d.role, d.org, d.period].filter(Boolean).join(" · ");
     .links { display: flex; flex-wrap: wrap; gap: 1.1rem; font-family: var(--mono); font-size: 0.85rem; margin-bottom: 1rem; }
     .prose { font-size: 1.02rem; color: var(--ink-soft); border-top: 1px solid var(--line); padding-top: 1.4rem; }
     .prose :global(p) { margin: 0 0 1rem; }
+    .prose :global(ul) { margin: 0 0 1rem; padding-left: 1.2rem; }
+    .prose :global(li) { margin: 0.3rem 0; }
+    .prose :global(li::marker) { color: var(--accent); }
+    .prose :global(strong) { color: var(--ink); font-weight: 700; }
     .prose :global(code) {
       font-family: var(--mono); font-size: 0.86em;
       background: var(--bg-elev); border: 1px solid var(--line);
