@@ -22,7 +22,7 @@ slideshows:
       - /projects/avm-3d/thai/4.jpg
 gallery: []
 links:
-  - { label: AVM+PLD 展示頁, href: "https://smallkill.github.io/avm-pld-showcase/" }
+  - { label: AVM+PLD 技術說明, href: "https://smallkill.github.io/avm-pld-showcase/" }
 featured: true
 order: 8
 ---
