@@ -57,12 +57,10 @@ const meta = [d.role, d.org, d.period].filter(Boolean).join(" · ");
       <Content />
     </div>
 
-    {d.slideshow && d.slideshow.images.length > 0 && (
-      <Slideshow
-        images={d.slideshow.images}
-        caption={d.slideshow.caption}
-        alt={d.title}
-      />
+    {d.slideshows.map((s) =>
+      s.images.length > 0 ? (
+        <Slideshow images={s.images} caption={s.caption} alt={d.title} />
+      ) : null,
     )}
 
     {d.gallery.length > 0 && (

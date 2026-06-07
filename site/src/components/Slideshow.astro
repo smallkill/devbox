@@ -26,7 +26,6 @@ const { images, caption, alt } = Astro.props;
       <button
         class={i === 0 ? "dot on" : "dot"}
         type="button"
-        data-dot={i}
         aria-label={`第 ${i + 1} 張`}
       />
     ))}
@@ -123,5 +122,12 @@ const { images, caption, alt } = Astro.props;
     font-size: 0.74rem;
     color: var(--muted);
     text-align: center;
+  }
+
+  /* 尊重 reduce-motion:手動切換仍可用,但不做淡入淡出/縮放動畫 */
+  @media (prefers-reduced-motion: reduce) {
+    .frame img,
+    .dot,
+    .nav { transition: none; }
   }
 </style>
