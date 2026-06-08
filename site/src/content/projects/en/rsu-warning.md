@@ -4,7 +4,7 @@ role: Edge computing + cloud integration
 org: TURING DRIVE
 period: 2021 – 2023
 tech: [Nvidia NX, YOLO, AWS KVS, Lambda, S3, MQTT, V2X]
-cover: /projects/rsu-warning/cover.png
+cover: /projects/rsu-warning/cover.jpg
 gallery:
   - { src: /projects/rsu-warning/cam.png, caption: Intersection camera view with detection zones }
 links:
