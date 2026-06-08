@@ -5,8 +5,6 @@ period: "2026"
 tech:
   ["Cloudflare Workers AI", "Vectorize", "bge-m3", "Llama 3.3", "RAG", "Astro"]
 cover: /projects/resume-rag/cover.jpg
-gallery:
-  - { src: /projects/resume-rag/ask.png, caption: /ask 實際問答 — 問「介紹 AVM 專案」即時串流出有根據的回答,並附引用來源(專案/經歷)連結 }
 links:
   - { label: Live, href: "https://derek-chen.pages.dev/ask" }
   - { label: GitHub, href: "https://github.com/smallkill/devbox" }

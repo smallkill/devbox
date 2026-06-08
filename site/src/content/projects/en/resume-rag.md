@@ -4,8 +4,6 @@ role: Personal project · AI / RAG + Full-stack
 period: "2026"
 tech: [Cloudflare Workers AI, Vectorize, bge-m3, Llama 3.3, RAG, Astro]
 cover: /projects/resume-rag/cover.jpg
-gallery:
-  - { src: /projects/resume-rag/ask.png, caption: "Live /ask query — asking about the AVM project; it streams a grounded answer with cited sources linking back to projects/experience" }
 links:
   - { label: Live, href: "https://derek-chen.pages.dev/ask" }
   - { label: GitHub, href: "https://github.com/smallkill/devbox" }

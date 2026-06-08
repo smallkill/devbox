@@ -4,8 +4,10 @@ import { UI, type Locale } from "../i18n/ui";
 interface Props {
   lang: Locale;
   projectSlugs: string[];
+  /** 嵌入到其他頁面時隱藏自身的大標題(避免一頁兩個 h1)。 */
+  embedded?: boolean;
 }
-const { lang, projectSlugs } = Astro.props;
+const { lang, projectSlugs, embedded = false } = Astro.props;
 const t = UI[lang];
 const base = lang === "en" ? "/en" : "";
 // ask Worker 網域於部署時用環境變數 PUBLIC_ASK_URL 注入,否則用預設值。
@@ -25,11 +27,13 @@ const txt = {
 };
 ---
 
-<section class="head">
-  <span class="eyebrow">{t.ask_eyebrow}</span>
-  <h1>{t.ask_title}</h1>
-  <p class="sub">{t.ask_intro}</p>
-</section>
+{!embedded && (
+  <section class="head">
+    <span class="eyebrow">{t.ask_eyebrow}</span>
+    <h1>{t.ask_title}</h1>
+    <p class="sub">{t.ask_intro}</p>
+  </section>
+)}
 
 <section class="examples">
   <span class="ex-label">{t.ask_examples_label}</span>
