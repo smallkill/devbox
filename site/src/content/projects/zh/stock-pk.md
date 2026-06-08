@@ -5,6 +5,8 @@ period: "2026"
 tech:
   ["Cloudflare Workers", "Pages", "D1", "Astro", "TypeScript", "Yahoo Finance API"]
 cover: /projects/stock-pk/cover.jpg
+gallery:
+  - { src: /projects/stock-pk/screenshot.jpg, caption: 工具實際畫面 — 台積電 vs 0050 三年含息報酬,贏家標示與雙軸成長曲線 }
 category: personal
 links:
   - { label: Live, href: "https://derek-stock-pk.pages.dev" }
