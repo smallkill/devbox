@@ -17,6 +17,13 @@ I build the bridge between edge systems and the cloud — across three industrie
 - Builds and owns from zero
 - Disciplined: testing · security · quality
 
+## Skills — AI / ML
+- RAG · retrieval-augmented generation (this resume Q&A is one I built)
+- LLM apps · Cloudflare Workers AI / Llama 3.3
+- Embeddings · bge-m3 (multilingual)
+- Vector DB · Vectorize
+- Prompt engineering · anti-hallucination grounding
+
 ## Skills — Cloud / Infra
 - AWS · EC2 / S3 / Lambda / IoT Core / API Gateway / KVS
 - GCP · Cloud Run / VPC / VM
