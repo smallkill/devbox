@@ -1,6 +1,7 @@
 export const UI = {
   zh: {
     role: "Software / DevOps Engineer",
+    nav_experience: "經歷",
     nav_projects: "專案",
     nav_status: "系統狀態",
     nav_ask: "問我",
@@ -53,6 +54,7 @@ export const UI = {
   },
   en: {
     role: "Software / DevOps Engineer",
+    nav_experience: "Experience",
     nav_projects: "Projects",
     nav_status: "Status",
     nav_ask: "Ask",

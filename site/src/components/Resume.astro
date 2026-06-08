@@ -80,7 +80,7 @@ const experience = resolveLocalized(experienceEntries, lang).sort(
   </script>
 </section>
 
-<section class="block reveal" style="animation-delay: 90ms">
+<section id="experience" class="block reveal" style="animation-delay: 90ms">
   <h2>{t.experience}</h2>
   {experience.length === 0 ? (
     <p class="soon">{t.experience_soon}</p>
@@ -180,7 +180,7 @@ const experience = resolveLocalized(experienceEntries, lang).sort(
   .pdf-btn:hover { background: var(--accent); color: #fff; }
 
   .block { padding: 1.8rem 0; }
-  #projects { scroll-margin-top: 72px; }
+  #projects, #experience { scroll-margin-top: 72px; }
   .block h2 {
     font-size: 0.95rem;
     font-family: var(--mono);
