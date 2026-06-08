@@ -11,6 +11,8 @@ interface Props {
 const { title, lang = "zh", path = "/" } = Astro.props;
 const t = UI[lang];
 const base = lang === "en" ? "/en" : "";
+// 訪客埋點 beacon 的 API 網域(部署時 PUBLIC_API_URL 注入,本機留空=同源)。
+const apiUrl = import.meta.env.PUBLIC_API_URL ?? "";
 ---
 
 <!doctype html>
@@ -172,5 +174,13 @@ const base = lang === "en" ? "/en" : "";
         </div>
       </div>
     </footer>
+    <script define:vars={{ apiUrl }}>
+      // 訪客埋點:fire-and-forget,失敗無感,絕不阻擋頁面。
+      try {
+        fetch(`${apiUrl}/api/visit?path=` + encodeURIComponent(location.pathname), {
+          method: "GET", mode: "no-cors", keepalive: true,
+        }).catch(() => {});
+      } catch { /* ignore */ }
+    </script>
   </body>
 </html>

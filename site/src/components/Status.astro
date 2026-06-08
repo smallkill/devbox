@@ -14,6 +14,7 @@ const txt = {
   noClicks: t.st_no_clicks,
   lastSync: t.st_last_sync,
   connFailed: t.st_conn_failed,
+  noVisitors: t.vs_no_visitors,
 };
 ---
 
@@ -41,6 +42,16 @@ const txt = {
     <span class="m-val" id="clicks" data-v="0">—</span>
     <span class="m-unit">clicks / 24h</span>
   </div>
+  <div class="metric">
+    <span class="m-label">{t.vs_views}</span>
+    <span class="m-val" id="views" data-v="0">—</span>
+    <span class="m-unit">page views</span>
+  </div>
+  <div class="metric accent">
+    <span class="m-label">{t.vs_unique_today}</span>
+    <span class="m-val" id="unique" data-v="0">—</span>
+    <span class="m-unit">unique today</span>
+  </div>
 </div>
 
 <section class="topwrap">
@@ -51,6 +62,14 @@ const txt = {
       <thead><tr><th>#</th><th>slug</th><th>clicks</th><th>share</th></tr></thead>
       <tbody id="top"><tr><td colspan="4" class="muted">{t.st_querying}</td></tr></tbody>
     </table>
+  </div>
+</section>
+
+<section class="topwrap">
+  <h2>{t.vs_countries}</h2>
+  <div class="console">
+    <div class="console-bar"><code>SELECT country, count() GROUP BY country</code></div>
+    <ul id="countries" class="ctry"><li class="muted">{t.st_querying}</li></ul>
   </div>
 </section>
 
@@ -95,6 +114,13 @@ const txt = {
   .console td code { font-family: var(--mono); color: var(--accent); }
   .console .bar { display: inline-block; height: 8px; min-width: 6px; border-radius: 4px; background: var(--accent); vertical-align: middle; }
   .console .muted { color: var(--muted); }
+  .console ul.ctry { list-style: none; margin: 0; padding: 0.4rem 0; }
+  .console ul.ctry li { display: flex; align-items: center; gap: 0.7rem; padding: 0.5rem 0.9rem; border-bottom: 1px solid var(--line); }
+  .console ul.ctry li:last-child { border-bottom: none; }
+  .console ul.ctry .flag { font-size: 1.1rem; }
+  .console ul.ctry .cc { font-family: var(--mono); font-size: 0.8rem; color: var(--ink-soft); width: 2.2rem; }
+  .console ul.ctry .cn { margin-left: auto; font-family: var(--mono); font-size: 0.82rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .console ul.ctry li.muted { color: var(--muted); justify-content: flex-start; }
 </style>
 
 <script define:vars={{ apiUrl, txt }}>
@@ -147,6 +173,30 @@ const txt = {
     }));
   }
 
+  function flag(cc) {
+    if (!/^[A-Za-z]{2}$/.test(cc)) return "🌐";
+    const b = 0x1f1e6, u = cc.toUpperCase();
+    return String.fromCodePoint(b + u.charCodeAt(0) - 65, b + u.charCodeAt(1) - 65);
+  }
+  function renderCountries(rows) {
+    const box = $("countries");
+    if (!Array.isArray(rows) || rows.length === 0) {
+      const li = document.createElement("li");
+      li.className = "muted"; li.textContent = txt.noVisitors;
+      box.replaceChildren(li); return;
+    }
+    const max = Math.max(...rows.map((r) => Number(r.n) || 0), 1);
+    box.replaceChildren(...rows.map((r) => {
+      const li = document.createElement("li");
+      const f = document.createElement("span"); f.className = "flag"; f.textContent = flag(r.country);
+      const cc = document.createElement("span"); cc.className = "cc"; cc.textContent = r.country;
+      const bar = document.createElement("span"); bar.className = "bar"; bar.style.width = Math.max(6, (Number(r.n) / max) * 120) + "px";
+      const cn = document.createElement("span"); cn.className = "cn"; cn.textContent = String(r.n);
+      li.append(f, cc, bar, cn);
+      return li;
+    }));
+  }
+
   const OK_MS = 15000;
   const MAX_MS = 60000;
   let delay = OK_MS;
@@ -162,6 +212,9 @@ const txt = {
       countTo($("links"), Number(d.links) || 0);
       countTo($("clicks"), Number(d.clicks24h) || 0);
       renderTop(d.topLinks);
+      countTo($("views"), Number(d.visitors?.views) || 0);
+      countTo($("unique"), Number(d.visitors?.uniqueToday) || 0);
+      renderCountries(d.visitors?.topCountries);
       $("live").classList.remove("off");
       $("live-text").textContent = "LIVE";
       $("sync").textContent = txt.lastSync + " · " + new Date().toLocaleTimeString();
