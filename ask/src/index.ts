@@ -7,14 +7,37 @@ import {
   type Source,
 } from "./rag";
 
+// Cloudflare Rate Limiting binding(原生、原子)。
+interface RateLimiter {
+  limit(opts: { key: string }): Promise<{ success: boolean }>;
+}
+
 export interface Env {
   AI: Ai;
   VECTORIZE: VectorizeIndex;
   ASK_KV: KVNamespace;
+  // 速率護欄:per-IP 與全域,擋快速燒 Workers AI 額度(KV 日上限仍保留為長期天花板)。
+  // optional:miniflare 測試環境不提供 ratelimit binding,缺少時 rlOk 直接放行。
+  RL_ASK_IP?: RateLimiter;
+  RL_ASK_GLOBAL?: RateLimiter;
 }
 
-const DAILY_CAP = 500;
-const PER_IP_CAP = 30;
+/** 查速率限制;無 binding(測試)或出錯 → fail-open 放行(KV 日上限仍是後盾)。 */
+// 註:Cloudflare 官方明示 Rate Limiting binding 是 per-colo 的「寬鬆過濾」,
+// 不是精確計數;小量 burst 會被放過,對「大量持續攻擊」才有效。它當寬鬆煞車,
+// 真正的成本硬上限靠下方 KV 每日上限(DAILY_CAP / PER_IP_CAP)。
+async function rlOk(rl: RateLimiter | undefined, key: string): Promise<boolean> {
+  if (!rl) return true; // 測試/本機無 binding → 放行
+  try {
+    return (await rl.limit({ key })).success;
+  } catch {
+    return true; // fail-open;KV 日上限仍是後盾
+  }
+}
+
+// 成本硬上限(KV 日計數,best-effort 但作為實際成本天花板;收緊以限制最壞情況花費)。
+const DAILY_CAP = 250;
+const PER_IP_CAP = 15;
 const MAX_BODY_BYTES = 8192;
 const EMBED_MODEL = "@cf/baai/bge-m3";
 const LLM_MODEL = "@cf/meta/llama-3.3-70b-instruct-fp8-fast";
@@ -47,6 +70,15 @@ export default {
       return new Response(null, { headers: cors(req) });
     if (req.method !== "POST" || url.pathname !== "/api/ask")
       return new Response("not found", { status: 404 });
+
+    // 速率護欄(原生 Rate Limiting binding,原子):per-IP 6/分 + 全域 40/分,
+    // 在讀 body / 呼叫 AI 之前就擋掉腳本快速燒額度(CORS 擋不住 curl)。
+    const rlIp = req.headers.get("cf-connecting-ip") ?? "0.0.0.0";
+    const [gOk, ipOk] = await Promise.all([
+      rlOk(env.RL_ASK_GLOBAL, "ask"),
+      rlOk(env.RL_ASK_IP, rlIp),
+    ]);
+    if (!gOk || !ipOk) return json({ error: "rate_limit" }, 429, req);
 
     // 大 payload 早擋:讀 body 前先看 content-length。
     const len = Number(req.headers.get("content-length") ?? 0);
