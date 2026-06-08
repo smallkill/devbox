@@ -29,3 +29,5 @@ It demonstrates self-hosted SaaS + DevOps + Observability end to end, with delib
 - **Least-privilege tokens** — the stats token is Analytics-Read only, separate from the deploy token
 - **Graceful degradation** — the stats endpoint degrades on query timeout instead of stalling the page
 - **XSS protection** — the dashboard renders via DOM APIs, not innerHTML
+
+This link-shortening API is also consumed by my other project, the **TW Stock PK** tool — wired in through a Cloudflare **Service Binding** to shorten its share links, so those clicks flow back into this site's analytics and the two services share one dataset.

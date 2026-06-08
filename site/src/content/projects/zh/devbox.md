@@ -30,3 +30,5 @@ category: personal
 - **最小權限 token** — 查統計用的 token 僅 Analytics Read,與部署 token 分離
 - **優雅降級** — 統計端點查詢逾時自動降級,不拖垮頁面
 - **XSS 防護** — 儀表板以 DOM API 渲染,不用 innerHTML
+
+這套短網址 API 也被我另一個專案「**台股多檔 PK**」串接使用——透過 Cloudflare **Service Binding** 把分享連結縮短,短連結的點擊也回流到本站的監控統計,兩個服務的數據因此打通。
