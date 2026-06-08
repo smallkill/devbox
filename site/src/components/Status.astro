@@ -96,6 +96,7 @@ const txt = {
   .metric.accent .m-val { color: var(--accent); }
   .m-unit { font-family: var(--mono); font-size: 0.7rem; color: var(--muted); }
 
+  .topwrap + .topwrap { margin-top: 2.6rem; }
   .topwrap h2 { font-family: var(--mono); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin: 0 0 0.7rem; }
   .console { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: var(--bg-elev); }
   .console-bar { padding: 0.6rem 0.9rem; border-bottom: 1px solid var(--line); background: var(--bg); }
@@ -117,7 +118,7 @@ const txt = {
   .console ul.ctry { list-style: none; margin: 0; padding: 0.4rem 0; }
   .console ul.ctry li { display: flex; align-items: center; gap: 0.7rem; padding: 0.5rem 0.9rem; border-bottom: 1px solid var(--line); }
   .console ul.ctry li:last-child { border-bottom: none; }
-  .console ul.ctry .flag { font-size: 1.1rem; }
+  .console ul.ctry .flag { width: 22px; height: 16px; border-radius: 2px; border: 1px solid var(--line); object-fit: cover; flex: 0 0 auto; background: var(--bg); }
   .console ul.ctry .cc { font-family: var(--mono); font-size: 0.8rem; color: var(--ink-soft); width: 2.2rem; }
   .console ul.ctry .cn { margin-left: auto; font-family: var(--mono); font-size: 0.82rem; color: var(--muted); font-variant-numeric: tabular-nums; }
   .console ul.ctry li.muted { color: var(--muted); justify-content: flex-start; }
@@ -173,10 +174,19 @@ const txt = {
     }));
   }
 
-  function flag(cc) {
-    if (!/^[A-Za-z]{2}$/.test(cc)) return "🌐";
-    const b = 0x1f1e6, u = cc.toUpperCase();
-    return String.fromCodePoint(b + u.charCodeAt(0) - 65, b + u.charCodeAt(1) - 65);
+  // 國旗用圖片(flagcdn),避免 regional-indicator emoji 在 Windows 不顯示的問題。
+  function flagEl(cc) {
+    if (/^[A-Za-z]{2}$/.test(cc)) {
+      const img = document.createElement("img");
+      img.className = "flag"; img.loading = "lazy"; img.decoding = "async";
+      img.width = 22; img.height = 16; img.alt = cc.toUpperCase();
+      img.src = "https://flagcdn.com/" + cc.toLowerCase() + ".svg";
+      return img;
+    }
+    const span = document.createElement("span");
+    span.className = "flag"; span.style.border = "none"; span.style.background = "none";
+    span.textContent = "🌐";
+    return span;
   }
   function renderCountries(rows) {
     const box = $("countries");
@@ -188,7 +198,7 @@ const txt = {
     const max = Math.max(...rows.map((r) => Number(r.n) || 0), 1);
     box.replaceChildren(...rows.map((r) => {
       const li = document.createElement("li");
-      const f = document.createElement("span"); f.className = "flag"; f.textContent = flag(r.country);
+      const f = flagEl(r.country);
       const cc = document.createElement("span"); cc.className = "cc"; cc.textContent = r.country;
       const bar = document.createElement("span"); bar.className = "bar"; bar.style.width = Math.max(6, (Number(r.n) / max) * 120) + "px";
       const cn = document.createElement("span"); cn.className = "cn"; cn.textContent = String(r.n);
