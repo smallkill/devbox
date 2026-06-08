@@ -10,6 +10,7 @@ links:
   - { label: GitHub, href: "https://github.com/smallkill/devbox" }
 featured: true
 order: 0
+category: personal
 ---
 
 在履歷站上加一個 `/ask` 頁,讓訪客用自然語言問我的經歷、專案與技能。整條 **RAG pipeline 全用 Cloudflare 實作**,本身就是「會做 LLM / RAG 應用」的作品:

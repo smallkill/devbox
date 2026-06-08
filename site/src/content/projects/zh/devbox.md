@@ -12,6 +12,7 @@ links:
   - { label: GitHub, href: "https://github.com/smallkill/devbox" }
 featured: true
 order: 1
+category: personal
 ---
 
 從 `git push` 到 CI/CD 自動部署到即時監控,全棧打通的短網址 SaaS。以 **Cloudflare 全家桶**實作:

@@ -28,6 +28,8 @@ const projects = defineCollection({
       .default([]),
     featured: z.boolean().default(false),
     order: z.number().default(99),
+    // 個人專案 / 工作專案,履歷分兩區呈現。
+    category: z.enum(["personal", "work"]).default("work"),
   }),
 });
 

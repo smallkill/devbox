@@ -11,6 +11,7 @@ links:
   - { label: GitHub, href: "https://github.com/smallkill/devbox" }
 featured: true
 order: 1
+category: personal
 ---
 
 A URL-shortener SaaS wired end to end — from `git push` through CI/CD to automated deployment and live monitoring. Built entirely on the **Cloudflare stack**:
