@@ -53,11 +53,17 @@ const projectSlugs = isAsk
       )}
       {d.links.length > 0 && (
         <nav class="links">
-          {d.links.map((l) => (
-            <a href={l.href} target="_blank" rel="noopener noreferrer">
-              {l.label} ↗
-            </a>
-          ))}
+          {d.links.map((l) =>
+            l.label === "Live" ? (
+              <a class="live-cta" href={l.href} target="_blank" rel="noopener noreferrer">
+                <span class="pulse"></span>{t.live_cta} ↗
+              </a>
+            ) : (
+              <a href={l.href} target="_blank" rel="noopener noreferrer">
+                {l.label} ↗
+              </a>
+            ),
+          )}
         </nav>
       )}
     </header>
@@ -130,7 +136,18 @@ const projectSlugs = isAsk
       background: var(--bg-elev); border: 1px solid var(--line);
       border-radius: 5px; padding: 0.15rem 0.5rem;
     }
-    .links { display: flex; flex-wrap: wrap; gap: 1.1rem; font-family: var(--mono); font-size: 0.85rem; margin-bottom: 1rem; }
+    .links { display: flex; flex-wrap: wrap; align-items: center; gap: 1.1rem; font-family: var(--mono); font-size: 0.85rem; margin-bottom: 1rem; }
+    /* Live 連結:醒目綠色按鈕 + 脈動點,讓人一看就知可點進線上專案 */
+    .live-cta {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      background: #15803d; color: #fff; border-radius: 999px;
+      padding: 0.4rem 0.95rem; font-weight: 700; text-decoration: none;
+      box-shadow: 0 6px 18px -10px rgba(21, 128, 61, 0.7);
+    }
+    .live-cta:hover { background: #166534; text-decoration: none; }
+    .live-cta .pulse { width: 8px; height: 8px; border-radius: 50%; background: #86efac; animation: livepulse 1.8s infinite; }
+    @keyframes livepulse { 0% { box-shadow: 0 0 0 0 rgba(134,239,172,0.7);} 70% { box-shadow: 0 0 0 7px rgba(134,239,172,0);} 100% { box-shadow: 0 0 0 0 rgba(134,239,172,0);} }
+    @media (prefers-reduced-motion: reduce) { .live-cta .pulse { animation: none; } }
     .prose { font-size: 1.02rem; color: var(--ink-soft); border-top: 1px solid var(--line); padding-top: 1.4rem; }
     .prose :global(p) { margin: 0 0 1rem; }
     .prose :global(ul) { margin: 0 0 1rem; padding-left: 1.2rem; }

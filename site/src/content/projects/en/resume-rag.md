@@ -9,6 +9,7 @@ links:
   - { label: GitHub, href: "https://github.com/smallkill/devbox" }
 featured: true
 order: 0
+category: personal
 ---
 
 An `/ask` page on the resume site that lets visitors query my experience, projects, and skills in natural language. The whole **RAG pipeline runs on Cloudflare** — and is itself a demonstration of building LLM / RAG applications:
