@@ -5,6 +5,9 @@ beforeAll(async () => {
   await env.DB.exec(
     "CREATE TABLE IF NOT EXISTS links (slug TEXT PRIMARY KEY, url TEXT NOT NULL, created_at INTEGER NOT NULL)",
   );
+  await env.DB.exec(
+    "CREATE TABLE IF NOT EXISTS visits (ts INTEGER NOT NULL, day TEXT NOT NULL, ip_hash TEXT NOT NULL, country TEXT, path TEXT)",
+  );
 });
 
 const AUTH = { authorization: "Bearer test-token" };
@@ -57,6 +60,28 @@ describe("GET /api/stats", () => {
     expect(res.headers.get("access-control-allow-origin")).toBe("*");
     const body = await res.json<{ links: number }>();
     expect(typeof body.links).toBe("number");
+  });
+});
+
+describe("GET /api/visit", () => {
+  it("埋點回 204 並帶 CORS header", async () => {
+    const res = await SELF.fetch("https://x/api/visit?path=/");
+    expect(res.status).toBe(204);
+    expect(res.headers.get("access-control-allow-origin")).toBe("*");
+  });
+});
+
+describe("GET /api/stats visitors 區塊", () => {
+  it("埋點後 visitors 不為 null 且有 views", async () => {
+    await SELF.fetch("https://x/api/visit?path=/");
+    const res = await SELF.fetch("https://x/api/stats");
+    expect(res.status).toBe(200);
+    const body = await res.json<{
+      visitors: { views: number; topCountries: unknown[] } | null;
+    }>();
+    expect(body.visitors).not.toBeNull();
+    expect(body.visitors!.views).toBeGreaterThanOrEqual(1);
+    expect(Array.isArray(body.visitors!.topCountries)).toBe(true);
   });
 });
 

@@ -30,6 +30,10 @@ export const UI = {
     st_syncing: "同步中…",
     st_last_sync: "最後同步",
     st_conn_failed: "連線失敗",
+    vs_views: "總瀏覽",
+    vs_unique_today: "今日不重複訪客",
+    vs_countries: "來訪國家 · Top",
+    vs_no_visitors: "尚無訪客",
     ask_eyebrow: "// 履歷問答 · RAG",
     ask_title: "問我關於 Derek 的事",
     ask_intro:
@@ -84,6 +88,10 @@ export const UI = {
     st_syncing: "syncing…",
     st_last_sync: "last sync",
     st_conn_failed: "connection failed",
+    vs_views: "Page views",
+    vs_unique_today: "Unique today",
+    vs_countries: "Top countries",
+    vs_no_visitors: "no visitors yet",
     ask_eyebrow: "// resume Q&A · RAG",
     ask_title: "Ask me about Derek",
     ask_intro:
