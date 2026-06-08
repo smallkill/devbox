@@ -12,3 +12,14 @@ index_name = "resume"
 [[kv_namespaces]]
 binding = "ASK_KV"
 id = "53c0380e24f649b9ac940f3d1bd29eac"
+
+# 速率護欄(原生 Rate Limiting,原子):per-IP 6/分、全域 40/分。
+[[ratelimits]]
+name = "RL_ASK_IP"
+namespace_id = "1001"
+simple = { limit = 6, period = 60 }
+
+[[ratelimits]]
+name = "RL_ASK_GLOBAL"
+namespace_id = "1002"
+simple = { limit = 40, period = 60 }
