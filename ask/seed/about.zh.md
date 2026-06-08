@@ -17,6 +17,13 @@ title: 關於我與技能
 - 從零打造、主導交付
 - 嚴謹:測試 · 安全 · 品質紀律
 
+## 技能 — AI / ML
+- RAG · 檢索增強生成(這個履歷問答就是我做的)
+- LLM 應用 · Cloudflare Workers AI / Llama 3.3
+- Embeddings · bge-m3 多語向量
+- 向量資料庫 · Vectorize
+- Prompt engineering · 防幻覺 grounding
+
 ## 技能 — Cloud / Infra
 - AWS · EC2 / S3 / Lambda / IoT Core / API Gateway / KVS
 - GCP · Cloud Run / VPC / VM

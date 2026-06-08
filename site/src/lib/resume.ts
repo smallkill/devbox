@@ -32,6 +32,16 @@ export const RESUME = {
   } as Record<"zh" | "en", string[]>,
   skills: [
     {
+      group: "AI / ML",
+      items: [
+        "RAG · retrieval-augmented generation",
+        "LLM apps · Workers AI / Llama 3.3",
+        "Embeddings · bge-m3 (multilingual)",
+        "Vector DB · Vectorize",
+        "Prompt engineering · anti-hallucination",
+      ],
+    },
+    {
       group: "Cloud / Infra",
       items: [
         "AWS · EC2 / S3 / Lambda / IoT Core / API Gateway / KVS",
