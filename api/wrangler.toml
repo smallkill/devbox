@@ -17,3 +17,4 @@ dataset = "devbox_clicks"
 #   wrangler secret put CREATE_TOKEN   # 建立短網址的 bearer token
 #   wrangler secret put AE_API_TOKEN   # 查 Analytics Engine SQL API(需 Account Analytics Read)
 #   wrangler secret put CF_ACCOUNT_ID  # Cloudflare account id(查 AE SQL API 用)
+#   wrangler secret put VISIT_SALT     # 訪客 IP 雜湊 salt(隨機字串)

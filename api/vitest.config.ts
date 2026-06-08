@@ -10,7 +10,7 @@ export default defineWorkersConfig({
         wrangler: { configPath: "./wrangler.toml" },
         // 測試用的建立 token(正式環境用 wrangler secret put CREATE_TOKEN)。
         miniflare: {
-          bindings: { CREATE_TOKEN: "test-token" },
+          bindings: { CREATE_TOKEN: "test-token", VISIT_SALT: "test-salt" },
         },
       },
     },

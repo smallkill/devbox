@@ -9,6 +9,8 @@ export interface Env {
   // Analytics Engine SQL API 用(account id 是 var,token 是 secret)。
   CF_ACCOUNT_ID?: string;
   AE_API_TOKEN?: string;
+  // 訪客 IP 雜湊 salt,用 `wrangler secret put VISIT_SALT` 設(防止彩虹表反推原始 IP)。
+  VISIT_SALT?: string;
 }
 
 const CLICKS_DATASET = "devbox_clicks";
