@@ -70,7 +70,9 @@ export async function fetchVisitStats(
         n: Number(r.n),
       })),
     };
-  } catch {
+  } catch (e) {
+    // 失敗回 null 讓前端降級;留一筆 log 以便排查(visits 表未建 / D1 異常)。
+    console.error("fetchVisitStats failed:", e);
     return null;
   }
 }

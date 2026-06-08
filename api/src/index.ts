@@ -76,6 +76,8 @@ export default {
       try {
         const ip = req.headers.get("cf-connecting-ip") ?? "0.0.0.0";
         const country = (req as unknown as { cf?: { country?: string } }).cf?.country ?? "";
+        // path 只收集不顯示(fetchVisitStats 不 select、前端不渲染);
+        // 日後若要顯示務必跳脫。長度上限避免膨脹 D1 row。
         const visitedPath = (url.searchParams.get("path") ?? "").slice(0, 256);
         await recordVisit(env, ip, country, visitedPath);
       } catch {
