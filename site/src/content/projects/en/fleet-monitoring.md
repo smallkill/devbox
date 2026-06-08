@@ -4,9 +4,10 @@ role: Principal Engineer · cloud architecture lead
 org: TURING DRIVE
 period: 2020 – 2023
 tech: [AWS, MQTT, ROS, Autoware, WebSocket, Node.js, Vue, IoT Core]
-cover: /projects/fleet-monitoring/cover.png
+cover: /projects/fleet-monitoring/cover.jpg
 gallery:
   - { src: /projects/fleet-monitoring/dashboard.png, caption: Fleet overview — per-vehicle rental/operational status with live positions on the map }
+  - { src: /projects/fleet-monitoring/monitor.jpg, caption: Live monitoring console — satellite-map vehicle positions and state table (WAITING_FOR_ROUTE, etc.), with Set Goal / Engage remote commands }
 links: []
 featured: true
 order: 4

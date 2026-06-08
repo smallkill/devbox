@@ -4,6 +4,7 @@ import Base from "../layouts/Base.astro";
 import Figure from "./Figure.astro";
 import Slideshow from "./Slideshow.astro";
 import ProjectCard from "./ProjectCard.astro";
+import AskChat from "./AskChat.astro";
 import { resolveLocalized } from "../i18n/content";
 import { UI, type Locale } from "../i18n/ui";
 
@@ -25,6 +26,12 @@ const allProjects = await getCollection("projects");
 const others = resolveLocalized(allProjects, lang)
   .filter((p) => p.slug !== slug && p.data.featured)
   .sort((a, b) => a.data.order - b.data.order);
+
+// resume-rag 這頁直接嵌入可互動的 /ask 問答(比放截圖更真實)。
+const isAsk = slug === "resume-rag";
+const projectSlugs = isAsk
+  ? [...new Set(allProjects.map((e) => e.id.replace(/^(zh|en)\//, "")))]
+  : [];
 ---
 
 <Base title={`${d.title} — Derek Chen`} lang={lang} path={`/projects/${slug}`}>
@@ -64,6 +71,13 @@ const others = resolveLocalized(allProjects, lang)
     <div class="prose">
       <Content />
     </div>
+
+    {isAsk && (
+      <section class="livedemo">
+        <h2>{t.ask_try} <span class="hint">▸ live</span></h2>
+        <AskChat lang={lang} projectSlugs={projectSlugs} embedded />
+      </section>
+    )}
 
     {d.slideshows.map((s) =>
       s.images.length > 0 ? (
@@ -129,6 +143,22 @@ const others = resolveLocalized(allProjects, lang)
       border-radius: 4px; padding: 0.05rem 0.35rem;
     }
     .gallery { margin-top: 1rem; }
+
+    /* resume-rag 內嵌的 live 問答 */
+    .livedemo {
+      margin-top: 2rem;
+      border-top: 1px solid var(--line);
+      padding-top: 1.2rem;
+    }
+    .livedemo > h2 {
+      font-family: var(--mono); font-size: 0.9rem; text-transform: uppercase;
+      letter-spacing: 0.06em; color: var(--muted); margin: 0 0 0.4rem;
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+    .livedemo > h2 .hint {
+      color: var(--accent); font-size: 0.75rem; letter-spacing: 0;
+      text-transform: none;
+    }
 
     /* 更多專案:獨立區塊 + 橫向滑動 strip */
     .more {

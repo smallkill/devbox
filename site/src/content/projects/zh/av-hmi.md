@@ -5,7 +5,8 @@ org: 輝創電子 WHETRON
 period: 2019 – 2020
 tech: [ROS, WebSocket, HMI, 電腦視覺, 超音波雷達, 嵌入式]
 cover: /projects/av-hmi/cover.jpg
-gallery: []
+gallery:
+  - { src: /projects/av-hmi/thailand.jpg, caption: 泰國實地運行 — 夜間以 Auto 模式低速行駛,HMI 即時標出前方行人(時速 5.3、路線進度、Auto 狀態) }
 links: []
 featured: true
 order: 6

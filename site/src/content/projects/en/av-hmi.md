@@ -5,7 +5,8 @@ org: WHETRON
 period: 2019 – 2020
 tech: [ROS, WebSocket, HMI, Computer Vision, Ultrasonic Radar, Embedded]
 cover: /projects/av-hmi/cover.jpg
-gallery: []
+gallery:
+  - { src: /projects/av-hmi/thailand.jpg, caption: "Live in Thailand — running in Auto mode at night; the HMI marks a pedestrian ahead in real time (speed, route progress, Auto status)" }
 links: []
 featured: true
 order: 6
