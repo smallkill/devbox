@@ -6,7 +6,9 @@
 // 讓 Workers runtime 下的 vitest 也能安全 import 本模組(只取純函式)。
 
 // ── 設定 ──────────────────────────────────────────────────────────────
-const ACCOUNT_ID = "a2d451e426b01a6f9d56333c4f7af4b8";
+// Cloudflare account id 從環境變數讀,不寫死進 repo。實跑 embedding 前才需要;
+// dry-run(無 token)不會用到。設定方式:export CF_ACCOUNT_ID=<你的 account id>
+const ACCOUNT_ID = process.env.CF_ACCOUNT_ID ?? "";
 const MODEL = "@cf/baai/bge-m3"; // 1024 維
 const BATCH_SIZE = 50;
 const CHUNK_MAX = 600;
@@ -288,6 +290,14 @@ async function main() {
       "token 缺,已 dry-run;放好 ~/.cf_ingest_token 後重跑可產生 vectors.ndjson",
     );
     return;
+  }
+
+  // 實跑需要 account id;沒設就明確報錯(不要拿空字串去打 API)。
+  if (!ACCOUNT_ID) {
+    console.error(
+      "錯誤:未設 CF_ACCOUNT_ID 環境變數。請先 `export CF_ACCOUNT_ID=<你的 Cloudflare account id>` 再重跑。",
+    );
+    process.exit(1);
   }
 
   // ── 實跑:分批算 embedding → 寫 NDJSON ──
