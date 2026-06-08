@@ -5,6 +5,12 @@ title: 關於我與技能
 ## 自我介紹
 我在 edge 與 cloud 之間搭橋,而且橫跨三個產業。從車用電腦視覺(3D AVM、ADAS)、自駕車隊的雲端平台,到現在的韌體 CI/CD 與 DevSecOps——主軸始終如一:把雜亂的 edge 系統(車、路由器、感測器)變得可觀測、安全、能規模化交付。
 
+## 聯絡方式
+- Email:chinte.cheng@gmail.com
+- LinkedIn:linkedin.com/in/dereklovetw
+- GitHub:github.com/smallkill
+- 想聯絡我、談合作或職缺,歡迎來信 chinte.cheng@gmail.com
+
 ## 人格特質
 - 好奇心驅動,持續探索新技術
 - 系統思維:橋接 edge 與 cloud

@@ -5,6 +5,12 @@ title: About me & skills
 ## About me
 I build the bridge between edge systems and the cloud — across three industries. From automotive computer vision (3D AVM, ADAS) to autonomous-fleet cloud platforms to firmware CI/CD and DevSecOps, the through-line stays the same: take messy edge systems — cars, routers, sensors — and make them observable, secure, and shippable at scale.
 
+## Contact
+- Email: chinte.cheng@gmail.com
+- LinkedIn: linkedin.com/in/dereklovetw
+- GitHub: github.com/smallkill
+- To get in touch about roles or collaboration, email chinte.cheng@gmail.com
+
 ## Traits
 - Curiosity-driven, always learning
 - Systems thinker: bridging edge & cloud

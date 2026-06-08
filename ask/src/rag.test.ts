@@ -95,6 +95,16 @@ describe("buildPrompt", () => {
     expect(system).not.toContain("make up");
   });
 
+  it("system prompt allows sharing public contact, still refuses private data", () => {
+    const { system } = buildPrompt("怎麼聯絡他?", chunks, "zh");
+    // 公開聯絡方式(Email/LinkedIn/GitHub)可分享
+    expect(system).toContain("Email");
+    expect(system).toMatch(/直接提供|可分享/);
+    // 但電話/住址/身分證/薪資等隱私仍婉拒
+    expect(system).toContain("薪資");
+    expect(system).toContain("婉拒");
+  });
+
   it("english system prompt does not force 中文", () => {
     const { system } = buildPrompt("What did you do?", chunks, "en");
     expect(system).toContain("只能根據");
