@@ -93,6 +93,41 @@ export function fmField(frontmatter, key) {
   return m[1].trim().replace(/^["']|["']$/g, "").trim();
 }
 
+const MONTHS_EN = [
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December",
+];
+
+/**
+ * 把履歷日期區間正規化成 LLM 能完整照抄的明確格式(僅供 RAG 文字,網站顯示不受影響)。
+ *   "2023.06 – 2026.04" → zh「2023年6月至2026年4月」/ en「June 2023 to April 2026」
+ *   "2026.04 – 現在"     → zh「2026年4月至今」      / en「April 2026 to present」
+ * 為什麼:小模型對「YYYY.MM」點格式常把年份吃掉(看成小數),輸出殘缺如「.06 –.04」。
+ * 非「YYYY.MM」格式(英文月名、純年份)不符正則 → 原樣返回,不動。
+ * @param {string} period
+ * @param {"zh"|"en"} lang
+ */
+export function normalizePeriod(period, lang = "zh") {
+  if (!period) return period;
+  const parts = period.split(/[–—-]/).map((s) => s.trim()).filter(Boolean);
+  if (parts.length !== 2) return period;
+  // 把 "YYYY.MM" 展開成明確年月;非此格式回原值。
+  const expand = (p) => {
+    const m = /^(\d{4})\.(\d{1,2})$/.exec(p);
+    if (!m) return p;
+    const mo = parseInt(m[2], 10);
+    if (mo < 1 || mo > 12) return p;
+    return lang === "en" ? `${MONTHS_EN[mo - 1]} ${m[1]}` : `${m[1]}年${mo}月`;
+  };
+  const a = expand(parts[0]);
+  if (a === parts[0]) return period; // 起點不是 YYYY.MM → 整段原樣(連分隔符都不動)
+  if (/現在|至今|present|now/i.test(parts[1])) // 結尾是「至今」類開放式
+    return lang === "en" ? `${a} to present` : `${a}至今`;
+  const b = expand(parts[1]);
+  if (b === parts[1]) return period; // 終點不符(如夾雜文字)→ 原樣,不半套處理
+  return lang === "en" ? `${a} to ${b}` : `${a}至${b}`;
+}
+
 /**
  * 檔名 → slug:去 .md、去前綴數字(`2-moxa` → `moxa`)。
  * @param {string} filename
@@ -124,7 +159,7 @@ export function describeFile(file) {
     fmField(frontmatter, "title"),
     fmField(frontmatter, "org"),
     fmField(frontmatter, "role"),
-    fmField(frontmatter, "period"),
+    normalizePeriod(fmField(frontmatter, "period"), lang),
   ].filter((s) => s.length > 0);
   const metaLine = metaLineParts.join(" · ");
   const text = metaLine ? `${metaLine}\n\n${body}` : body;
