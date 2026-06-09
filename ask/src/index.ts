@@ -3,8 +3,14 @@ import {
   detectLang,
   buildPrompt,
   dedupeSources,
+  sanitizeHistory,
+  buildEmbedQuery,
+  buildRewritePrompt,
+  cleanRewrite,
+  historyToMessages,
   type Chunk,
   type Source,
+  type Turn,
 } from "./rag";
 
 // Cloudflare Rate Limiting binding(原生、原子)。
@@ -41,6 +47,35 @@ const PER_IP_CAP = 15;
 const MAX_BODY_BYTES = 8192;
 const EMBED_MODEL = "@cf/baai/bge-m3";
 const LLM_MODEL = "@cf/meta/llama-3.3-70b-instruct-fp8-fast";
+// 查詢改寫用便宜小模型(只在跟進題跑;成本遠低於主回答模型)。
+const REWRITE_MODEL = "@cf/meta/llama-3.1-8b-instruct";
+
+/**
+ * 跟進問題的查詢改寫:用小模型把省略主體的問題補成獨立問題,提升檢索準度。
+ * 任何失敗/空輸出 → 回 null(呼叫端退回拼接法),絕不擋住主流程。
+ */
+async function rewriteQuery(
+  env: Env,
+  question: string,
+  turns: Turn[],
+): Promise<string | null> {
+  try {
+    const { system, user } = buildRewritePrompt(question, turns);
+    const run = env.AI.run(REWRITE_MODEL, {
+      messages: [
+        { role: "system", content: system },
+        { role: "user", content: user },
+      ],
+      max_tokens: 80,
+    }) as Promise<{ response?: string }>;
+    // 改寫是「可選優化」,不能拖住主回答:逾時 2.5s 就放棄退回拼接法。
+    const timeout = new Promise<null>((res) => setTimeout(() => res(null), 2500));
+    const r = await Promise.race([run, timeout]);
+    return r && typeof r.response === "string" ? cleanRewrite(r.response) : null;
+  } catch {
+    return null;
+  }
+}
 
 /**
  * CORS allowlist。站台(derek-chen.pages.dev,含隨機 preview 子網域)與 worker
@@ -84,11 +119,14 @@ export default {
     const len = Number(req.headers.get("content-length") ?? 0);
     if (len > MAX_BODY_BYTES) return json({ error: "too_large" }, 413, req);
 
-    const { question } = await req
-      .json<{ question?: string }>()
-      .catch(() => ({ question: "" }));
+    const { question, history } = await req
+      .json<{ question?: string; history?: unknown }>()
+      .catch(() => ({ question: "", history: [] }));
     const v = validateQuestion(question ?? "");
     if (!v.ok) return json({ error: v.reason }, 400, req);
+
+    // 多輪對話歷史(client 不可信:已截長度/去 fence/最多 4 輪)
+    const turns = sanitizeHistory(history);
 
     // 限流檢查(全域 + per-IP)在 guardrail 之後、embed 之前。
     // 註:KV 非原子(讀-改-寫有競態),全域上限為 best-effort;
@@ -108,7 +146,13 @@ export default {
     // 外部呼叫 graceful degradation:embed → query 任一失敗回 503(帶 CORS)。
     let chunks: Chunk[];
     try {
-      const emb = (await env.AI.run(EMBED_MODEL, { text: [question!] })) as {
+      // 跟進問題:先用小模型改寫成獨立問題(補主體)→ 檢索更準;
+      // 改寫失敗就退回「拼接近期 Q+A」的啟發式。第一題(無歷史)直接用原問題。
+      let embQuery = question!;
+      if (turns.length > 0) {
+        embQuery = (await rewriteQuery(env, question!, turns)) ?? buildEmbedQuery(question!, turns);
+      }
+      const emb = (await env.AI.run(EMBED_MODEL, { text: [embQuery] })) as {
         data: number[][];
       };
       const vector = emb.data?.[0];
@@ -153,6 +197,7 @@ export default {
       stream = (await env.AI.run(LLM_MODEL, {
         messages: [
           { role: "system", content: system },
+          ...historyToMessages(turns),   // 多輪對話脈絡
           { role: "user", content: user },
         ],
         stream: true,

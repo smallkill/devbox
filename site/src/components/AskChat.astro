@@ -15,6 +15,11 @@ const askUrl =
   import.meta.env.PUBLIC_ASK_URL ??
   "https://devbox-ask.chinte-cheng.workers.dev";
 
+// 多輪對話上限(預設 5 題)。
+const MAX_TURNS = 5;
+// 單題輸入字數上限,與後端 rag.ts MAX_QUESTION_LEN 一致(500)。
+const MAX_Q = 500;
+
 // 傳給 client script 的本地化字串。
 const txt = {
   loading: t.ask_loading,
@@ -24,6 +29,11 @@ const txt = {
   errCap: t.ask_err_cap,
   errGeneric: t.ask_err_generic,
   errHome: t.ask_err_home,
+  newChat: t.ask_new_chat,
+  turns: t.ask_turns,
+  cap: t.ask_cap,
+  followupPh: t.ask_followup_ph,
+  placeholder: t.ask_placeholder,
 };
 ---
 
@@ -53,10 +63,17 @@ const txt = {
     id="ask-input"
     class="ask-input"
     rows="2"
+    maxlength={MAX_Q}
     placeholder={t.ask_placeholder}
     aria-label={t.ask_title}></textarea>
   <button type="submit" class="ask-send" id="ask-send">{t.ask_send}</button>
 </form>
+<div class="char-count" id="char-count" aria-hidden="true">0/{MAX_Q}</div>
+
+<div class="ask-bar" id="ask-bar" hidden>
+  <span class="turn-counter" id="turn-counter"></span>
+  <button type="button" class="new-chat" id="new-chat">{t.ask_new_chat}</button>
+</div>
 
 <section class="answer-wrap" id="answer-wrap" aria-live="polite"></section>
 
@@ -91,6 +108,24 @@ const txt = {
   }
   .ask-send:hover { opacity: 0.9; }
   .ask-send:disabled { opacity: 0.5; cursor: default; }
+
+  .char-count {
+    font-family: var(--mono); font-size: 0.7rem; color: var(--muted);
+    text-align: right; margin: 0.3rem 0 0;
+  }
+  .char-count.near { color: #b35309; }
+
+  .ask-bar {
+    display: flex; align-items: center; gap: 0.8rem; margin: 0.7rem 0 0;
+  }
+  .ask-bar[hidden] { display: none; }
+  .turn-counter { font-family: var(--mono); font-size: 0.74rem; color: var(--muted); }
+  .new-chat {
+    margin-left: auto; font-family: var(--sans); font-size: 0.8rem; color: var(--ink-soft);
+    background: var(--bg); border: 1px solid var(--line); border-radius: 999px;
+    padding: 0.3rem 0.8rem; cursor: pointer; transition: border-color 0.15s, color 0.15s;
+  }
+  .new-chat:hover { border-color: var(--accent); color: var(--accent); }
 </style>
 
 <!-- 答案區與來源 chip 由 JS 動態建立,拿不到 Astro scoped 屬性,故用 is:global(以 .answer-wrap 前綴避免外洩) -->
@@ -99,6 +134,12 @@ const txt = {
   .answer-wrap .answer-card {
     background: var(--bg-elev); border: 1px solid var(--line); border-radius: 12px;
     padding: 1.1rem 1.3rem; position: relative; overflow: hidden;
+  }
+  /* 對話串:卡片之間留間距 */
+  .answer-wrap .answer-card + .answer-card { margin-top: 0.8rem; }
+  /* 問滿上限的提示 */
+  .answer-wrap .cap-note {
+    margin: 0.9rem 0 0; font-size: 0.88rem; color: var(--ink-soft); text-align: center;
   }
   .answer-wrap .answer-card::after {
     content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--accent);
@@ -139,25 +180,75 @@ const txt = {
   .answer-wrap .ask-error a { font-family: var(--mono); font-size: 0.82rem; display: inline-block; margin-top: 0.5rem; }
 </style>
 
-<script define:vars={{ askUrl, base, projectSlugs, txt }}>
+<script define:vars={{ askUrl, base, projectSlugs, txt, MAX_TURNS, MAX_Q }}>
   const form = document.getElementById("ask-form");
   const input = document.getElementById("ask-input");
   const sendBtn = document.getElementById("ask-send");
   const wrap = document.getElementById("answer-wrap");
+  const bar = document.getElementById("ask-bar");
+  const counter = document.getElementById("turn-counter");
+  const newChatBtn = document.getElementById("new-chat");
+  const charCount = document.getElementById("char-count");
   const exButtons = Array.from(document.querySelectorAll(".chip.ex"));
 
-  let busy = false;
+  // 即時字數(上限 MAX_Q,與後端一致);接近上限轉警示色。
+  function updateCharCount() {
+    const n = input.value.length;
+    charCount.textContent = n + "/" + MAX_Q;
+    charCount.classList.toggle("near", n >= MAX_Q * 0.9);
+  }
+  input.addEventListener("input", updateCharCount);
 
-  function setBusy(state) {
-    busy = state;
-    sendBtn.disabled = state;
-    input.disabled = state;
-    exButtons.forEach((b) => (b.disabled = state));
+  // 多輪對話狀態:turns = 已完成的 {q,a};capped = 問滿上限。
+  const turns = [];
+  let busy = false;
+  let capped = false;
+
+  function refreshEnabled() {
+    const dis = busy || capped;
+    sendBtn.disabled = dis;
+    input.disabled = dis;
+    exButtons.forEach((b) => (b.disabled = dis));
+  }
+  function setBusy(state) { busy = state; refreshEnabled(); }
+
+  function fmt(tmpl, vars) {
+    return tmpl.replace(/\{(\w+)\}/g, (_, k) => (k in vars ? vars[k] : "{" + k + "}"));
   }
 
-  // 建立答案卡片骨架,回傳其中的 body 元素供串流寫入。
-  function buildCard(question) {
+  // 更新對話列(題數 + 顯示);問滿則進 capped。
+  function updateBar() {
+    bar.hidden = turns.length === 0;
+    counter.textContent = fmt(txt.turns, { n: turns.length, max: MAX_TURNS });
+    if (turns.length >= MAX_TURNS) setCapped();
+    if (turns.length > 0) input.placeholder = txt.followupPh;
+  }
+
+  function setCapped() {
+    capped = true;
+    refreshEnabled();
+    if (wrap.querySelector(".cap-note")) return;
+    const note = document.createElement("p");
+    note.className = "cap-note";
+    note.textContent = fmt(txt.cap, { max: MAX_TURNS });
+    wrap.append(note);
+  }
+
+  function resetChat() {
+    turns.length = 0;
+    capped = false;
+    busy = false;
     wrap.replaceChildren();
+    bar.hidden = true;
+    input.value = "";
+    input.placeholder = txt.placeholder;
+    updateCharCount();
+    refreshEnabled();
+    input.focus();
+  }
+
+  // 在對話串「附加」一張答案卡(不清掉先前的),回傳 body 供串流寫入。
+  function buildCard(question) {
     const card = document.createElement("div");
     card.className = "answer-card";
 
@@ -171,17 +262,14 @@ const txt = {
 
     card.append(q, body);
     wrap.append(card);
+    card.scrollIntoView({ behavior: "smooth", block: "nearest" });
     return { card, body };
   }
 
-  function showError(message, withHome) {
-    wrap.replaceChildren();
-    const card = document.createElement("div");
-    card.className = "answer-card";
-    const p = document.createElement("p");
-    p.className = "ask-error";
-    p.textContent = message;
-    card.append(p);
+  // 在「當前這張卡」內顯示錯誤(不清掉對話串);此題不計入 history,可重問。
+  function cardError(card, body, message, withHome) {
+    body.className = "ask-error";
+    body.textContent = message;
     if (withHome) {
       const a = document.createElement("a");
       a.href = base + "/";
@@ -189,7 +277,6 @@ const txt = {
       const br = document.createElement("br");
       card.append(br, a);
     }
-    wrap.append(card);
   }
 
   function renderSources(card, sources) {
@@ -221,24 +308,23 @@ const txt = {
 
   async function ask(question) {
     const q = (question || "").trim();
-    if (!q) {
-      showError(txt.errEmpty, false);
-      return;
-    }
-    if (busy) return;
+    if (!q) { input.focus(); return; }
+    if (busy || capped) return;
     setBusy(true);
 
     const { card, body } = buildCard(q);
+    // 帶上目前對話歷史(後端會再清理/截斷;最多 4 輪)。
+    const history = turns.map((t) => ({ q: t.q, a: t.a }));
 
     let res;
     try {
       res = await fetch(askUrl + "/api/ask", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ question: q }),
+        body: JSON.stringify({ question: q, history }),
       });
     } catch {
-      showError(txt.errGeneric, true);
+      cardError(card, body, txt.errGeneric, true);
       setBusy(false);
       return;
     }
@@ -251,10 +337,10 @@ const txt = {
       } catch {
         // 忽略解析失敗,走通用錯誤。
       }
-      if (res.status === 400 && code === "too_long") showError(txt.errTooLong, false);
-      else if (res.status === 400 && code === "empty") showError(txt.errEmpty, false);
-      else if (res.status === 429) showError(txt.errCap, true);
-      else showError(txt.errGeneric, true);
+      if (res.status === 400 && code === "too_long") cardError(card, body, txt.errTooLong, false);
+      else if (res.status === 400 && code === "empty") cardError(card, body, txt.errEmpty, false);
+      else if (res.status === 429) cardError(card, body, txt.errCap, true);
+      else cardError(card, body, txt.errGeneric, true);
       setBusy(false);
       return;
     }
@@ -271,7 +357,7 @@ const txt = {
     }
 
     if (!res.body) {
-      showError(txt.errGeneric, true);
+      cardError(card, body, txt.errGeneric, true);
       setBusy(false);
       return;
     }
@@ -296,8 +382,10 @@ const txt = {
       }
       try {
         const obj = JSON.parse(payload);
-        if (typeof obj.response === "string") {
-          body.appendChild(document.createTextNode(obj.response));
+        // Workers AI 偶爾把純數字 token(如年份 2023)當 JSON number 送,
+        // 不能只收 string,否則數字會被丟掉(日期變「.06 –.04」)。number 也照收。
+        if (typeof obj.response === "string" || typeof obj.response === "number") {
+          body.appendChild(document.createTextNode(String(obj.response)));
         }
       } catch {
         // 非 JSON 的 data 行忽略。
@@ -324,7 +412,7 @@ const txt = {
     } catch {
       // 串流中斷:若已有內容就保留,否則顯示通用錯誤。
       if (!body.textContent) {
-        showError(txt.errGeneric, true);
+        cardError(card, body, txt.errGeneric, true);
         setBusy(false);
         return;
       }
@@ -332,6 +420,15 @@ const txt = {
 
     body.classList.remove("streaming");
     renderSources(card, sources);
+
+    // 成功完成一輪 → 記入歷史、更新對話列、清空輸入(供接續發問)。
+    const answer = body.textContent || "";
+    if (answer.trim()) {
+      turns.push({ q: q, a: answer });
+      input.value = "";
+      updateCharCount();
+      updateBar();
+    }
     setBusy(false);
   }
 
@@ -350,10 +447,13 @@ const txt = {
 
   exButtons.forEach((btn) => {
     btn.addEventListener("click", () => {
-      if (busy) return;
+      if (busy || capped) return;
       const q = btn.dataset.q || "";
       input.value = q;
+      updateCharCount();
       ask(q);
     });
   });
+
+  newChatBtn.addEventListener("click", () => resetChat());
 </script>

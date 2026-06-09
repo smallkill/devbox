@@ -6,7 +6,30 @@ import {
   splitFrontmatter,
   slugFromFilename,
   fmField,
+  normalizePeriod,
 } from "./ingest.mjs";
+
+describe("normalizePeriod", () => {
+  it("zh:點格式 → 明確年月(避免小模型吃掉年份)", () => {
+    expect(normalizePeriod("2023.06 – 2026.04", "zh")).toBe("2023年6月至2026年4月");
+  });
+  it("zh:現在 → 至今", () => {
+    expect(normalizePeriod("2026.04 – 現在", "zh")).toBe("2026年4月至今");
+  });
+  it("en:點格式 → 月名", () => {
+    expect(normalizePeriod("2023.06 – 2026.04", "en")).toBe("June 2023 to April 2026");
+  });
+  it("英文月名格式不符正則 → 原樣不動", () => {
+    expect(normalizePeriod("Jun 2023 – Apr 2026", "en")).toBe("Jun 2023 – Apr 2026");
+  });
+  it("純年份 → 原樣不動", () => {
+    expect(normalizePeriod("2019 – 2020", "zh")).toBe("2019 – 2020");
+    expect(normalizePeriod("2026", "zh")).toBe("2026");
+  });
+  it("空字串 → 原樣", () => {
+    expect(normalizePeriod("", "zh")).toBe("");
+  });
+});
 
 describe("chunkText", () => {
   it("returns single element for short text", () => {

@@ -5,8 +5,14 @@ import {
   dedupeSources,
   buildPrompt,
   chunkText,
+  sanitizeHistory,
+  buildEmbedQuery,
+  buildRewritePrompt,
+  cleanRewrite,
+  historyToMessages,
   type Source,
   type Chunk,
+  type Turn,
 } from "./rag";
 
 describe("validateQuestion", () => {
@@ -200,5 +206,97 @@ describe("chunkText", () => {
   it("drops empty paragraphs from collapsed blank lines", () => {
     const out = chunkText("a\n\n\n\nb");
     expect(out).toEqual(["a", "b"]);
+  });
+});
+
+describe("sanitizeHistory", () => {
+  it("非陣列回空", () => {
+    expect(sanitizeHistory(undefined)).toEqual([]);
+    expect(sanitizeHistory("x")).toEqual([]);
+    expect(sanitizeHistory(null)).toEqual([]);
+  });
+  it("濾掉缺 q 或 a 的項", () => {
+    const out = sanitizeHistory([{ q: "a", a: "" }, { q: "", a: "b" }, { q: "ok", a: "yes" }]);
+    expect(out).toEqual([{ q: "ok", a: "yes" }]);
+  });
+  it("去 <question> fence 並 trim", () => {
+    const out = sanitizeHistory([{ q: " <question>hi</question> ", a: " ans " }]);
+    expect(out).toEqual([{ q: "hi", a: "ans" }]);
+  });
+  it("只留最後 4 輪", () => {
+    const many = Array.from({ length: 6 }, (_, i) => ({ q: `q${i}`, a: `a${i}` }));
+    const out = sanitizeHistory(many);
+    expect(out.length).toBe(4);
+    expect(out[0].q).toBe("q2");
+    expect(out[3].q).toBe("q5");
+  });
+  it("截斷過長 q/a", () => {
+    const out = sanitizeHistory([{ q: "x".repeat(900), a: "y".repeat(1200) }]);
+    expect(out[0].q.length).toBe(500);
+    expect(out[0].a.length).toBe(800);
+  });
+});
+
+describe("buildEmbedQuery", () => {
+  it("無歷史 → 原問題", () => {
+    expect(buildEmbedQuery("他用什麼框架?", [])).toBe("他用什麼框架?");
+  });
+  it("有歷史 → 接問題+回答(回答帶主體,供指代錨定)", () => {
+    const h: Turn[] = [{ q: "介紹 AVM 專案", a: "AVM 是車用環景系統" }];
+    expect(buildEmbedQuery("用什麼技術?", h)).toBe(
+      "介紹 AVM 專案 AVM 是車用環景系統\n用什麼技術?",
+    );
+  });
+  it("多輪 → 納入近期所有 Q+A(主體不丟失)", () => {
+    const h: Turn[] = [
+      { q: "他現在的工作?", a: "他在 Moxa 擔任資深軟體工程師" },
+      { q: "待多久?", a: "2 年 10 個月" },
+    ];
+    const out = buildEmbedQuery("擔任什麼職務?", h);
+    expect(out).toContain("Moxa"); // 主體仍在查詢中
+    expect(out.endsWith("擔任什麼職務?")).toBe(true);
+  });
+  it("回答過長會截斷到 160 字", () => {
+    const h: Turn[] = [{ q: "Q", a: "字".repeat(300) }];
+    const out = buildEmbedQuery("現在", h);
+    expect(out).toBe("Q " + "字".repeat(160) + "\n現在");
+  });
+});
+
+describe("buildRewritePrompt", () => {
+  it("把歷史與最新問題組進 user prompt", () => {
+    const h: Turn[] = [{ q: "他在 Moxa 做什麼?", a: "CI/CD" }];
+    const { system, user } = buildRewritePrompt("待多久?", h);
+    expect(system).toContain("改寫");
+    expect(user).toContain("他在 Moxa 做什麼?");
+    expect(user).toContain("待多久?");
+  });
+});
+
+describe("cleanRewrite", () => {
+  it("取第一行非空", () => {
+    expect(cleanRewrite("\n他在 Moxa 待多久?\n(說明)")).toBe("他在 Moxa 待多久?");
+  });
+  it("去掉前綴與引號", () => {
+    expect(cleanRewrite("改寫後的問題:「他在 Moxa 擔任什麼職務?」")).toBe("他在 Moxa 擔任什麼職務?");
+  });
+  it("全空回 null", () => {
+    expect(cleanRewrite("   \n  ")).toBeNull();
+    expect(cleanRewrite("")).toBeNull();
+  });
+});
+
+describe("historyToMessages", () => {
+  it("交錯 user/assistant", () => {
+    const h: Turn[] = [{ q: "Q1", a: "A1" }, { q: "Q2", a: "A2" }];
+    expect(historyToMessages(h)).toEqual([
+      { role: "user", content: "Q1" },
+      { role: "assistant", content: "A1" },
+      { role: "user", content: "Q2" },
+      { role: "assistant", content: "A2" },
+    ]);
+  });
+  it("空歷史回空", () => {
+    expect(historyToMessages([])).toEqual([]);
   });
 });
