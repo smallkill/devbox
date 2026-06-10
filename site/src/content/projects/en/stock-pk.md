@@ -3,7 +3,7 @@ title: TW Stock PK — multi-stock return comparison
 role: Personal project · Full-stack + Cloudflare
 period: "2026"
 tech: [Cloudflare Workers, Pages, D1, Astro, TypeScript, Yahoo Finance API]
-cover: /projects/stock-pk/cover.jpg
+cover: /projects/stock-pk/cover.webp
 gallery:
   - { src: /projects/stock-pk/screenshot.jpg, caption: "The live tool — TSMC vs 0050 three-year total return, winner highlight and dual-axis growth chart" }
 category: personal

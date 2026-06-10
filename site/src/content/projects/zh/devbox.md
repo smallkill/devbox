@@ -4,7 +4,7 @@ role: 個人專案 · 全端 + DevOps
 period: "2026"
 tech:
   ["Cloudflare Workers", "D1", "Analytics Engine", "GitHub Actions", "Astro", "TypeScript"]
-cover: /projects/devbox/cover.jpg
+cover: /projects/devbox/cover.webp
 gallery:
   - { src: /projects/devbox/status.png, caption: 即時監控儀表板 }
 links:

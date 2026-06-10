@@ -2,6 +2,7 @@ import { defineConfig } from "astro/config";
 
 // 靜態輸出 + i18n:中文於 `/`,英文於 `/en`。
 export default defineConfig({
+  site: "https://derek-chen.pages.dev",
   output: "static",
   i18n: {
     defaultLocale: "zh",

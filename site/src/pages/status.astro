@@ -1,8 +1,9 @@
 ---
 import Base from "../layouts/Base.astro";
 import Status from "../components/Status.astro";
+import { UI } from "../i18n/ui";
 ---
 
-<Base title="系統狀態 — devbox" lang="zh" path="/status">
+<Base title="系統狀態 — devbox" lang="zh" path="/status" description={UI.zh.st_intro}>
   <Status lang="zh" />
 </Base>

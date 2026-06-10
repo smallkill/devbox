@@ -4,7 +4,7 @@ role: Computer Vision / ADAS algorithm engineer
 org: WHETRON
 period: 2015 – 2020
 tech: [OpenCV, OpenGL ES, 3D Reconstruction, Fisheye Calibration, C++, Nvidia, Fujitsu]
-cover: /projects/avm-3d/cover.jpg
+cover: /projects/avm-3d/cover.webp
 slideshows:
   - caption: Self-developed version (with Parking-Lot Detection) — bird's-eye surround, red boxes mark available parking spaces in real time, supporting automatic parking
     images:

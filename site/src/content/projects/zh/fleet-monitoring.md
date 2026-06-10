@@ -4,7 +4,7 @@ role: 主任工程師 · 雲端架構主導
 org: 台灣智慧駕駛 TURING DRIVE
 period: 2020 – 2023
 tech: [AWS, MQTT, ROS, Autoware, WebSocket, Node.js, Vue, IoT Core]
-cover: /projects/fleet-monitoring/cover.jpg
+cover: /projects/fleet-monitoring/cover.webp
 gallery:
   - { src: /projects/fleet-monitoring/dashboard.png, caption: 車隊總覽 — 各車輛租借/運行狀態與地圖即時定位 }
   - { src: /projects/fleet-monitoring/monitor.jpg, caption: 即時監控台 — 衛星地圖車輛定位與狀態表(WAITING_FOR_ROUTE 等),可下達 Set Goal / Engage 遠端指令 }

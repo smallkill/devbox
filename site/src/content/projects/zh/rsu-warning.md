@@ -4,7 +4,7 @@ role: 邊緣運算 + 雲端整合
 org: 台灣智慧駕駛 TURING DRIVE
 period: 2021 – 2023
 tech: [Nvidia NX, YOLO, AWS KVS, Lambda, S3, MQTT, V2X]
-cover: /projects/rsu-warning/cover.jpg
+cover: /projects/rsu-warning/cover.webp
 gallery:
   - { src: /projects/rsu-warning/cam.png, caption: 路口攝影機畫面與偵測區域標定 }
   - { src: /projects/rsu-warning/intersection.jpg, caption: 另一路口偵測畫面 — 綠色偵測區內以紅框標出來車,持續監看混合車流 }

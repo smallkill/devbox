@@ -1,8 +1,9 @@
 ---
 import Base from "../../layouts/Base.astro";
 import Status from "../../components/Status.astro";
+import { UI } from "../../i18n/ui";
 ---
 
-<Base title="System Status — devbox" lang="en" path="/status">
+<Base title="System Status — devbox" lang="en" path="/status" description={UI.en.st_intro}>
   <Status lang="en" />
 </Base>
