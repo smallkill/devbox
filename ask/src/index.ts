@@ -8,9 +8,12 @@ import {
   buildRewritePrompt,
   cleanRewrite,
   historyToMessages,
+  parseSSEAnswer,
+  renderAdminPage,
   type Chunk,
   type Source,
   type Turn,
+  type AskLogRow,
 } from "./rag";
 
 // Cloudflare Rate Limiting binding(原生、原子)。
@@ -26,7 +29,13 @@ export interface Env {
   // optional:miniflare 測試環境不提供 ratelimit binding,缺少時 rlOk 直接放行。
   RL_ASK_IP?: RateLimiter;
   RL_ASK_GLOBAL?: RateLimiter;
+  // 問答記錄(D1)+ /admin 查看頁密碼(secret)。optional:測試環境不提供。
+  DB?: D1Database;
+  ADMIN_KEY?: string;
 }
+
+const LOG_MAX_ANSWER = 4000;   // 記錄答案截斷長度,控 D1 列大小
+const ADMIN_LIMIT = 200;       // /admin 顯示最近幾筆
 
 /** 查速率限制;無 binding(測試)或出錯 → fail-open 放行(KV 日上限仍是後盾)。 */
 // 註:Cloudflare 官方明示 Rate Limiting binding 是 per-colo 的「寬鬆過濾」,
@@ -98,11 +107,71 @@ function cors(req: Request): Record<string, string> {
   return headers;
 }
 
+/**
+ * 把問答記錄寫進 D1(背景執行,不擋回應)。讀 log 串流抽出完整答案,
+ * INSERT ask_log。只存 question/answer/country/lang/ts,不存 IP。永不 throw。
+ */
+async function logQA(
+  env: Env,
+  logStream: ReadableStream,
+  question: string,
+  country: string,
+  lang: string,
+): Promise<void> {
+  if (!env.DB) return;
+  try {
+    const reader = logStream.getReader();
+    const decoder = new TextDecoder();
+    let sse = "";
+    for (;;) {
+      const { value, done } = await reader.read();
+      if (value) sse += decoder.decode(value, { stream: true });
+      if (done) break;
+    }
+    const answer = parseSSEAnswer(sse).slice(0, LOG_MAX_ANSWER);
+    await env.DB.prepare(
+      "INSERT INTO ask_log (ts, country, lang, question, answer) VALUES (?, ?, ?, ?, ?)",
+    )
+      .bind(Date.now(), country, lang, question.slice(0, 500), answer)
+      .run();
+  } catch {
+    /* 記錄失敗不影響使用者,也不噴錯 */
+  }
+}
+
+/** /admin 查看頁:?key=ADMIN_KEY 對才回 HTML 表格,否則 401。 */
+async function handleAdmin(req: Request, env: Env): Promise<Response> {
+  const key = new URL(req.url).searchParams.get("key") ?? "";
+  // 未設 ADMIN_KEY 或不符 → 拒絕(避免空密碼=人人可看)。
+  if (!env.ADMIN_KEY || key !== env.ADMIN_KEY) {
+    return new Response("unauthorized", { status: 401 });
+  }
+  let rows: AskLogRow[] = [];
+  if (env.DB) {
+    try {
+      const res = await env.DB.prepare(
+        "SELECT ts, country, lang, question, answer FROM ask_log ORDER BY ts DESC LIMIT ?",
+      )
+        .bind(ADMIN_LIMIT)
+        .all<AskLogRow>();
+      rows = res.results ?? [];
+    } catch {
+      rows = [];
+    }
+  }
+  return new Response(renderAdminPage(rows), {
+    headers: { "content-type": "text/html; charset=utf-8" },
+  });
+}
+
 export default {
-  async fetch(req: Request, env: Env): Promise<Response> {
+  async fetch(req: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const url = new URL(req.url);
     if (req.method === "OPTIONS")
       return new Response(null, { headers: cors(req) });
+    // 問答記錄查看頁(Derek 專屬,密碼保護)。
+    if (req.method === "GET" && url.pathname === "/admin")
+      return handleAdmin(req, env);
     if (req.method !== "POST" || url.pathname !== "/api/ask")
       return new Response("not found", { status: 404 });
 
@@ -206,7 +275,13 @@ export default {
       return json({ error: "unavailable" }, 503, req);
     }
 
-    return new Response(stream, {
+    // tee:一份回給使用者串流,一份背景讀取以記錄完整答案到 D1(不擋回應)。
+    const [toClient, toLog] = stream.tee();
+    const country =
+      (req as unknown as { cf?: { country?: string } }).cf?.country ?? "";
+    ctx.waitUntil(logQA(env, toLog, question!, country, lang));
+
+    return new Response(toClient, {
       headers: {
         ...cors(req),
         "content-type": "text/event-stream",

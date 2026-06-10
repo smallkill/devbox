@@ -229,3 +229,95 @@ function splitSentences(text: string): string[] {
   }
   return parts.filter((p) => p.length > 0);
 }
+
+// ── 問答記錄(D1)相關純函式 ─────────────────────────────────
+
+export interface AskLogRow {
+  ts: number;
+  country: string;
+  lang: string;
+  question: string;
+  answer: string;
+}
+
+/**
+ * 從累積的 SSE 文字抽出 LLM 完整回答:逐行 `data: {...}` 取 response 串接。
+ * Workers AI 偶把純數字 token 當 number 送,故 string/number 都收。[DONE] 略過。
+ */
+export function parseSSEAnswer(sse: string): string {
+  let out = "";
+  for (const line of sse.split("\n")) {
+    const t = line.trim();
+    if (!t.startsWith("data:")) continue;
+    const payload = t.slice(5).trim();
+    if (!payload || payload === "[DONE]") continue;
+    try {
+      const r = (JSON.parse(payload) as { response?: unknown }).response;
+      if (typeof r === "string" || typeof r === "number") out += String(r);
+    } catch {
+      /* 非 JSON data 行略過 */
+    }
+  }
+  return out;
+}
+
+/** HTML 跳脫(viewer 頁面用,防注入)。 */
+export function escapeHtml(s: string): string {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+/** 把問答記錄渲染成一頁簡潔 HTML 表格(newest first 由呼叫端排序)。 */
+export function renderAdminPage(rows: AskLogRow[]): string {
+  const fmtTs = (ts: number): string => {
+    const d = new Date(ts);
+    const p = (n: number): string => String(n).padStart(2, "0");
+    return `${d.getUTCFullYear()}-${p(d.getUTCMonth() + 1)}-${p(d.getUTCDate())} ${p(d.getUTCHours())}:${p(d.getUTCMinutes())} UTC`;
+  };
+  const body =
+    rows.length === 0
+      ? `<tr><td colspan="4" class="empty">尚無記錄</td></tr>`
+      : rows
+          .map(
+            (r) => `<tr>
+  <td class="t">${escapeHtml(fmtTs(r.ts))}</td>
+  <td class="c">${escapeHtml(r.country || "?")}<span class="lg">${escapeHtml(r.lang || "")}</span></td>
+  <td class="q">${escapeHtml(r.question)}</td>
+  <td class="a">${escapeHtml(r.answer)}</td>
+</tr>`,
+          )
+          .join("\n");
+  return `<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Ask 問答記錄</title>
+<style>
+  :root{--bg:#faf9f6;--ink:#18181b;--soft:#3f3f46;--muted:#8a8a8f;--line:#e7e4dd;--accent:#2347d6}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 system-ui,"Noto Sans TC",sans-serif;padding:24px}
+  h1{font-size:1.2rem;margin:0 0 4px}
+  .sub{color:var(--muted);font-size:.82rem;margin:0 0 18px;font-family:ui-monospace,monospace}
+  table{border-collapse:collapse;width:100%;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{background:#f3f1ec;font-size:.72rem;letter-spacing:.04em;text-transform:uppercase;color:var(--soft)}
+  td.t{white-space:nowrap;font-family:ui-monospace,monospace;font-size:.78rem;color:var(--muted)}
+  td.c{white-space:nowrap;font-family:ui-monospace,monospace;font-size:.82rem}
+  td.c .lg{margin-left:6px;color:var(--accent);font-size:.72rem}
+  td.q{font-weight:600;max-width:24ch}
+  td.a{color:var(--soft);max-width:60ch;white-space:pre-wrap}
+  tr:last-child td{border-bottom:none}
+  .empty{text-align:center;color:var(--muted);padding:24px}
+</style></head><body>
+<h1>Ask my resume — 問答記錄</h1>
+<p class="sub">最新 ${rows.length} 筆・僅存 問題/答案/時間/國家,不含 IP</p>
+<table>
+<thead><tr><th>時間</th><th>國家</th><th>問題</th><th>回答</th></tr></thead>
+<tbody>
+${body}
+</tbody></table>
+</body></html>`;
+}
