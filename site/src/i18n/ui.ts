@@ -1,6 +1,13 @@
 export const UI = {
   zh: {
     role: "Software / DevOps Engineer",
+    meta_desc:
+      "Derek Chen — Software / DevOps 工程師,在 edge 與 cloud 之間搭橋:車用電腦視覺(3D AVM、ADAS)、自駕車隊雲端平台、韌體 CI/CD 與 DevSecOps。附 AI 履歷問答與自架 SaaS 即時儀表板。",
+    home_ask_eyebrow: "// AI 履歷問答 · LIVE",
+    home_ask_title: "別只看履歷——直接問",
+    home_ask_intro:
+      "這份履歷接了一個 RAG 問答(Cloudflare Workers AI),只根據我的真實專案與經歷回答。",
+    home_ask_full: "完整問答頁 →",
     nav_experience: "經歷",
     nav_projects: "專案",
     nav_status: "系統狀態",
@@ -66,6 +73,13 @@ export const UI = {
   },
   en: {
     role: "Software / DevOps Engineer",
+    meta_desc:
+      "Derek Chen — Software / DevOps engineer bridging edge and cloud: automotive computer vision (3D AVM, ADAS), AV fleet cloud platforms, firmware CI/CD and DevSecOps. With an AI resume Q&A and a live self-hosted SaaS dashboard.",
+    home_ask_eyebrow: "// ask my resume · LIVE",
+    home_ask_title: "Don't just read it — ask it",
+    home_ask_intro:
+      "This resume is wired to a RAG Q&A (Cloudflare Workers AI) that answers only from my real projects and experience.",
+    home_ask_full: "Full Q&A page →",
     nav_experience: "Experience",
     nav_projects: "Projects",
     nav_status: "Status",

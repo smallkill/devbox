@@ -4,7 +4,7 @@ role: 個人專案 · AI / RAG + 全端
 period: "2026"
 tech:
   ["Cloudflare Workers AI", "Vectorize", "bge-m3", "Llama 3.3", "RAG", "Astro"]
-cover: /projects/resume-rag/cover.jpg
+cover: /projects/resume-rag/cover.webp
 links:
   - { label: Live, href: "https://derek-chen.pages.dev/ask" }
   - { label: GitHub, href: "https://github.com/smallkill/devbox" }

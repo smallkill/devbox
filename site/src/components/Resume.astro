@@ -5,6 +5,7 @@ import { UI, type Locale } from "../i18n/ui";
 import { RESUME } from "../lib/resume";
 import ProjectCard from "./ProjectCard.astro";
 import ExperienceItem from "./ExperienceItem.astro";
+import AskChat from "./AskChat.astro";
 
 interface Props {
   lang: Locale;
@@ -26,6 +27,11 @@ const workProjects = projects.filter((p) => p.data.category !== "personal");
 const experience = resolveLocalized(experienceEntries, lang).sort(
   (a, b) => a.data.order - b.data.order,
 );
+
+// 首頁嵌入式 AI 問答用:乾淨的 project slug 清單(來源 chip 連結)。
+const projectSlugs = [
+  ...new Set(projectEntries.map((e) => e.id.replace(/^(zh|en)\//, ""))),
+];
 ---
 
 <section class="hero reveal">
@@ -81,6 +87,16 @@ const experience = resolveLocalized(experienceEntries, lang).sort(
       });
     });
   </script>
+</section>
+
+<section id="ask" class="ask-callout reveal" style="animation-delay: 60ms">
+  <div class="ask-card">
+    <span class="eyebrow">{t.home_ask_eyebrow}</span>
+    <h2 class="ask-title">{t.home_ask_title}</h2>
+    <p class="ask-sub">{t.home_ask_intro}</p>
+    <AskChat lang={lang} projectSlugs={projectSlugs} embedded />
+    <p class="ask-more"><a href={base + "/ask"}>{t.home_ask_full}</a></p>
+  </div>
 </section>
 
 <section id="experience" class="block reveal" style="animation-delay: 90ms">
@@ -204,8 +220,35 @@ const experience = resolveLocalized(experienceEntries, lang).sort(
   }
   .pdf-btn:hover { background: var(--accent); color: #fff; }
 
+  /* 首頁嵌入式 AI 問答:用強調卡片框出來,讓訪客第一眼就看到 */
+  .ask-callout { padding: 1.7rem 0 0.4rem; }
+  .ask-card {
+    background: var(--bg-elev);
+    border: 1px solid color-mix(in srgb, var(--accent) 24%, var(--line));
+    border-radius: 14px;
+    padding: 1.3rem 1.4rem 1.15rem;
+    box-shadow: 0 12px 32px -26px rgba(35, 71, 214, 0.5);
+  }
+  .ask-title {
+    font-size: clamp(1.3rem, 4vw, 1.55rem);
+    font-weight: 800;
+    margin: 0.35rem 0 0.4rem;
+  }
+  .ask-sub {
+    color: var(--ink-soft);
+    font-size: 0.94rem;
+    line-height: 1.6;
+    margin: 0 0 0.2rem;
+    max-width: 60ch;
+  }
+  .ask-more { margin: 1rem 0 0; font-family: var(--mono); font-size: 0.82rem; }
+  /* 互動元件不進列印/PDF */
+  @media print {
+    .ask-callout { display: none !important; }
+  }
+
   .block { padding: 1.8rem 0; }
-  #projects, #experience { scroll-margin-top: 72px; }
+  #projects, #experience, #ask { scroll-margin-top: 72px; }
   #projects h2.group2 { margin-top: 2.4rem; }
   .block h2 {
     font-size: 0.95rem;

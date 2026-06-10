@@ -3,7 +3,7 @@ title: devbox — self-hosted URL-shortener SaaS
 role: Personal project · Full-stack + DevOps
 period: "2026"
 tech: [Cloudflare Workers, D1, Analytics Engine, GitHub Actions, Astro, TypeScript]
-cover: /projects/devbox/cover.jpg
+cover: /projects/devbox/cover.webp
 gallery:
   - { src: /projects/devbox/status.png, caption: Live monitoring dashboard }
 links:

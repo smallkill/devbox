@@ -7,12 +7,24 @@ interface Props {
   lang?: Locale;
   /** 不含 locale 前綴的純路徑,給語言切換用。 */
   path?: string;
+  /** SEO / 社群分享描述;未給時用該語言的預設履歷描述。 */
+  description?: string;
+  /** og:image 的站內路徑(1200×630),預設全站共用一張。 */
+  ogImage?: string;
 }
-const { title, lang = "zh", path = "/" } = Astro.props;
+const { title, lang = "zh", path = "/", description, ogImage = "/og.png" } = Astro.props;
 const t = UI[lang];
 const base = lang === "en" ? "/en" : "";
 // 訪客埋點 beacon 的 API 網域(部署時 PUBLIC_API_URL 注入,本機留空=同源)。
 const apiUrl = import.meta.env.PUBLIC_API_URL ?? "";
+
+// SEO:canonical / hreflang / Open Graph。網域以 astro.config 的 site 為準
+// (URL.origin 本身不帶尾斜線,直接用)。
+const SITE = Astro.site?.origin ?? "https://derek-chen.pages.dev";
+const desc = description ?? t.meta_desc;
+const canonical = SITE + Astro.url.pathname;
+const zhUrl = SITE + (path === "/" ? "/" : path);
+const enUrl = SITE + "/en" + (path === "/" ? "" : path);
 ---
 
 <!doctype html>
@@ -21,6 +33,24 @@ const apiUrl = import.meta.env.PUBLIC_API_URL ?? "";
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
+    <meta name="description" content={desc} />
+    <link rel="canonical" href={canonical} />
+    <link rel="alternate" hreflang="zh-Hant" href={zhUrl} />
+    <link rel="alternate" hreflang="en" href={enUrl} />
+    <link rel="alternate" hreflang="x-default" href={zhUrl} />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Derek Chen" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={desc} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={SITE + ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:locale" content={lang === "en" ? "en_US" : "zh_TW"} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={desc} />
+    <meta name="twitter:image" content={SITE + ogImage} />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />

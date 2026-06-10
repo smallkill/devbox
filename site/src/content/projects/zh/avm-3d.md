@@ -4,7 +4,7 @@ role: 電腦視覺 / ADAS 演算法工程師
 org: 輝創電子 WHETRON
 period: 2015 – 2020
 tech: [OpenCV, OpenGL ES, 3D 重建, 魚眼校正, C++, Nvidia, Fujitsu]
-cover: /projects/avm-3d/cover.jpg
+cover: /projects/avm-3d/cover.webp
 slideshows:
   - caption: 自主研發版(含 PLD 停車格偵測)— 環景鳥瞰,紅框即時標示偵測到的可用停車格,支援自動停車
     images:

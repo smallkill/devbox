@@ -20,6 +20,10 @@ const d = entry.data;
 const t = UI[lang];
 const base = lang === "en" ? "/en" : "";
 const meta = [d.role, d.org, d.period].filter(Boolean).join(" · ");
+// SEO 描述:角色/組織/期間 + 技術棧(內文是 Markdown,不易安全截字);
+// 兩者皆空時給 undefined,讓 Base 用該語言預設描述。
+const seoDesc =
+  [meta, d.tech.join(", ")].filter(Boolean).join(" — ") || undefined;
 
 // 其他專案(排除目前這個),依 order 排序,給底部「更多專案」。
 const allProjects = await getCollection("projects");
@@ -34,7 +38,12 @@ const projectSlugs = isAsk
   : [];
 ---
 
-<Base title={`${d.title} — Derek Chen`} lang={lang} path={`/projects/${slug}`}>
+<Base
+  title={`${d.title} — Derek Chen`}
+  lang={lang}
+  path={`/projects/${slug}`}
+  description={seoDesc}
+>
   <article class="proj">
     <a class="back" href={base + "/#projects"}>{t.back}</a>
 
