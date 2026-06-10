@@ -9,6 +9,9 @@ import {
   buildEmbedQuery,
   buildRewritePrompt,
   cleanRewrite,
+  parseSSEAnswer,
+  escapeHtml,
+  renderAdminPage,
   historyToMessages,
   type Source,
   type Chunk,
@@ -283,6 +286,58 @@ describe("cleanRewrite", () => {
   it("全空回 null", () => {
     expect(cleanRewrite("   \n  ")).toBeNull();
     expect(cleanRewrite("")).toBeNull();
+  });
+});
+
+describe("parseSSEAnswer", () => {
+  it("串接 data 行的 response(含數字 token)", () => {
+    const sse = [
+      'data: {"response":"他在 "}',
+      'data: {"response":2023}',
+      'data: {"response":" 年到 2026"}',
+      "data: [DONE]",
+    ].join("\n");
+    expect(parseSSEAnswer(sse)).toBe("他在 2023 年到 2026");
+  });
+  it("略過非 data / 壞 JSON / 空行", () => {
+    const sse = "event: x\ndata: not-json\n\ndata: {\"response\":\"ok\"}\n";
+    expect(parseSSEAnswer(sse)).toBe("ok");
+  });
+  it("空輸入回空字串", () => {
+    expect(parseSSEAnswer("")).toBe("");
+  });
+});
+
+describe("escapeHtml", () => {
+  it("跳脫 < > & \" '", () => {
+    expect(escapeHtml(`<script>"a"&'b'`)).toBe(
+      "&lt;script&gt;&quot;a&quot;&amp;&#39;b&#39;",
+    );
+  });
+});
+
+describe("renderAdminPage", () => {
+  const row = {
+    ts: Date.UTC(2026, 5, 10, 3, 45),
+    country: "TW",
+    lang: "zh",
+    question: "他擔任什麼職務?",
+    answer: "資深軟體工程師",
+  };
+  it("含問題與答案、時間格式化、noindex", () => {
+    const html = renderAdminPage([row]);
+    expect(html).toContain("他擔任什麼職務?");
+    expect(html).toContain("資深軟體工程師");
+    expect(html).toContain("2026-06-10 03:45 UTC");
+    expect(html).toContain("noindex");
+  });
+  it("跳脫注入,不讓 <script> 原樣輸出", () => {
+    const html = renderAdminPage([{ ...row, question: "<script>alert(1)</script>" }]);
+    expect(html).not.toContain("<script>alert(1)</script>");
+    expect(html).toContain("&lt;script&gt;");
+  });
+  it("空記錄顯示『尚無記錄』", () => {
+    expect(renderAdminPage([])).toContain("尚無記錄");
   });
 });
 
