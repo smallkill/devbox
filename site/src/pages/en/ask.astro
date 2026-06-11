@@ -2,6 +2,7 @@
 import { getCollection } from "astro:content";
 import Base from "../../layouts/Base.astro";
 import AskChat from "../../components/AskChat.astro";
+import AskHardening from "../../components/AskHardening.astro";
 import { UI } from "../../i18n/ui";
 
 // content collection 條目 id 形如 "zh/moxa-cicd";取乾淨的 project slug。
@@ -13,4 +14,5 @@ const projectSlugs = [
 
 <Base title="Ask me about Derek — devbox" lang="en" path="/ask" description={UI.en.ask_intro}>
   <AskChat lang="en" projectSlugs={projectSlugs} />
+  <AskHardening lang="en" />
 </Base>
