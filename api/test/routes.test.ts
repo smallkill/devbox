@@ -54,20 +54,50 @@ describe("POST /api/links", () => {
 });
 
 describe("GET /api/stats", () => {
-  it("回傳連結總數 JSON", async () => {
+  it("回傳連結總數 JSON;無 Origin 不帶 ACAO", async () => {
     const res = await SELF.fetch("https://x/api/stats");
     expect(res.status).toBe(200);
-    expect(res.headers.get("access-control-allow-origin")).toBe("*");
+    expect(res.headers.get("access-control-allow-origin")).toBe(null);
     const body = await res.json<{ links: number }>();
     expect(typeof body.links).toBe("number");
   });
 });
 
 describe("GET /api/visit", () => {
-  it("埋點回 204 並帶 CORS header", async () => {
+  it("埋點回 204;無 Origin 不帶 ACAO", async () => {
     const res = await SELF.fetch("https://x/api/visit?path=/");
     expect(res.status).toBe(204);
-    expect(res.headers.get("access-control-allow-origin")).toBe("*");
+    expect(res.headers.get("access-control-allow-origin")).toBe(null);
+  });
+});
+
+describe("CORS allowlist", () => {
+  it("允許自家來源與 preview 子網域被 echo,他站/釣魚不帶 ACAO", async () => {
+    const ok = await SELF.fetch("https://x/api/stats", {
+      headers: { origin: "https://derek-chen.pages.dev" },
+    });
+    expect(ok.headers.get("access-control-allow-origin")).toBe(
+      "https://derek-chen.pages.dev",
+    );
+    const preview = await SELF.fetch("https://x/api/stats", {
+      headers: { origin: "https://abc123.derek-chen.pages.dev" },
+    });
+    expect(preview.headers.get("access-control-allow-origin")).toBe(
+      "https://abc123.derek-chen.pages.dev",
+    );
+    const evil = await SELF.fetch("https://x/api/stats", {
+      headers: { origin: "https://evil.com" },
+    });
+    expect(evil.headers.get("access-control-allow-origin")).toBe(null);
+    const phish = await SELF.fetch("https://x/api/stats", {
+      headers: { origin: "https://derek-chen.pages.dev.evil.com" },
+    });
+    expect(phish.headers.get("access-control-allow-origin")).toBe(null);
+    // 非 https scheme 的子網域不可被 echo
+    const insecure = await SELF.fetch("https://x/api/stats", {
+      headers: { origin: "http://abc.derek-chen.pages.dev" },
+    });
+    expect(insecure.headers.get("access-control-allow-origin")).toBe(null);
   });
 });
 
