@@ -19,6 +19,28 @@ const CLICKS_DATASET = "devbox_clicks";
 const SLUG_RE = /^\/[0-9a-zA-Z]{6}$/;
 const MAX_URL_LEN = 2048;
 
+/**
+ * CORS:只 echo 給自家站台(derek-chen.pages.dev,含 preview 子網域)與本機開發,
+ * 非允許來源不帶 allow-origin。/api/stats、/api/visit 皆公開唯讀 GET,收斂只是不讓
+ * 他站 JS 讀回應、並消掉掃描的 ACAO:* 告警(實際存取無法靠 CORS 擋,本來就能 curl)。
+ * echo origin 時帶 Vary: Origin,避免快取把某來源的 ACAO 餵給別的來源。
+ * 註:/api/links 是 bearer 鑑權的伺服器端呼叫(CLI / service binding),不走瀏覽器 CORS。
+ */
+function cors(req: Request): Record<string, string> {
+  const origin = req.headers.get("origin") ?? "";
+  const h: Record<string, string> = { vary: "Origin" };
+  // 單一錨定 regex:限 https、apex 或單層 preview 子網域、子網域字元受限;
+  // 加本機開發。錨定 ^…$ 防尾綴釣魚(…pages.dev.evil.com)、明確 pin scheme。
+  if (
+    /^https:\/\/([a-z0-9-]+\.)?derek-chen\.pages\.dev$/.test(origin) ||
+    /^http:\/\/localhost(:\d+)?$/.test(origin) ||
+    /^http:\/\/127\.0\.0\.1(:\d+)?$/.test(origin)
+  ) {
+    h["access-control-allow-origin"] = origin;
+  }
+  return h;
+}
+
 export default {
   async fetch(req: Request, env: Env): Promise<Response> {
     const url = new URL(req.url);
@@ -50,9 +72,7 @@ export default {
     }
 
     // 統計(MVP:先回連結總數;點擊聚合於 Phase 6 接 Analytics Engine SQL API)
-    // 加 CORS:儀表板頁在 pages.dev,跨網域讀此端點。
-    // wildcard `*` 刻意:此端點 public 唯讀(僅連結數),且 pages.dev preview
-    // 每次部署 origin 都不同,固定 origin 反而會壞。勿改成具名 origin。
+    // CORS:儀表板頁在 pages.dev,跨網域讀此端點;用 cors() echo 自家來源(含 preview)。
     if (req.method === "GET" && path === "/api/stats") {
       const total = await env.DB.prepare(
         "SELECT count(*) AS n FROM links",
@@ -67,7 +87,7 @@ export default {
           topLinks: clicks?.topLinks ?? [],
           visitors,
         },
-        { headers: { "access-control-allow-origin": "*" } },
+        { headers: cors(req) },
       );
     }
 
@@ -83,7 +103,7 @@ export default {
       } catch {
         /* 寧可漏記一筆,不報錯 */
       }
-      return new Response(null, { status: 204, headers: { "access-control-allow-origin": "*" } });
+      return new Response(null, { status: 204, headers: cors(req) });
     }
 
     // 轉址
