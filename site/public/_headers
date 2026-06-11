@@ -1,0 +1,14 @@
+# Cloudflare Pages 安全標頭。public/ 會被複製到 dist 根目錄,Pages 讀 /_headers。
+# CSP 說明:
+#   - script-src 需 'unsafe-inline':Astro 的 define:vars 與少數 onclick 是 inline script,無法外置。
+#   - style-src 需 'unsafe-inline':站上有 inline <style>/style="" 與 Google Fonts 的 <link>。
+#   - connect-src 放行兩個後端 worker:devbox-api(/status 指標+訪客 beacon)、devbox-ask(/ask SSE)。
+#   - img-src 放行 flagcdn.com:/status 用它顯示訪客國家國旗(避免 Windows emoji 國旗不顯示)。
+# HSTS 不加 preload:pages.dev 是公共後綴共享網域,無法/不該替整個 pages.dev 提交 preload;改用自有 apex 網域時再加。
+/*
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://flagcdn.com; connect-src 'self' https://devbox-api.chinte-cheng.workers.dev https://devbox-ask.chinte-cheng.workers.dev; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'
+  Strict-Transport-Security: max-age=31536000; includeSubDomains
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: accelerometer=(), camera=(), geolocation=(), gyroscope=(), microphone=(), payment=(), usb=(), fullscreen=(), display-capture=(), browsing-topics=(), interest-cohort=()
