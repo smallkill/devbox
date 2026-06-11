@@ -283,9 +283,10 @@ export function escapeHtml(s: string): string {
 /** 把問答記錄渲染成一頁簡潔 HTML 表格(newest first 由呼叫端排序)。 */
 export function renderAdminPage(rows: AskLogRow[]): string {
   const fmtTs = (ts: number): string => {
-    const d = new Date(ts);
+    // 顯示台灣時間:固定 UTC+8(台灣無夏令時間),不依賴 runtime 時區/ICU。
+    const d = new Date(ts + 8 * 3600_000);
     const p = (n: number): string => String(n).padStart(2, "0");
-    return `${d.getUTCFullYear()}-${p(d.getUTCMonth() + 1)}-${p(d.getUTCDate())} ${p(d.getUTCHours())}:${p(d.getUTCMinutes())} UTC`;
+    return `${d.getUTCFullYear()}-${p(d.getUTCMonth() + 1)}-${p(d.getUTCDate())} ${p(d.getUTCHours())}:${p(d.getUTCMinutes())}`;
   };
   const body =
     rows.length === 0
@@ -324,7 +325,7 @@ export function renderAdminPage(rows: AskLogRow[]): string {
 <h1>Ask my resume — 問答記錄</h1>
 <p class="sub">最新 ${rows.length} 筆・僅存 問題/答案/時間/國家,不含 IP</p>
 <table>
-<thead><tr><th>時間</th><th>國家</th><th>問題</th><th>回答</th></tr></thead>
+<thead><tr><th>時間(台灣)</th><th>國家</th><th>問題</th><th>回答</th></tr></thead>
 <tbody>
 ${body}
 </tbody></table>

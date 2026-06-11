@@ -346,7 +346,9 @@ describe("renderAdminPage", () => {
     const html = renderAdminPage([row]);
     expect(html).toContain("他擔任什麼職務?");
     expect(html).toContain("資深軟體工程師");
-    expect(html).toContain("2026-06-10 03:45 UTC");
+    // UTC 03:45 → 台灣(UTC+8)11:45
+    expect(html).toContain("2026-06-10 11:45");
+    expect(html).not.toContain("11:45 UTC");
     expect(html).toContain("noindex");
   });
   it("跳脫注入,不讓 <script> 原樣輸出", () => {
@@ -356,6 +358,10 @@ describe("renderAdminPage", () => {
   });
   it("空記錄顯示『尚無記錄』", () => {
     expect(renderAdminPage([])).toContain("尚無記錄");
+  });
+  it("台灣時間跨日正確(UTC 18:00 → 隔天 02:00)", () => {
+    const html = renderAdminPage([{ ...row, ts: Date.UTC(2026, 5, 10, 18, 0) }]);
+    expect(html).toContain("2026-06-11 02:00");
   });
 });
 
