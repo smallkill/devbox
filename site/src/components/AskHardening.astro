@@ -1,0 +1,114 @@
+---
+// /ask 頁的「防護設計」區塊:列出這個公開 LLM 端點做了哪些強化。
+// 作品集視角:防護本身就是展示工程能力的一部分。只放在完整問答頁,不放首頁嵌入版。
+import type { Locale } from "../i18n/ui";
+
+interface Props {
+  lang: Locale;
+}
+const { lang } = Astro.props;
+
+const CONTENT = {
+  zh: {
+    title: "這個問答怎麼防濫用?",
+    sub: "公開、免登入的 LLM 端點本身就是攻擊面。這些防護跟問答功能一樣,都是這個作品的一部分:",
+    items: [
+      {
+        t: "回答鎖在履歷上",
+        d: "設計上只根據向量檢索回來的履歷片段回答;找不到答案時要照實說沒有,而不是編造。",
+      },
+      {
+        t: "離題任務拒絕",
+        d: "寫程式、翻譯、寫文章這類代辦任務設計上一律婉拒;就算混在正常問題裡,也只回答履歷的部分。",
+      },
+      {
+        t: "Prompt injection 防護",
+        d: "訪客輸入用圍欄標籤隔離、夾帶的圍欄標籤會被中和;對話歷史視為不可信輸入,清洗後才進模型。",
+      },
+      {
+        t: "隱私界線",
+        d: "薪資、電話、住址一律婉拒,只提供本人同意公開的聯絡方式;問答記錄不存 IP。",
+      },
+      {
+        t: "限流與成本控制",
+        d: "每日全域與單一 IP 雙層上限、輸入長度限制、過大請求直接拒收、CORS 白名單。",
+      },
+      {
+        t: "降級與容錯",
+        d: "AI 或檢索故障時回明確錯誤不裝死;查詢改寫逾時自動退回備援;前端串流中斷友善降級。",
+      },
+    ],
+  },
+  en: {
+    title: "How this Q&A resists abuse",
+    sub: "A public, unauthenticated LLM endpoint is an attack surface. These guardrails are as much part of the work as the Q&A itself:",
+    items: [
+      {
+        t: "Grounded in the resume",
+        d: "Designed to answer only from retrieved resume chunks; when something is not in them, it is instructed to say so rather than make things up.",
+      },
+      {
+        t: "Off-topic task refusal",
+        d: "Code writing, translation and other chores are designed to be declined, even when mixed into an otherwise legitimate question.",
+      },
+      {
+        t: "Prompt-injection defenses",
+        d: "Visitor input is fenced and smuggled fence tags are neutralized; chat history is treated as untrusted and sanitized first.",
+      },
+      {
+        t: "Privacy boundaries",
+        d: "Salary, phone and address are off limits; only contact info the owner chose to publish is shared. Q&A logs store no IPs.",
+      },
+      {
+        t: "Rate & cost limits",
+        d: "Daily global and per-IP caps, input length limits, oversized payloads rejected outright, CORS allowlist.",
+      },
+      {
+        t: "Graceful degradation",
+        d: "Clear errors when AI or retrieval fails; query rewriting falls back on timeout; the streaming UI degrades gracefully.",
+      },
+    ],
+  },
+} as const;
+
+const c = CONTENT[lang];
+---
+
+<section class="hardening">
+  <h2>{c.title}</h2>
+  <p class="sub">{c.sub}</p>
+  <ul class="grid">
+    {
+      c.items.map((it) => (
+        <li class="item">
+          <h3>{it.t}</h3>
+          <p>{it.d}</p>
+        </li>
+      ))
+    }
+  </ul>
+</section>
+
+<style>
+  .hardening { margin: 3rem 0 1rem; }
+  h2 { font-size: 1.25rem; font-weight: 700; margin: 0 0 0.4rem; }
+  .sub {
+    color: var(--ink-soft); font-size: 0.92rem; line-height: 1.6;
+    max-width: 56ch; margin: 0 0 1.1rem;
+  }
+  .grid {
+    display: grid; grid-template-columns: 1fr; gap: 0.7rem;
+    list-style: none; margin: 0; padding: 0;
+  }
+  @media (min-width: 720px) {
+    .grid { grid-template-columns: 1fr 1fr; }
+  }
+  .item {
+    background: var(--bg-elev); border: 1px solid var(--line);
+    border-radius: 12px; padding: 0.85rem 1rem;
+  }
+  .item h3 { font-size: 0.92rem; font-weight: 700; margin: 0 0 0.3rem; }
+  .item p {
+    font-size: 0.85rem; color: var(--ink-soft); line-height: 1.55; margin: 0;
+  }
+</style>
