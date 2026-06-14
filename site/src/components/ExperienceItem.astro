@@ -24,8 +24,10 @@ const { org, role, period, location, logo, tech = [], highlights = [] } =
     </h3>
     {highlights.length > 0 && (
       <ul class="hl">
+        {/* set:html allows inline links in highlights — trusted authored
+            content only (static markdown frontmatter); never wire to dynamic input. */}
         {highlights.map((h) => (
-          <li>{h}</li>
+          <li set:html={h} />
         ))}
       </ul>
     )}

@@ -20,6 +20,8 @@ const projects = defineCollection({
         z.object({
           caption: z.string().optional(),
           images: z.array(z.string()).default([]),
+          // 圖片填滿方式:cover(裁切填滿,預設)或 contain(完整不裁切)。
+          fit: z.enum(["cover", "contain"]).optional(),
         }),
       )
       .default([]),

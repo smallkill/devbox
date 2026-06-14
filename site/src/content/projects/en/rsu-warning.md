@@ -5,9 +5,24 @@ org: TURING DRIVE
 period: 2021 – 2023
 tech: [Nvidia NX, YOLO, AWS KVS, Lambda, S3, MQTT, V2X]
 cover: /projects/rsu-warning/cover.webp
-gallery:
-  - { src: /projects/rsu-warning/cam.png, caption: Intersection camera view with detection zones }
-  - { src: /projects/rsu-warning/intersection.jpg, caption: Another intersection — incoming vehicle boxed in red within the green detection zone, continuously watching mixed traffic }
+slideshows:
+  - caption: "Real-time RSU detection across intersections — the green polygon is the detection zone; intruding vehicles/pedestrians are boxed in red in real time (several of the Qingpu deployment's 7 intersections / 11 cameras)"
+    images:
+      - /projects/rsu-warning/detect/cam1.jpg
+      - /projects/rsu-warning/detect/cam2.jpg
+      - /projects/rsu-warning/detect/cam4.jpg
+      - /projects/rsu-warning/detect/cam5.jpg
+      - /projects/rsu-warning/detect/cam6.jpg
+      - /projects/rsu-warning/detect/cam7.jpg
+      - /projects/rsu-warning/detect/cam10.jpg
+  - caption: "Real telemetry evidence (2022 test data, logged at 5 Hz) — the moment the RSU issues a warning, the autonomous bus brakes and slows. Left: a single run in detail (speed 16.8→8 km/h, brake command fires in sync); right: all 23 warning events (Auto mode) aligned, mean speed dropping ~14→~7 km/h — every warning reliably triggers deceleration"
+    images:
+      - /projects/rsu-warning/telemetry/run.jpg
+      - /projects/rsu-warning/telemetry/overlay.jpg
+gallery: []
+video:
+  src: /projects/rsu-warning/route.mp4
+  caption: "Deployment site: the Taoyuan Qingpu autonomous-bus route — onboard view of the shuttle running the pilot corridor"
 links:
   - { label: Project · Turing Drive, href: "https://turing-drive.com/featured_item/%E6%A1%83%E5%9C%92%E5%B8%82%E9%9D%92%E5%9F%94%E5%9C%B0%E5%8D%80%E8%87%AA%E9%A7%95%E5%B7%B4%E5%A3%AB%E5%89%B5%E6%96%B0%E5%AF%A6%E9%A9%97%E8%A8%88%E7%95%AB/" }
   - { label: "Press · INSIDE", href: "https://www.inside.com.tw/article/25555-2021-taoyuan-smart-city" }
