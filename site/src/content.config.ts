@@ -23,6 +23,10 @@ const projects = defineCollection({
         }),
       )
       .default([]),
+    // 選用:示範影片(渲染在 slideshows 之後、頁面下方)。
+    video: z
+      .object({ src: z.string(), caption: z.string().optional() })
+      .optional(),
     links: z
       .array(z.object({ label: z.string(), href: z.string() }))
       .default([]),

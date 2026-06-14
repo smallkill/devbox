@@ -21,6 +21,9 @@ slideshows:
       - /projects/avm-3d/thai/3.jpg
       - /projects/avm-3d/thai/4.jpg
 gallery: []
+video:
+  src: /projects/avm-3d/demo.mp4
+  caption: "Self-developed AVM+PLD, live run: 3D surround rotation → front/rear/side views → parking-slot detection → select a slot and send the auto-park signal"
 links:
   - { label: AVM+PLD technical write-up, href: "https://smallkill.github.io/avm-pld-showcase/" }
 featured: true

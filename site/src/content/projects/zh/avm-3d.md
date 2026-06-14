@@ -21,6 +21,9 @@ slideshows:
       - /projects/avm-3d/thai/3.jpg
       - /projects/avm-3d/thai/4.jpg
 gallery: []
+video:
+  src: /projects/avm-3d/demo.mp4
+  caption: "自主研發 AVM+PLD 實機運行:開場 3D 環景旋轉 → 前/後/左/右各視角 → 停車格偵測 → 選定車格、送出自動停車訊號"
 links:
   - { label: AVM+PLD 技術說明, href: "https://smallkill.github.io/avm-pld-showcase/" }
 featured: true

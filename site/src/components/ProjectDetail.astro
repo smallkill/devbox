@@ -100,6 +100,19 @@ const projectSlugs = isAsk
       ) : null,
     )}
 
+    {d.video && (
+      <figure class="videowrap">
+        <video
+          controls
+          preload="metadata"
+          playsinline
+          poster={d.cover}
+          src={d.video.src}
+        ></video>
+        {d.video.caption && <figcaption>{d.video.caption}</figcaption>}
+      </figure>
+    )}
+
     {d.gallery.length > 0 && (
       <div class="gallery">
         {d.gallery.map((g) => (
@@ -169,6 +182,17 @@ const projectSlugs = isAsk
       border-radius: 4px; padding: 0.05rem 0.35rem;
     }
     .gallery { margin-top: 1rem; }
+
+    /* 示範影片(頁面下方) */
+    .videowrap { margin: 1.6rem 0 0; }
+    .videowrap video {
+      width: 100%; display: block; border-radius: 10px;
+      border: 1px solid var(--line); background: #000;
+    }
+    .videowrap figcaption {
+      font-family: var(--mono); font-size: 0.78rem; color: var(--muted);
+      margin-top: 0.5rem; line-height: 1.5;
+    }
 
     /* resume-rag 內嵌的 live 問答 */
     .livedemo {
