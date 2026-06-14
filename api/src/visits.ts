@@ -20,10 +20,17 @@ export interface CountryCount {
   country: string;
   n: number;
 }
+export interface DailyCount {
+  day: string;
+  views: number;
+  uniques: number;
+}
 export interface VisitStats {
   views: number;
   uniqueToday: number;
   topCountries: CountryCount[];
+  // 近 N 天每日彙整(新到舊),讓儀表板能看每日歷史而非只有當天。
+  daily: DailyCount[];
 }
 export interface VisitEnv {
   DB: D1Database;
@@ -51,7 +58,7 @@ export async function fetchVisitStats(
 ): Promise<VisitStats | null> {
   try {
     const today = utcDay(Date.now());
-    const [views, uniq, countries] = await Promise.all([
+    const [views, uniq, countries, daily] = await Promise.all([
       env.DB.prepare("SELECT count(*) AS n FROM visits").first<{ n: number }>(),
       env.DB.prepare(
         "SELECT count(DISTINCT ip_hash) AS n FROM visits WHERE day = ?",
@@ -61,6 +68,10 @@ export async function fetchVisitStats(
       env.DB.prepare(
         "SELECT country, count(*) AS n FROM visits WHERE country IS NOT NULL AND country != '' GROUP BY country ORDER BY n DESC LIMIT 6",
       ).all<{ country: string; n: number }>(),
+      // 每日彙整:每天瀏覽數與不重複訪客,近 14 天(新到舊)。
+      env.DB.prepare(
+        "SELECT day, count(*) AS views, count(DISTINCT ip_hash) AS uniques FROM visits GROUP BY day ORDER BY day DESC LIMIT 14",
+      ).all<{ day: string; views: number; uniques: number }>(),
     ]);
     return {
       views: views?.n ?? 0,
@@ -68,6 +79,11 @@ export async function fetchVisitStats(
       topCountries: (countries.results ?? []).map((r) => ({
         country: String(r.country),
         n: Number(r.n),
+      })),
+      daily: (daily.results ?? []).map((r) => ({
+        day: String(r.day),
+        views: Number(r.views),
+        uniques: Number(r.uniques),
       })),
     };
   } catch (e) {

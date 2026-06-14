@@ -55,6 +55,17 @@ const txt = {
 </div>
 
 <section class="topwrap">
+  <h2>{t.vs_daily}</h2>
+  <div class="console">
+    <div class="console-bar"><code>SELECT day, count() GROUP BY day ORDER BY day DESC</code></div>
+    <table>
+      <thead><tr><th>date</th><th>views</th><th>unique</th><th>trend</th></tr></thead>
+      <tbody id="daily"><tr><td colspan="4" class="muted">{t.st_querying}</td></tr></tbody>
+    </table>
+  </div>
+</section>
+
+<section class="topwrap">
   <h2>{t.st_top}</h2>
   <div class="console">
     <div class="console-bar"><code>SELECT slug, count() ORDER BY clicks DESC</code></div>
@@ -207,6 +218,33 @@ const txt = {
     }));
   }
 
+  function renderDaily(rows) {
+    const box = $("daily");
+    if (!Array.isArray(rows) || rows.length === 0) {
+      const tr = document.createElement("tr");
+      const td = document.createElement("td");
+      td.colSpan = 4; td.className = "muted"; td.textContent = txt.noVisitors;
+      tr.append(td); box.replaceChildren(tr);
+      return;
+    }
+    const max = Math.max(...rows.map((r) => Number(r.views) || 0), 1);
+    box.replaceChildren(...rows.map((r) => {
+      const tr = document.createElement("tr");
+      const day = document.createElement("td");
+      const dc = document.createElement("code"); dc.textContent = r.day;
+      day.append(dc);
+      const views = document.createElement("td"); views.textContent = String(r.views);
+      const uniq = document.createElement("td"); uniq.textContent = String(r.uniques);
+      const trend = document.createElement("td");
+      const bar = document.createElement("span");
+      bar.className = "bar";
+      bar.style.width = Math.max(6, (Number(r.views) / max) * 90) + "px";
+      trend.append(bar);
+      tr.append(day, views, uniq, trend);
+      return tr;
+    }));
+  }
+
   const OK_MS = 15000;
   const MAX_MS = 60000;
   let delay = OK_MS;
@@ -225,6 +263,7 @@ const txt = {
       countTo($("views"), Number(d.visitors?.views) || 0);
       countTo($("unique"), Number(d.visitors?.uniqueToday) || 0);
       renderCountries(d.visitors?.topCountries);
+      renderDaily(d.visitors?.daily);
       $("live").classList.remove("off");
       $("live-text").textContent = "LIVE";
       $("sync").textContent = txt.lastSync + " · " + new Date().toLocaleTimeString();

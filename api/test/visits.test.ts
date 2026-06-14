@@ -74,4 +74,20 @@ describe("recordVisit / fetchVisitStats (D1)", () => {
     expect(stats?.views).toBe(2);
     expect(stats?.topCountries).toEqual([{ country: "TW", n: 1 }]);
   });
+
+  it("daily 依日彙整(views / 不重複)且新到舊排序", async () => {
+    // recordVisit 只會用「今天」,故直接 insert 指定 day 來測跨日彙整。
+    const ins = (ts: number, day: string, ipHash: string, country: string) =>
+      env.DB.prepare(
+        "INSERT INTO visits (ts, day, ip_hash, country, path) VALUES (?,?,?,?,?)",
+      )
+        .bind(ts, day, ipHash, country, "/")
+        .run();
+    await ins(1, "2026-06-10", "h1", "TW");
+    await ins(2, "2026-06-10", "h1", "TW"); // 同 ip_hash → 當日 uniques=1
+    await ins(3, "2026-06-11", "h2", "JP");
+    const daily = (await fetchVisitStats(env))?.daily ?? [];
+    expect(daily[0].day).toBe("2026-06-11"); // DESC:新到舊
+    expect(daily[1]).toEqual({ day: "2026-06-10", views: 2, uniques: 1 });
+  });
 });
