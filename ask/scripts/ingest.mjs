@@ -99,7 +99,8 @@ export function fmField(frontmatter, key) {
  * 每項去引號、去 HTML 標籤(highlights 可含 inline `<a>`/`<strong>`),回傳純文字陣列。
  */
 export function fmList(frontmatter, key) {
-  const re = new RegExp(`^${key}\\s*:\\s*\\n([\\s\\S]*?)(?=^\\S|$(?![\\r\\n]))`, "m");
+  // 抓 `key:` 之後「連續縮排」的區塊(到第一個非縮排=下一個頂層 key 為止)。
+  const re = new RegExp(`^${key}\\s*:[ \\t]*\\n((?:[ \\t]+.*\\n?)*)`, "m");
   const m = re.exec(frontmatter);
   if (!m) return [];
   const items = [];
@@ -109,7 +110,7 @@ export function fmList(frontmatter, key) {
     const val = im[1]
       .trim()
       .replace(/^["']|["']$/g, "") // 去外層引號
-      .replace(/<[^>]+>/g, "") // 去 HTML 標籤,保留可見文字
+      .replace(/<\/?[a-zA-Z][^>]*>/g, "") // 去 HTML 標籤(只匹配真標籤,不誤刪 "<5ms" 之類)
       .trim();
     if (val) items.push(val);
   }

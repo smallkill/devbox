@@ -30,6 +30,18 @@ describe("fmList", () => {
   it("沒有該欄位 → 空陣列", () => {
     expect(fmList("org: X\ntech: [A]", "highlights")).toEqual([]);
   });
+  it("highlights 是最後欄位(含結尾空行)→ 不漏項", () => {
+    const f = "org: X\nhighlights:\n  - a\n  - b\n";
+    expect(fmList(f, "highlights")).toEqual(["a", "b"]);
+  });
+  it("highlights 後面還有別的頂層 key → 不吃到後面", () => {
+    const f = "highlights:\n  - a\n  - b\norder: 3\ntech: [Z]";
+    expect(fmList(f, "highlights")).toEqual(["a", "b"]);
+  });
+  it("不誤刪非標籤的 < (如 <5ms)", () => {
+    const f = "highlights:\n  - latency <5ms after tuning\norder: 1";
+    expect(fmList(f, "highlights")).toEqual(["latency <5ms after tuning"]);
+  });
   it("describeFile 把 highlights 併入文字(experience 無 body)", () => {
     const raw = `---\norg: ACME\nrole: Eng\nhighlights:\n  - 'patent <a href="u">TWI844132B</a>'\n  - did stuff\n---\n`;
     const { text } = describeFile({ filename: "3-acme.md", lang: "zh", type: "experience", raw });
