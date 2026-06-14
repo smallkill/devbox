@@ -15,6 +15,8 @@ const txt = {
   lastSync: t.st_last_sync,
   connFailed: t.st_conn_failed,
   noVisitors: t.vs_no_visitors,
+  viewsShort: t.vs_views_short,
+  uniqueShort: t.vs_unique_short,
 };
 ---
 
@@ -57,11 +59,11 @@ const txt = {
 <section class="topwrap">
   <h2>{t.vs_daily}</h2>
   <div class="console">
-    <div class="console-bar"><code>SELECT day, count() GROUP BY day ORDER BY day DESC</code></div>
-    <table>
-      <thead><tr><th>date</th><th>views</th><th>unique</th><th>trend</th></tr></thead>
-      <tbody id="daily"><tr><td colspan="4" class="muted">{t.st_querying}</td></tr></tbody>
-    </table>
+    <div class="console-bar">
+      <code>SELECT day, count() GROUP BY day ORDER BY day</code>
+      <span class="legend"><i class="lg lg-v"></i>{t.vs_views_short}<i class="lg lg-u"></i>{t.vs_unique_short}</span>
+    </div>
+    <div id="daily" class="daychart"><span class="muted dc-msg">{t.st_querying}</span></div>
   </div>
 </section>
 
@@ -110,8 +112,12 @@ const txt = {
   .topwrap + .topwrap { margin-top: 2.6rem; }
   .topwrap h2 { font-family: var(--mono); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin: 0 0 0.7rem; }
   .console { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: var(--bg-elev); }
-  .console-bar { padding: 0.6rem 0.9rem; border-bottom: 1px solid var(--line); background: var(--bg); }
+  .console-bar { padding: 0.6rem 0.9rem; border-bottom: 1px solid var(--line); background: var(--bg); display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; flex-wrap: wrap; }
   .console-bar code { font-family: var(--mono); font-size: 0.74rem; color: var(--muted); }
+  .console-bar .legend { display: inline-flex; align-items: center; gap: 0.35rem; font-family: var(--mono); font-size: 0.66rem; color: var(--muted); }
+  .console-bar .legend .lg { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+  .console-bar .legend .lg-v { background: var(--accent-soft); }
+  .console-bar .legend .lg-u { background: var(--accent); margin-left: 0.5rem; }
 </style>
 
 <!-- 表格列由 JS 動態產生,拿不到 Astro scoped 屬性,故用 is:global(以 .console 前綴避免外洩) -->
@@ -133,6 +139,22 @@ const txt = {
   .console ul.ctry .cc { font-family: var(--mono); font-size: 0.8rem; color: var(--ink-soft); width: 2.2rem; }
   .console ul.ctry .cn { margin-left: auto; font-family: var(--mono); font-size: 0.82rem; color: var(--muted); font-variant-numeric: tabular-nums; }
   .console ul.ctry li.muted { color: var(--muted); justify-content: flex-start; }
+
+  /* 每日訪客長條圖(#daily 內元素由 JS 建,需 global) */
+  .daychart { display: flex; align-items: flex-end; gap: 4px; padding: 1rem 0.9rem 0.7rem; min-height: 168px; }
+  .daychart .dc-msg { padding: 1.4rem 0; color: var(--muted); }
+  .daychart .daycol { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 0.3rem; cursor: default; }
+  .daychart .dc-val { font-family: var(--mono); font-size: 0.64rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .daychart .dc-track { width: 100%; height: 110px; display: flex; align-items: flex-end; justify-content: center; }
+  .daychart .dc-bar { width: 64%; max-width: 26px; min-height: 2px; background: var(--accent-soft); border-radius: 3px 3px 0 0; position: relative; transition: filter 0.15s; }
+  .daychart .daycol:hover .dc-bar { filter: brightness(0.94); }
+  .daychart .dc-uniq { position: absolute; left: 0; right: 0; bottom: 0; background: var(--accent); border-radius: 0 0 3px 3px; }
+  .daychart .dc-day { font-family: var(--mono); font-size: 0.58rem; color: var(--muted); white-space: nowrap; }
+  @media (max-width: 560px) {
+    .daychart { gap: 2px; }
+    .daychart .dc-day { font-size: 0.5rem; transform: rotate(-45deg); transform-origin: center; margin-top: 0.2rem; }
+    .daychart .dc-val { font-size: 0.56rem; }
+  }
 </style>
 
 <script define:vars={{ apiUrl, txt }}>
@@ -218,30 +240,39 @@ const txt = {
     }));
   }
 
-  function renderDaily(rows) {
+  function renderDailyChart(rows) {
     const box = $("daily");
     if (!Array.isArray(rows) || rows.length === 0) {
-      const tr = document.createElement("tr");
-      const td = document.createElement("td");
-      td.colSpan = 4; td.className = "muted"; td.textContent = txt.noVisitors;
-      tr.append(td); box.replaceChildren(tr);
+      const s = document.createElement("span");
+      s.className = "muted dc-msg"; s.textContent = txt.noVisitors;
+      box.replaceChildren(s);
       return;
     }
-    const max = Math.max(...rows.map((r) => Number(r.views) || 0), 1);
-    box.replaceChildren(...rows.map((r) => {
-      const tr = document.createElement("tr");
-      const day = document.createElement("td");
-      const dc = document.createElement("code"); dc.textContent = r.day;
-      day.append(dc);
-      const views = document.createElement("td"); views.textContent = String(r.views);
-      const uniq = document.createElement("td"); uniq.textContent = String(r.uniques);
-      const trend = document.createElement("td");
-      const bar = document.createElement("span");
-      bar.className = "bar";
-      bar.style.width = Math.max(6, (Number(r.views) / max) * 90) + "px";
-      trend.append(bar);
-      tr.append(day, views, uniq, trend);
-      return tr;
+    // API 回傳新到舊;圖表要舊到新(左→右)才符合趨勢直覺。
+    const data = rows.slice().reverse();
+    const max = Math.max(...data.map((r) => Number(r.views) || 0), 1);
+    box.replaceChildren(...data.map((r) => {
+      const views = Number(r.views) || 0;
+      const uniq = Number(r.uniques) || 0;
+      const col = document.createElement("div");
+      col.className = "daycol";
+      col.title = `${r.day} · ${views} ${txt.viewsShort} · ${uniq} ${txt.uniqueShort}`;
+      const val = document.createElement("span");
+      val.className = "dc-val"; val.textContent = String(views);
+      const track = document.createElement("div");
+      track.className = "dc-track";
+      const bar = document.createElement("div");
+      bar.className = "dc-bar";
+      bar.style.height = (views / max) * 100 + "%";
+      const u = document.createElement("div");
+      u.className = "dc-uniq";
+      u.style.height = views > 0 ? (uniq / views) * 100 + "%" : "0%";
+      bar.append(u);
+      track.append(bar);
+      const lab = document.createElement("span");
+      lab.className = "dc-day"; lab.textContent = r.day.slice(5); // MM-DD
+      col.append(val, track, lab);
+      return col;
     }));
   }
 
@@ -263,7 +294,7 @@ const txt = {
       countTo($("views"), Number(d.visitors?.views) || 0);
       countTo($("unique"), Number(d.visitors?.uniqueToday) || 0);
       renderCountries(d.visitors?.topCountries);
-      renderDaily(d.visitors?.daily);
+      renderDailyChart(d.visitors?.daily);
       $("live").classList.remove("off");
       $("live-text").textContent = "LIVE";
       $("sync").textContent = txt.lastSync + " · " + new Date().toLocaleTimeString();

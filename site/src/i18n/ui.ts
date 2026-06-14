@@ -45,6 +45,8 @@ export const UI = {
     vs_countries: "來訪國家 · Top",
     vs_no_visitors: "尚無訪客",
     vs_daily: "每日訪客 · 近 14 天",
+    vs_views_short: "瀏覽",
+    vs_unique_short: "不重複",
     ask_eyebrow: "// 履歷問答 · RAG",
     ask_title: "問我關於 Derek 的事",
     ask_intro:
@@ -118,6 +120,8 @@ export const UI = {
     vs_countries: "Top countries",
     vs_no_visitors: "no visitors yet",
     vs_daily: "Daily visitors · last 14 days",
+    vs_views_short: "views",
+    vs_unique_short: "unique",
     ask_eyebrow: "// resume Q&A · RAG",
     ask_title: "Ask me about Derek",
     ask_intro:
