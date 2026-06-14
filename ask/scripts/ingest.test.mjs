@@ -18,14 +18,18 @@ describe("fmList", () => {
     "  - second plain item",
     "tech: [A, B]",
   ].join("\n");
-  it("抓 highlights 清單項目", () => {
+  it("抓 highlights 清單項目(連結保留文字+URL)", () => {
     expect(fmList(fm, "highlights")).toEqual([
-      "first bold item with link text",
+      "first bold item with link text(x)",
       "second plain item",
     ]);
   });
   it("去 HTML 標籤、保留可見文字", () => {
     expect(fmList(fm, "highlights")[0]).not.toMatch(/[<>]/);
+  });
+  it("連結的 URL 會被保留(供 RAG 回答『有沒有連結』)", () => {
+    const f = 'highlights:\n  - \'see <a href="https://example.com/p">the patent</a>\'\norder: 1';
+    expect(fmList(f, "highlights")[0]).toBe("see the patent(https://example.com/p)");
   });
   it("沒有該欄位 → 空陣列", () => {
     expect(fmList("org: X\ntech: [A]", "highlights")).toEqual([]);
