@@ -6,8 +6,50 @@ import {
   splitFrontmatter,
   slugFromFilename,
   fmField,
+  fmList,
   normalizePeriod,
 } from "./ingest.mjs";
+
+describe("fmList", () => {
+  const fm = [
+    "org: ACME",
+    "highlights:",
+    "  - 'first <strong>bold</strong> item with <a href=\"x\">link text</a>'",
+    "  - second plain item",
+    "tech: [A, B]",
+  ].join("\n");
+  it("抓 highlights 清單項目", () => {
+    expect(fmList(fm, "highlights")).toEqual([
+      "first bold item with link text",
+      "second plain item",
+    ]);
+  });
+  it("去 HTML 標籤、保留可見文字", () => {
+    expect(fmList(fm, "highlights")[0]).not.toMatch(/[<>]/);
+  });
+  it("沒有該欄位 → 空陣列", () => {
+    expect(fmList("org: X\ntech: [A]", "highlights")).toEqual([]);
+  });
+  it("highlights 是最後欄位(含結尾空行)→ 不漏項", () => {
+    const f = "org: X\nhighlights:\n  - a\n  - b\n";
+    expect(fmList(f, "highlights")).toEqual(["a", "b"]);
+  });
+  it("highlights 後面還有別的頂層 key → 不吃到後面", () => {
+    const f = "highlights:\n  - a\n  - b\norder: 3\ntech: [Z]";
+    expect(fmList(f, "highlights")).toEqual(["a", "b"]);
+  });
+  it("不誤刪非標籤的 < (如 <5ms)", () => {
+    const f = "highlights:\n  - latency <5ms after tuning\norder: 1";
+    expect(fmList(f, "highlights")).toEqual(["latency <5ms after tuning"]);
+  });
+  it("describeFile 把 highlights 併入文字(experience 無 body)", () => {
+    const raw = `---\norg: ACME\nrole: Eng\nhighlights:\n  - 'patent <a href="u">TWI844132B</a>'\n  - did stuff\n---\n`;
+    const { text } = describeFile({ filename: "3-acme.md", lang: "zh", type: "experience", raw });
+    expect(text).toContain("patent TWI844132B");
+    expect(text).toContain("did stuff");
+    expect(text).not.toMatch(/<a /);
+  });
+});
 
 describe("normalizePeriod", () => {
   it("zh:點格式 → 明確年月(避免小模型吃掉年份)", () => {

@@ -5,8 +5,20 @@ org: WHETRON
 period: 2019 – 2020
 tech: [ROS, WebSocket, HMI, Computer Vision, Ultrasonic Radar, Embedded]
 cover: /projects/av-hmi/cover.webp
-gallery:
-  - { src: /projects/av-hmi/thailand.jpg, caption: "Live in Thailand — running in Auto mode at night; the HMI marks a pedestrian ahead in real time (speed, route progress, Auto status)" }
+slideshows:
+  - caption: "Live field run in Thailand — night-time, low speed in Auto mode; the on-board screen flags the pedestrian ahead in real time (5.3 km/h, route progress Head Office→HABITO, Auto status)"
+    fit: contain
+    images:
+      - /projects/av-hmi/thailand.jpg
+  - caption: "Rebuilt runnable demo (opens straight in a browser, simulated data) — passenger view (speed / Auto / route / pedestrian & vehicle detection), driver/engineer view (top-down map with sonar arcs + camera object boxes, plus sensor-status panel), and sensor self-check"
+    images:
+      - /projects/av-hmi/demo/passenger.jpg
+      - /projects/av-hmi/demo/driver.jpg
+      - /projects/av-hmi/demo/sensor.jpg
+gallery: []
+video:
+  src: /projects/av-hmi/demo.mp4
+  caption: "Runnable demo in action (simulated data): real-time passenger dashboard → driver/engineer top-down view and sensor status"
 links: []
 featured: true
 order: 6

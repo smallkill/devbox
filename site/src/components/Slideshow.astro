@@ -3,11 +3,12 @@ interface Props {
   images: string[];
   caption?: string;
   alt?: string;
+  fit?: "cover" | "contain";
 }
-const { images, caption, alt } = Astro.props;
+const { images, caption, alt, fit = "cover" } = Astro.props;
 ---
 
-<figure class="slideshow" data-slideshow data-interval="3500">
+<figure class={`slideshow ${fit === "contain" ? "fit-contain" : ""}`} data-slideshow data-interval="3500">
   <div class="frame">
     {images.map((src, i) => (
       <img
@@ -85,6 +86,8 @@ const { images, caption, alt } = Astro.props;
     transition: opacity 0.6s ease;
   }
   .frame img.on { opacity: 1; }
+  /* 不裁切版:完整顯示原圖(例如直式實拍照),兩側以底色補滿 */
+  .slideshow.fit-contain .frame img { object-fit: contain; }
 
   .nav {
     position: absolute;

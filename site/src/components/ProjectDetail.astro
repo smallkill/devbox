@@ -96,7 +96,7 @@ const projectSlugs = isAsk
 
     {d.slideshows.map((s) =>
       s.images.length > 0 ? (
-        <Slideshow images={s.images} caption={s.caption} alt={d.title} />
+        <Slideshow images={s.images} caption={s.caption} alt={d.title} fit={s.fit} />
       ) : null,
     )}
 
