@@ -93,6 +93,29 @@ export function fmField(frontmatter, key) {
   return m[1].trim().replace(/^["']|["']$/g, "").trim();
 }
 
+/**
+ * 抓 frontmatter 的 YAML 清單欄位(如 experience 的 `highlights:`)。
+ * 取 `key:` 之後縮排的 `- ` 項目,直到遇到下一個頂層 key。
+ * 每項去引號、去 HTML 標籤(highlights 可含 inline `<a>`/`<strong>`),回傳純文字陣列。
+ */
+export function fmList(frontmatter, key) {
+  const re = new RegExp(`^${key}\\s*:\\s*\\n([\\s\\S]*?)(?=^\\S|$(?![\\r\\n]))`, "m");
+  const m = re.exec(frontmatter);
+  if (!m) return [];
+  const items = [];
+  for (const line of m[1].split("\n")) {
+    const im = /^\s+-\s+(.*)$/.exec(line);
+    if (!im) continue;
+    const val = im[1]
+      .trim()
+      .replace(/^["']|["']$/g, "") // 去外層引號
+      .replace(/<[^>]+>/g, "") // 去 HTML 標籤,保留可見文字
+      .trim();
+    if (val) items.push(val);
+  }
+  return items;
+}
+
 const MONTHS_EN = [
   "January", "February", "March", "April", "May", "June",
   "July", "August", "September", "October", "November", "December",
@@ -162,7 +185,16 @@ export function describeFile(file) {
     normalizePeriod(fmField(frontmatter, "period"), lang),
   ].filter((s) => s.length > 0);
   const metaLine = metaLineParts.join(" · ");
-  const text = metaLine ? `${metaLine}\n\n${body}` : body;
+
+  // experience 是純 frontmatter(無 body),重點在 highlights 清單 —
+  // 抓出來併入文字,RAG 才檢索得到經歷細節(含專利等)。
+  // 各 highlight 之間用空行分隔,讓 chunkText 切成獨立 chunk —
+  // 每條成就/專利可被精準檢索(整段合一會稀釋特定主題如「專利」的訊號)。
+  const highlights = fmList(frontmatter, "highlights");
+  const bodyParts = [highlights.join("\n\n"), body].filter((s) => s.length > 0);
+  const text = [metaLine, bodyParts.join("\n\n")]
+    .filter((s) => s.length > 0)
+    .join("\n\n");
 
   return { source, lang, title, type, text };
 }
