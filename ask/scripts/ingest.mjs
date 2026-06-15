@@ -110,7 +110,9 @@ export function fmList(frontmatter, key) {
     const val = im[1]
       .trim()
       .replace(/^["']|["']$/g, "") // 去外層引號
-      .replace(/<\/?[a-zA-Z][^>]*>/g, "") // 去 HTML 標籤(只匹配真標籤,不誤刪 "<5ms" 之類)
+      // 連結:保留可見文字 + URL(讓 RAG 答得出「有沒有連結」),再去其餘標籤
+      .replace(/<a\b[^>]*href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi, "$2($1)")
+      .replace(/<\/?[a-zA-Z][^>]*>/g, "") // 去其餘 HTML 標籤(只匹配真標籤,不誤刪 "<5ms")
       .trim();
     if (val) items.push(val);
   }
