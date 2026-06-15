@@ -29,6 +29,21 @@ const projects = defineCollection({
     video: z
       .object({ src: z.string(), caption: z.string().optional() })
       .optional(),
+    // 選用:多平台分頁(tab 切換),每個分頁一張截圖 + 一支 demo 影片。
+    platforms: z
+      .array(
+        z
+          .object({
+            label: z.string(),
+            image: z.string().optional(),
+            video: z.string().optional(),
+            caption: z.string().optional(),
+          })
+          .refine((p) => p.image || p.video, {
+            message: "platform needs at least an image or a video",
+          }),
+      )
+      .default([]),
     links: z
       .array(z.object({ label: z.string(), href: z.string() }))
       .default([]),

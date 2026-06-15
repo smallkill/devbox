@@ -5,9 +5,10 @@ org: 台灣智慧駕駛 TURING DRIVE
 period: 2020 – 2023
 tech: [AWS, MQTT, ROS, Autoware, WebSocket, Node.js, Vue, IoT Core]
 cover: /projects/fleet-monitoring/cover.webp
-gallery:
-  - { src: /projects/fleet-monitoring/dashboard.png, caption: 車隊總覽 — 各車輛租借/運行狀態與地圖即時定位 }
-  - { src: /projects/fleet-monitoring/monitor.jpg, caption: 即時監控台 — 衛星地圖車輛定位與狀態表(WAITING_FOR_ROUTE 等),可下達 Set Goal / Engage 遠端指令 }
+platforms:
+  - { label: "🏌️ 高爾夫球車 (smartkart)", image: /projects/fleet-monitoring/smartkart.png, video: /projects/fleet-monitoring/smartkart.mp4, caption: "高爾夫球場自駕球車車隊 OCC — 衛星地圖上即時車隊定位、租借/歸還狀態、車速與路線。" }
+  - { label: "🚗 自駕車與工作車輛監控 (kennel)", image: /projects/fleet-monitoring/kennel.png, video: /projects/fleet-monitoring/kennel.mp4, caption: "港區自駕/工作車隊 OCC — 即時定位 + 地理圍籬區域監控(point-in-polygon 判斷車輛在哪一區、是否跑出區域)+ 車輛沿港區道路行駛。" }
+  - { label: "🛡️ 任務巡邏車 (bigmac)", image: /projects/fleet-monitoring/bigmac.png, video: /projects/fleet-monitoring/bigmac.mp4, caption: "自駕巡邏/任務車 OCC — 規劃起點→終點路線、沿路導航到目標停靠點、即時軌跡與遠端指令。" }
 links: []
 featured: true
 order: 4

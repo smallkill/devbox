@@ -94,6 +94,44 @@ const projectSlugs = isAsk
       </section>
     )}
 
+    {d.platforms.length > 0 && (
+      <section class="platforms" data-tabs>
+        <div class="tabbar" role="tablist">
+          {d.platforms.map((p, i) => (
+            <button
+              class={i === 0 ? "tab on" : "tab"}
+              type="button"
+              data-tab={i}
+              id={`tab-${slug}-${i}`}
+              role="tab"
+              aria-selected={i === 0 ? "true" : "false"}
+              aria-controls={`panel-${slug}-${i}`}
+              tabindex={i === 0 ? 0 : -1}
+            >
+              {p.label}
+            </button>
+          ))}
+        </div>
+        {d.platforms.map((p, i) => (
+          <div
+            class={i === 0 ? "panel on" : "panel"}
+            data-panel={i}
+            id={`panel-${slug}-${i}`}
+            role="tabpanel"
+            aria-labelledby={`tab-${slug}-${i}`}
+            tabindex={0}
+          >
+            {p.video && (
+              <figure class="videowrap">
+                <video controls preload="metadata" playsinline poster={p.image} aria-label={p.label} src={p.video}></video>
+              </figure>
+            )}
+            {p.image && <Figure src={p.image} alt={p.caption ?? p.label} caption={p.caption} />}
+          </div>
+        ))}
+      </section>
+    )}
+
     {d.slideshows.map((s) =>
       s.images.length > 0 ? (
         <Slideshow images={s.images} caption={s.caption} alt={d.title} fit={s.fit} />
@@ -140,6 +178,49 @@ const projectSlugs = isAsk
       </section>
     )}
   </article>
+
+  <script>
+    // platform tabs: switch screenshot+video panels; pause hidden videos.
+    // Implements the WAI-ARIA tabs pattern: roving tabindex + arrow/Home/End keys.
+    document.querySelectorAll("[data-tabs]").forEach((root) => {
+      const tabs = Array.from(root.querySelectorAll<HTMLElement>("[data-tab]"));
+      const panels = Array.from(root.querySelectorAll<HTMLElement>("[data-panel]"));
+
+      const activate = (tab: HTMLElement, focus = false) => {
+        const i = tab.getAttribute("data-tab");
+        tabs.forEach((t) => {
+          const on = t === tab;
+          t.classList.toggle("on", on);
+          t.setAttribute("aria-selected", on ? "true" : "false");
+          t.tabIndex = on ? 0 : -1;
+        });
+        panels.forEach((p) => {
+          const on = p.getAttribute("data-panel") === i;
+          p.classList.toggle("on", on);
+          if (!on) {
+            const v = p.querySelector("video");
+            if (v) v.pause();
+          }
+        });
+        if (focus) tab.focus();
+      };
+
+      tabs.forEach((tab, idx) => {
+        tab.addEventListener("click", () => activate(tab));
+        tab.addEventListener("keydown", (e) => {
+          let next = -1;
+          if (e.key === "ArrowRight") next = (idx + 1) % tabs.length;
+          else if (e.key === "ArrowLeft") next = (idx - 1 + tabs.length) % tabs.length;
+          else if (e.key === "Home") next = 0;
+          else if (e.key === "End") next = tabs.length - 1;
+          if (next >= 0) {
+            e.preventDefault();
+            activate(tabs[next], true);
+          }
+        });
+      });
+    });
+  </script>
 
   <style>
     .proj { padding: 1.5rem 0 1rem; }
@@ -193,6 +274,28 @@ const projectSlugs = isAsk
       font-family: var(--mono); font-size: 0.78rem; color: var(--muted);
       margin-top: 0.5rem; line-height: 1.5;
     }
+
+    /* 多平台 tab demo */
+    .platforms { margin: 1.8rem 0 0; }
+    .tabbar {
+      display: flex; flex-wrap: wrap; gap: 0.4rem;
+      border-bottom: 1px solid var(--line); margin-bottom: 1.1rem;
+    }
+    .tab {
+      font-family: var(--mono); font-size: 0.8rem; color: var(--muted);
+      background: transparent; border: 1px solid transparent; border-bottom: none;
+      border-radius: 7px 7px 0 0; padding: 0.45rem 0.9rem; cursor: pointer;
+      margin-bottom: -1px; line-height: 1.45;
+    }
+    .tab:hover { color: var(--ink); }
+    .tab.on {
+      color: var(--accent); font-weight: 700;
+      background: var(--bg-elev); border-color: var(--line);
+      border-bottom-color: var(--bg-elev);
+    }
+    .platforms .panel { display: none; }
+    .platforms .panel.on { display: block; }
+    .platforms .videowrap { margin-top: 0; }
 
     /* resume-rag 內嵌的 live 問答 */
     .livedemo {
