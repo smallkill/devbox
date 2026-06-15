@@ -121,12 +121,13 @@ const projectSlugs = isAsk
             aria-labelledby={`tab-${slug}-${i}`}
             tabindex={0}
           >
+            {p.caption && <p class="platform-desc">{p.caption}</p>}
+            {p.image && <Figure src={p.image} alt={p.caption ?? p.label} />}
             {p.video && (
               <figure class="videowrap">
                 <video controls preload="metadata" playsinline poster={p.image} aria-label={p.label} src={p.video}></video>
               </figure>
             )}
-            {p.image && <Figure src={p.image} alt={p.caption ?? p.label} caption={p.caption} />}
           </div>
         ))}
       </section>
@@ -295,7 +296,11 @@ const projectSlugs = isAsk
     }
     .platforms .panel { display: none; }
     .platforms .panel.on { display: block; }
-    .platforms .videowrap { margin-top: 0; }
+    .platform-desc {
+      font-size: 0.96rem; color: var(--ink-soft); line-height: 1.6;
+      margin: 0 0 1.1rem; max-width: 70ch;
+    }
+    .platforms .videowrap { margin-top: 1.1rem; }
 
     /* resume-rag 內嵌的 live 問答 */
     .livedemo {
