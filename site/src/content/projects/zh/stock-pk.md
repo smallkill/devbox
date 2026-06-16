@@ -9,7 +9,8 @@ gallery:
   - { src: /projects/stock-pk/screenshot.jpg, caption: 工具實際畫面,台積電 vs 0050 三年含息報酬,贏家標示與雙軸成長曲線 }
 category: personal
 links:
-  - { label: Live, href: "https://derek-stock-pk.pages.dev" }
+  - { label: "Live · 台股版", href: "https://derek-stock-pk.pages.dev" }
+  - { label: "Live · 美股版", href: "https://derek-stock-pk-us.pages.dev" }
   - { label: GitHub, href: "https://github.com/smallkill/stock-pk" }
 featured: true
 order: 2

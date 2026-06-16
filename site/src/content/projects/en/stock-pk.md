@@ -8,7 +8,8 @@ gallery:
   - { src: /projects/stock-pk/screenshot.jpg, caption: "The live tool: TSMC vs 0050 three-year total return, winner highlight and dual-axis growth chart" }
 category: personal
 links:
-  - { label: Live, href: "https://derek-stock-pk.pages.dev" }
+  - { label: "Live · TW", href: "https://derek-stock-pk.pages.dev" }
+  - { label: "Live · US", href: "https://derek-stock-pk-us.pages.dev" }
   - { label: GitHub, href: "https://github.com/smallkill/stock-pk" }
 featured: true
 order: 2
