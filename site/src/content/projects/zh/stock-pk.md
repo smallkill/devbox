@@ -1,5 +1,5 @@
 ---
-title: "台股多檔 PK:投報率比較工具"
+title: "美股／台股多檔 PK:投報率比較工具"
 role: 個人專案 · 全端 + Cloudflare
 period: "2026"
 tech:

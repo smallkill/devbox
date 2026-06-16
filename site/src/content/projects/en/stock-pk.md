@@ -1,5 +1,5 @@
 ---
-title: "TW Stock PK: multi-stock return comparison"
+title: "US & TW Stock PK: multi-stock return comparison"
 role: Personal project · Full-stack + Cloudflare
 period: "2026"
 tech: [Cloudflare Workers, Pages, D1, Astro, TypeScript, Yahoo Finance API]

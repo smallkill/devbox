@@ -63,9 +63,9 @@ const projectSlugs = isAsk
       {d.links.length > 0 && (
         <nav class="links">
           {d.links.map((l) =>
-            l.label === "Live" ? (
+            l.label.startsWith("Live") ? (
               <a class="live-cta" href={l.href} target="_blank" rel="noopener noreferrer">
-                <span class="pulse"></span>{t.live_cta} ↗
+                <span class="pulse"></span>{l.label === "Live" ? t.live_cta : l.label} ↗
               </a>
             ) : (
               <a href={l.href} target="_blank" rel="noopener noreferrer">
