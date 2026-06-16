@@ -2,6 +2,11 @@ name = "devbox-ask"
 main = "src/index.ts"
 compatibility_date = "2025-09-06"
 
+# Workers Logs — 保留近期呼叫的 console 記錄,供事後查問答/SSE 問題。
+[observability]
+enabled = true
+head_sampling_rate = 1
+
 [ai]
 binding = "AI"
 

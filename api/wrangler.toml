@@ -2,6 +2,11 @@ name = "devbox-api"
 main = "src/index.ts"
 compatibility_date = "2025-09-06"
 
+# Workers Logs — 保留近期呼叫的 console 記錄,供事後查 /api/stats 偶發 5xx 等。
+[observability]
+enabled = true
+head_sampling_rate = 1
+
 # D1 — 短網址儲存。部署前用 `wrangler d1 create devbox` 取得 database_id 後填入。
 [[d1_databases]]
 binding = "DB"

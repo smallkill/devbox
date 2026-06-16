@@ -2,6 +2,11 @@ name = "devbox-watchdog"
 main = "src/index.ts"
 compatibility_date = "2025-09-06"
 
+# Workers Logs — 保留近期 cron 執行記錄,供查告警漏發/誤發。
+[observability]
+enabled = true
+head_sampling_rate = 1
+
 # 每 15 分鐘檢查一次指標。
 [triggers]
 crons = ["*/15 * * * *"]
