@@ -273,5 +273,10 @@ const projectSlugs = [
   }
 
   .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.1rem; }
-  @media (max-width: 620px) { .grid { grid-template-columns: 1fr; } }
+  /* 奇數張時,最後一張橫跨整列,避免末張孤零零留半排空白 */
+  .grid > :last-child:nth-child(odd) { grid-column: 1 / -1; }
+  @media (max-width: 620px) {
+    .grid { grid-template-columns: 1fr; }
+    .grid > :last-child:nth-child(odd) { grid-column: auto; }
+  }
 </style>

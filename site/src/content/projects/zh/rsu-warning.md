@@ -6,7 +6,7 @@ period: 2021 – 2023
 tech: [Nvidia NX, YOLO, AWS KVS, Lambda, S3, MQTT, V2X]
 cover: /projects/rsu-warning/cover.webp
 slideshows:
-  - caption: 各路口 RSU 即時偵測 — 綠色為偵測區域,闖入的車輛/行人以紅框即時標出(青埔 7 路口、11 監視器中的數個路口實景)
+  - caption: 各路口 RSU 即時偵測,綠色為偵測區域,闖入的車輛/行人以紅框即時標出(青埔 7 路口、11 監視器中的數個路口實景)
     images:
       - /projects/rsu-warning/detect/cam1.jpg
       - /projects/rsu-warning/detect/cam2.jpg
@@ -15,14 +15,14 @@ slideshows:
       - /projects/rsu-warning/detect/cam6.jpg
       - /projects/rsu-warning/detect/cam7.jpg
       - /projects/rsu-warning/detect/cam10.jpg
-  - caption: 實機 telemetry 佐證(2022 測試數據,5Hz 記錄)— RSU 一發出警示,自駕巴士即時煞車減速。左:單趟細節(車速 16.8→8 km/h、煞車指令同步觸發);右:全部 23 次警示(自駕模式)對齊疊圖,平均車速由 ~14 降到 ~7 km/h,證明每次警示都確實觸發減速
+  - caption: 實機 telemetry 佐證(2022 測試數據,5Hz 記錄),RSU 一發出警示,自駕巴士即時煞車減速。左:單趟細節(車速 16.8→8 km/h、煞車指令同步觸發);右:全部 23 次警示(自駕模式)對齊疊圖,平均車速由 ~14 降到 ~7 km/h,證明每次警示都確實觸發減速
     images:
       - /projects/rsu-warning/telemetry/run.jpg
       - /projects/rsu-warning/telemetry/overlay.jpg
 gallery: []
 video:
   src: /projects/rsu-warning/route.mp4
-  caption: "部署場域:桃園青埔自駕巴士路線 — 自駕巴士車上視角行經實驗路段"
+  caption: "部署場域:桃園青埔自駕巴士路線,自駕巴士車上視角行經實驗路段"
 links:
   - { label: 計畫頁 · Turing Drive, href: "https://turing-drive.com/featured_item/%E6%A1%83%E5%9C%92%E5%B8%82%E9%9D%92%E5%9F%94%E5%9C%B0%E5%8D%80%E8%87%AA%E9%A7%95%E5%B7%B4%E5%A3%AB%E5%89%B5%E6%96%B0%E5%AF%A6%E9%A9%97%E8%A8%88%E7%95%AB/" }
   - { label: 媒體報導 · INSIDE, href: "https://www.inside.com.tw/article/25555-2021-taoyuan-smart-city" }
@@ -36,7 +36,7 @@ order: 5
 雲端側以 **AWS KVS / Lambda / S3** 構成影像串流、儲存與警示管理服務,設計兼顧低延遲與高可靠。
 我擔任技術負責人,協調演算法、嵌入式與雲端團隊穩定交付。
 
-**部署規模與成果** — 應用於 **桃園市青埔自駕巴士創新實驗計畫**(全國首條捷運接駁、深入社區的自駕巴士路線):
+**部署規模與成果**:應用於 **桃園市青埔自駕巴士創新實驗計畫**(全國首條捷運接駁、深入社區的自駕巴士路線):
 
 - 路側系統涵蓋 **7 個路口、共 11 台監視器**,即時守護混合車流的複雜路口。
 - 2021 年試運行(平日 10:00–15:40、每 20 分一班),累計 **載客破千人次**、**逾 9 成試乘滿意度**。
