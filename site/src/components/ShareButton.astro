@@ -1,0 +1,301 @@
+---
+// 頂列分享控制:一鍵分享當前頁 URL + 本機產生 QR code。
+// QR 走 qrcode-generator(零依賴,Astro 打包進 /_astro,符合 script-src 'self'),
+// 以 inline SVG 呈現(符合 CSP,不打任何外部 QR API / CDN)。
+import { UI, type Locale } from "../i18n/ui";
+interface Props {
+  lang?: Locale;
+}
+const { lang = "zh" } = Astro.props;
+const t = UI[lang];
+---
+
+<div class="share" data-share>
+  <button
+    type="button"
+    class="share-btn"
+    data-share-toggle
+    aria-haspopup="dialog"
+    aria-expanded="false"
+    aria-label={t.share_aria}
+  >
+    <svg
+      class="share-ico"
+      viewBox="0 0 24 24"
+      width="14"
+      height="14"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      aria-hidden="true"
+    >
+      <circle cx="18" cy="5" r="3"></circle>
+      <circle cx="6" cy="12" r="3"></circle>
+      <circle cx="18" cy="19" r="3"></circle>
+      <line x1="8.6" y1="10.5" x2="15.4" y2="6.5"></line>
+      <line x1="8.6" y1="13.5" x2="15.4" y2="17.5"></line>
+    </svg>
+    <span>{t.share}</span>
+  </button>
+
+  <div
+    class="share-pop"
+    data-share-pop
+    role="group"
+    aria-label={t.share_panel_title}
+    hidden
+  >
+    <div class="share-head">
+      <span class="share-title">{t.share_panel_title}</span>
+      <button type="button" class="share-x" data-share-close aria-label={t.share_close}>
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+
+    <div class="share-qr" data-share-qr aria-hidden="true"></div>
+    <p class="share-hint">{t.share_qr_hint}</p>
+
+    <div class="share-url" data-share-url aria-label={t.share_aria}></div>
+
+    <div class="share-actions">
+      <button
+        type="button"
+        class="share-copy"
+        data-share-copy
+        data-copy-label={t.share_copy}
+        data-copied-label={t.share_copied}
+      >{t.share_copy}</button>
+      <button type="button" class="share-native" data-share-native hidden>{t.share_native}</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  import qrcode from "qrcode-generator";
+
+  document.querySelectorAll<HTMLElement>("[data-share]").forEach((root) => {
+    const toggle = root.querySelector<HTMLButtonElement>("[data-share-toggle]");
+    const pop = root.querySelector<HTMLElement>("[data-share-pop]");
+    const closeBtn = root.querySelector<HTMLButtonElement>("[data-share-close]");
+    const urlEl = root.querySelector<HTMLElement>("[data-share-url]");
+    const qrEl = root.querySelector<HTMLElement>("[data-share-qr]");
+    const copyBtn = root.querySelector<HTMLButtonElement>("[data-share-copy]");
+    const nativeBtn = root.querySelector<HTMLButtonElement>("[data-share-native]");
+    if (!toggle || !pop || !urlEl || !qrEl || !copyBtn) return;
+
+    let copyTimer: ReturnType<typeof setTimeout>;
+
+    // 本機產生 QR → inline SVG。每次開啟用當前 location.href 重新產生。
+    function renderQR(text: string) {
+      const qr = qrcode(0, "M"); // type 0 = 自動選最小尺寸
+      qr.addData(text);
+      qr.make();
+      const count = qr.getModuleCount();
+      const margin = 2;
+      const size = count + margin * 2;
+      let cells = "";
+      for (let r = 0; r < count; r++) {
+        for (let c = 0; c < count; c++) {
+          if (qr.isDark(r, c)) {
+            cells += `<rect x="${c + margin}" y="${r + margin}" width="1" height="1"/>`;
+          }
+        }
+      }
+      qrEl!.innerHTML =
+        `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${size} ${size}" ` +
+        `width="148" height="148" shape-rendering="crispEdges" role="img">` +
+        `<rect width="${size}" height="${size}" fill="#ffffff"/>` +
+        `<g fill="#18181b">${cells}</g></svg>`;
+    }
+
+    function open() {
+      const href = location.href;
+      urlEl!.textContent = href;
+      renderQR(href);
+      // navigator.share 只在支援(多為行動裝置)時顯示系統分享。
+      if (nativeBtn && typeof navigator !== "undefined" && "share" in navigator) {
+        nativeBtn.hidden = false;
+      }
+      pop!.hidden = false;
+      toggle!.setAttribute("aria-expanded", "true");
+      document.addEventListener("keydown", onKey);
+      document.addEventListener("click", onOutside, true);
+      closeBtn?.focus();
+    }
+
+    function close() {
+      pop!.hidden = true;
+      toggle!.setAttribute("aria-expanded", "false");
+      document.removeEventListener("keydown", onKey);
+      document.removeEventListener("click", onOutside, true);
+    }
+
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") {
+        close();
+        toggle!.focus();
+      }
+    }
+
+    function onOutside(e: MouseEvent) {
+      if (!root.contains(e.target as Node)) close();
+    }
+
+    toggle.addEventListener("click", () => {
+      if (pop.hidden) open();
+      else close();
+    });
+
+    closeBtn?.addEventListener("click", () => {
+      close();
+      toggle.focus();
+    });
+
+    const copyOriginal = copyBtn.dataset.copyLabel ?? copyBtn.textContent ?? "";
+    copyBtn.addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(location.href);
+        copyBtn.textContent = copyBtn.dataset.copiedLabel ?? "✓";
+        clearTimeout(copyTimer);
+        copyTimer = setTimeout(() => { copyBtn.textContent = copyOriginal; }, 1500);
+      } catch {
+        /* clipboard 不可用時,使用者仍可手動選取上方 URL 文字 */
+      }
+    });
+
+    nativeBtn?.addEventListener("click", async () => {
+      try {
+        await navigator.share({ title: document.title, url: location.href });
+      } catch {
+        /* 使用者取消或不支援:略過,QR / 複製仍可用 */
+      }
+    });
+  });
+</script>
+
+<style>
+  .share {
+    position: relative;
+    display: inline-flex;
+  }
+
+  .share-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.32rem;
+    background: none;
+    border: 0;
+    padding: 0;
+    margin: 0;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.9rem;
+    line-height: 1;
+    color: var(--ink-soft);
+  }
+  .share-btn:hover { color: var(--accent); }
+  .share-ico { display: block; }
+
+  .share-pop {
+    position: absolute;
+    top: calc(100% + 0.6rem);
+    right: 0;
+    z-index: 20;
+    width: 248px;
+    padding: 0.85rem;
+    background: var(--bg-elev);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    box-shadow: 0 8px 28px color-mix(in srgb, var(--ink) 14%, transparent);
+    text-align: center;
+  }
+  .share-pop[hidden] { display: none; }
+
+  .share-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-bottom: 0.7rem;
+  }
+  .share-title {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .share-x {
+    display: inline-flex;
+    background: none;
+    border: 0;
+    padding: 0.1rem;
+    cursor: pointer;
+    color: var(--muted);
+    line-height: 0;
+  }
+  .share-x:hover { color: var(--ink); }
+
+  .share-qr {
+    display: flex;
+    justify-content: center;
+    padding: 0.5rem;
+    background: #ffffff;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+  }
+  .share-qr :global(svg) { display: block; }
+
+  .share-hint {
+    margin: 0.5rem 0 0.7rem;
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.04em;
+    color: var(--muted);
+  }
+
+  .share-url {
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    color: var(--ink-soft);
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 0.4rem 0.5rem;
+    margin-bottom: 0.6rem;
+    word-break: break-all;
+    text-align: left;
+    max-height: 3.2em;
+    overflow-y: auto;
+  }
+
+  .share-actions {
+    display: flex;
+    gap: 0.4rem;
+  }
+  .share-actions button {
+    flex: 1;
+    font-family: var(--mono);
+    font-size: 0.74rem;
+    cursor: pointer;
+    border-radius: 6px;
+    padding: 0.42rem 0.5rem;
+    line-height: 1.2;
+  }
+  .share-copy {
+    border: 1px solid var(--accent);
+    background: var(--accent-soft);
+    color: var(--accent);
+  }
+  .share-copy:hover { background: color-mix(in srgb, var(--accent-soft) 70%, var(--accent)); }
+  .share-native {
+    border: 1px solid var(--line);
+    background: var(--bg-elev);
+    color: var(--ink-soft);
+  }
+  .share-native:hover { border-color: var(--accent); color: var(--accent); }
+  .share-native[hidden] { display: none; }
+</style>

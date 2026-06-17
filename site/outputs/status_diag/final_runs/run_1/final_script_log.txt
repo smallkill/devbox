@@ -1,0 +1,94 @@
+step 1 action: navigate to /status/
+step 2 action: wait 12s for client JS fetch
+=== STATUS PAGE BODY TEXT (truncated 4000) ===
+Derek Chen.
+經歷
+專案
+問我
+中
+/
+EN
+可觀測性主控台
+系統狀態
+
+這是我自架的 devbox 短網址 SaaS 的即時監控儀表板,數字全是真的,來自 Cloudflare Analytics Engine。它展示我把「CI/CD 自動部署 + 可觀測性」做成可運行系統的能力。
+
+看 devbox 專案 →
+LIVE
+最後同步 · 13:16:40
+短網址連結
+21
+links total
+近 24h 點擊
+0
+clicks / 24h
+總瀏覽
+549
+page views
+今日不重複訪客
+3
+unique today
+每日訪客 · 近 14 天
+SELECT day, count() GROUP BY day ORDER BY day
+瀏覽
+不重複
+117
+06-08
+68
+06-09
+103
+06-10
+66
+06-11
+30
+06-12
+22
+06-13
+66
+06-14
+57
+06-15
+20
+06-16
+TOP 連結 · 近 24H
+SELECT slug, count() ORDER BY clicks DESC
+#	SLUG	CLICKS	SHARE
+尚無點擊
+來訪國家 · TOP
+SELECT country, count() GROUP BY country
+TW
+499
+US
+46
+DE
+2
+FR
+1
+CA
+1
+© 2026 Derek Chen · built with Astro on Cloudflare
+本站與其 SaaS 後端皆開源於 github.com/smallkill/devbox ↗ · 系統狀態 →
+=== CONSOLE MESSAGES (status) ===
+=== PAGE ERRORS (status) ===
+=== STATS API RESPONSES ===
+204  https://devbox-api.chinte-cheng.workers.dev/api/visit?path=%2Fstatus%2F
+200  https://devbox-api.chinte-cheng.workers.dev/api/stats
+200  https://flagcdn.com/us.svg
+200  https://flagcdn.com/ca.svg
+200  https://flagcdn.com/fr.svg
+200  https://flagcdn.com/tw.svg
+200  https://flagcdn.com/de.svg
+=== FAILED REQUESTS (status) ===
+=== ALL REQUESTS to workers.dev / flagcdn ===
+GET https://devbox-api.chinte-cheng.workers.dev/api/visit?path=%2Fstatus%2F
+GET https://devbox-api.chinte-cheng.workers.dev/api/stats
+GET https://flagcdn.com/tw.svg
+GET https://flagcdn.com/us.svg
+GET https://flagcdn.com/de.svg
+GET https://flagcdn.com/fr.svg
+GET https://flagcdn.com/ca.svg
+step 3 action: navigate to homepage /
+=== CONSOLE MESSAGES (home) ===
+=== PAGE ERRORS (home) ===
+=== FAILED REQUESTS (home) ===
+DONE
