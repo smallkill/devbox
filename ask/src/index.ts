@@ -4,7 +4,6 @@ import {
   buildPrompt,
   dedupeSources,
   sanitizeHistory,
-  buildEmbedQuery,
   buildRewritePrompt,
   cleanRewrite,
   historyToMessages,
@@ -77,7 +76,8 @@ async function rewriteQuery(
       ],
       max_tokens: 80,
     }) as Promise<{ response?: string }>;
-    // 改寫是「可選優化」,不能拖住主回答:逾時 2.5s 就放棄退回拼接法。
+    // 改寫純屬「錦上添花」(替省略主體的跟進題補主體);切換主題的正確性已由
+    // 原問題那條查詢保證,所以這裡逾時設短(2.5s)以免拖慢常見路徑的延遲。
     const timeout = new Promise<null>((res) => setTimeout(() => res(null), 2500));
     const r = await Promise.race([run, timeout]);
     return r && typeof r.response === "string" ? cleanRewrite(r.response) : null;
@@ -215,36 +215,54 @@ export default {
     // 外部呼叫 graceful degradation:embed → query 任一失敗回 503(帶 CORS)。
     let chunks: Chunk[];
     try {
-      // 跟進問題:先用小模型改寫成獨立問題(補主體)→ 檢索更準;
-      // 改寫失敗就退回「拼接近期 Q+A」的啟發式。第一題(無歷史)直接用原問題。
-      let embQuery = question!;
+      // 檢索查詢。第一題只用原問題。跟進題用「多查詢合併」:
+      //   ① 原問題本身 —— 自帶主體的題目(如「介紹 AVM 專案」)靠這條精準命中,
+      //      且**不被前一題的主題汙染**(這是修掉「切換主題答沒有」的關鍵)。
+      //   ② 小模型改寫成的獨立問句 —— 替省略主體的題(如「擔任什麼職務?」)補主體;
+      //      改寫失敗(回 null)就略過。
+      // 兩條各自向量檢索,依分數合併去重。**刻意不再把「前一題 Q+A 拼接」當查詢**——
+      // 舊版那條會讓前一題(尤其長答案如 AVM)的片段在合併時壓過當前題片段,導致
+      // 「AVM→Moxa」這類切換被誤判成沒有資料。
+      const embQueries: string[] = [question!];
       if (turns.length > 0) {
-        embQuery = (await rewriteQuery(env, question!, turns)) ?? buildEmbedQuery(question!, turns);
+        const rw = await rewriteQuery(env, question!, turns);
+        if (rw && rw !== question!) embQueries.push(rw);
       }
-      const emb = (await env.AI.run(EMBED_MODEL, { text: [embQuery] })) as {
+      const emb = (await env.AI.run(EMBED_MODEL, { text: embQueries })) as {
         data: number[][];
       };
-      const vector = emb.data?.[0];
-      if (!vector || vector.length === 0)
+      const vectors = (emb.data ?? []).filter((v) => Array.isArray(v) && v.length > 0);
+      if (vectors.length === 0)
         return json({ error: "unavailable" }, 503, req);
 
-      let res = await env.VECTORIZE.query(vector, {
-        topK: 5,
-        returnMetadata: "all",
-        filter: { lang },
-      });
-      // lang filter fallback:bge-m3 多語,短英文可能被誤判語言而撈不到,
-      // 無命中時改查不帶 filter 的同樣 query。
-      if (res.matches.length === 0) {
-        res = await env.VECTORIZE.query(vector, {
+      // 每條查詢各取 topK,用 vectorId 合併保留最高分,排序後取前 TOP_N。
+      const TOP_N = 6;
+      const byId = new Map<string, { score: number; meta: Record<string, unknown> }>();
+      const collect = (matches: { id: string; score: number; metadata?: Record<string, unknown> }[]) => {
+        for (const m of matches) {
+          const prev = byId.get(m.id);
+          if (!prev || m.score > prev.score)
+            byId.set(m.id, { score: m.score, meta: m.metadata ?? {} });
+        }
+      };
+      for (const vector of vectors) {
+        let res = await env.VECTORIZE.query(vector, {
           topK: 5,
           returnMetadata: "all",
+          filter: { lang },
         });
+        // lang filter fallback:bge-m3 多語,短英文可能被誤判語言而撈不到,
+        // 無命中時改查不帶 filter 的同樣 query。
+        if (res.matches.length === 0) {
+          res = await env.VECTORIZE.query(vector, { topK: 5, returnMetadata: "all" });
+        }
+        collect(res.matches);
       }
-      chunks = res.matches.map((m) => ({
-        text: String(m.metadata?.text ?? ""),
-        source: String(m.metadata?.source ?? ""),
-        title: String(m.metadata?.title ?? ""),
+      const merged = [...byId.values()].sort((a, b) => b.score - a.score).slice(0, TOP_N);
+      chunks = merged.map((m) => ({
+        text: String(m.meta?.text ?? ""),
+        source: String(m.meta?.source ?? ""),
+        title: String(m.meta?.title ?? ""),
       }));
     } catch {
       return json({ error: "unavailable" }, 503, req);
