@@ -51,12 +51,12 @@ export const UI = {
     ask_title: "問我關於 Derek 的事",
     ask_intro:
       "這是接在我履歷上的 AI 問答,後端用 Cloudflare Workers AI 做 RAG,只根據我的專案與經歷回答。問問看我做過什麼、擅長什麼。",
-    ask_placeholder: "輸入你的問題,例如:他最擅長哪些雲?",
+    ask_placeholder: "輸入你的問題,例如:他用過哪些雲端平台?",
     ask_send: "送出",
     ask_examples_label: "試試看:",
     ask_examples: [
       "他在 Moxa 做了什麼?",
-      "他最擅長哪些雲?",
+      "他用過哪些雲端平台?",
       "介紹一下 AVM 專案",
       "他有哪些 CI/CD 經驗?",
     ],
@@ -134,12 +134,12 @@ export const UI = {
     ask_title: "Ask me about Derek",
     ask_intro:
       "An AI Q&A wired into my resume: the backend runs RAG on Cloudflare Workers AI and answers only from my projects and experience. Ask what I've built or what I'm good at.",
-    ask_placeholder: "Type your question, e.g. which clouds is he best at?",
+    ask_placeholder: "Type your question, e.g. which cloud platforms has he used?",
     ask_send: "Send",
     ask_examples_label: "Try:",
     ask_examples: [
       "What did he do at Moxa?",
-      "Which clouds is he best at?",
+      "Which cloud platforms has he used?",
       "Tell me about the AVM project",
       "What CI/CD experience does he have?",
     ],
