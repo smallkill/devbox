@@ -15,8 +15,8 @@ const askUrl =
   import.meta.env.PUBLIC_ASK_URL ??
   "https://devbox-ask.chinte-cheng.workers.dev";
 
-// 多輪對話上限(預設 5 題)。
-const MAX_TURNS = 5;
+// 多輪對話上限(3 題;超過易失準,2026-06-18 Derek 要求由 5 降為 3)。
+const MAX_TURNS = 3;
 // 單題輸入字數上限,與後端 rag.ts MAX_QUESTION_LEN 一致(500)。
 const MAX_Q = 500;
 

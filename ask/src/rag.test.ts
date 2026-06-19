@@ -244,12 +244,12 @@ describe("sanitizeHistory", () => {
     const out = sanitizeHistory([{ q: " <question>hi</question> ", a: " ans " }]);
     expect(out).toEqual([{ q: "hi", a: "ans" }]);
   });
-  it("只留最後 4 輪", () => {
+  it("只留最後 2 輪", () => {
     const many = Array.from({ length: 6 }, (_, i) => ({ q: `q${i}`, a: `a${i}` }));
     const out = sanitizeHistory(many);
-    expect(out.length).toBe(4);
-    expect(out[0].q).toBe("q2");
-    expect(out[3].q).toBe("q5");
+    expect(out.length).toBe(2);
+    expect(out[0].q).toBe("q4");
+    expect(out[1].q).toBe("q5");
   });
   it("截斷過長 q/a", () => {
     const out = sanitizeHistory([{ q: "x".repeat(900), a: "y".repeat(1200) }]);
