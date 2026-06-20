@@ -1,0 +1,173 @@
+---
+// 面試簡報播放器「殼」。投影片清單從 /slides/deck/manifest.json 動態載入,
+// 之後換投影片只要替換 public/slides/deck/ 內的圖檔 + manifest.json,不用改這支。
+import { UI, type Locale } from "../i18n/ui";
+interface Props {
+  lang?: Locale;
+  /** manifest 路徑(預設面試簡報);未來可放多套 deck。 */
+  src?: string;
+}
+const { lang = "zh", src = "/slides/deck/manifest.json" } = Astro.props;
+const t = UI[lang];
+---
+
+<section class="deck" data-deck data-src={src}>
+  <div class="bar top">
+    <span class="title" data-title>{t.slides_title}</span>
+    <span class="count" aria-live="polite"><b data-cur>–</b> / <span data-total>–</span></span>
+  </div>
+
+  <div class="stage" data-stage>
+    <img data-img alt={t.slides_title} draggable="false" />
+    <button class="edge left" type="button" data-prev aria-label={t.slides_prev}><span>‹</span></button>
+    <button class="edge right" type="button" data-next aria-label={t.slides_next}><span>›</span></button>
+    <p class="msg" data-msg>{t.slides_loading}</p>
+  </div>
+
+  <div class="bar bottom">
+    <button type="button" data-prev>‹ {t.slides_prev}</button>
+    <button type="button" data-play aria-pressed="false">▶ {t.slides_play}</button>
+    <button type="button" data-fs>⛶ {t.slides_fs}</button>
+    <button type="button" data-next>{t.slides_next} ›</button>
+  </div>
+  <div class="progress" aria-hidden="true"><span data-bar></span></div>
+  <p class="hint">{t.slides_hint}</p>
+</section>
+
+<style>
+  /* 注意:投影片資產用 root 絕對路徑(/slides/deck/…),假設站台部署在根目錄
+     (astro.config 未設 base)。若日後改成子路徑部署,這裡與 manifest 預設路徑要一起調。 */
+  .deck { margin: 0 auto; max-width: 1100px; }
+  .deck:focus-visible { outline: 2px solid var(--accent); outline-offset: 6px; border-radius: 4px; }
+  .bar { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; }
+  .bar.top { margin-bottom: 0.6rem; }
+  .title { font-weight: 700; color: var(--ink); }
+  .count { font-family: var(--mono, ui-monospace, monospace); color: var(--ink-soft, #667); font-size: 0.9rem; }
+  .count b { color: var(--accent); }
+
+  .stage {
+    position: relative; aspect-ratio: 16 / 9; width: 100%;
+    background: #11131a; border: 1px solid var(--line, #e5e2da);
+    border-radius: 14px; overflow: hidden; box-shadow: 0 8px 30px rgba(20,24,40,0.14);
+  }
+  .stage img { width: 100%; height: 100%; object-fit: contain; display: block; user-select: none; }
+  .stage .msg {
+    position: absolute; inset: 0; display: grid; place-items: center;
+    color: #aeb4c4; font-size: 0.95rem; margin: 0;
+  }
+  .edge {
+    position: absolute; top: 0; bottom: 0; width: 22%; border: 0; cursor: pointer;
+    background: transparent; color: #fff; font-size: 2.4rem; line-height: 1;
+    display: flex; align-items: center; opacity: 0; transition: opacity 0.15s;
+  }
+  .edge.left { left: 0; justify-content: flex-start; padding-left: 0.5rem;
+    background: linear-gradient(90deg, rgba(0,0,0,0.32), transparent); }
+  .edge.right { right: 0; justify-content: flex-end; padding-right: 0.5rem;
+    background: linear-gradient(270deg, rgba(0,0,0,0.32), transparent); }
+  .stage:hover .edge { opacity: 0.85; }
+  .edge:focus-visible { opacity: 1; outline: 2px solid var(--accent); outline-offset: -4px; }
+
+  .bar.bottom { margin-top: 0.7rem; flex-wrap: wrap; justify-content: center; }
+  .bar.bottom button {
+    font: inherit; font-size: 0.9rem; padding: 0.45rem 0.85rem; cursor: pointer;
+    background: var(--bg-soft, #f3f1ec); color: var(--ink); border: 1px solid var(--line, #e5e2da);
+    border-radius: 8px; transition: border-color 0.15s, color 0.15s, background 0.15s;
+  }
+  .bar.bottom button:hover { border-color: var(--accent); color: var(--accent); }
+  .bar.bottom button[aria-pressed="true"] { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+  .progress { height: 4px; margin-top: 0.7rem; background: var(--line, #e5e2da); border-radius: 99px; overflow: hidden; }
+  .progress span { display: block; height: 100%; width: 0%; background: var(--accent); transition: width 0.3s ease; }
+  .hint { text-align: center; color: var(--ink-soft, #889); font-size: 0.8rem; margin: 0.7rem 0 0; }
+
+  /* 全螢幕時讓舞台填滿、控制列浮在下方 */
+  .deck:fullscreen { max-width: none; background: #0c0e14; padding: 1.2rem 1.4rem; display: flex; flex-direction: column; justify-content: center; }
+  .deck:fullscreen .stage { flex: 1; min-height: 0; aspect-ratio: auto; border-radius: 8px; }
+  .deck:fullscreen .title, .deck:fullscreen .count { color: #cfd4e2; }
+  .deck:fullscreen .hint { color: #8b93a7; }
+
+  @media (max-width: 560px) { .bar.bottom button { padding: 0.4rem 0.6rem; font-size: 0.82rem; } }
+</style>
+
+<script>
+  // 每個 deck 獨立驅動;投影片清單來自 manifest.json(同源 fetch)。
+  document.querySelectorAll<HTMLElement>("[data-deck]").forEach((deck) => {
+    const q = <T extends Element>(s: string) => deck.querySelector(s) as T | null;
+    const img = q<HTMLImageElement>("[data-img]");
+    const msg = q<HTMLElement>("[data-msg]");
+    const curEl = q<HTMLElement>("[data-cur]");
+    const totalEl = q<HTMLElement>("[data-total]");
+    const bar = q<HTMLElement>("[data-bar]");
+    const playBtn = q<HTMLButtonElement>("[data-play]");
+    if (!img) return;
+
+    const base = (deck.dataset.src || "/slides/deck/manifest.json").replace(/manifest\.json$/, "");
+    let slides: string[] = [];
+    let deckTitle = "";
+    let i = 0;
+    let timer: number | undefined;
+
+    const preload = (n: number) => {
+      if (n >= 0 && n < slides.length) { const im = new Image(); im.src = base + slides[n]; }
+    };
+    const show = (n: number) => {
+      if (!slides.length) return;
+      i = (n + slides.length) % slides.length;
+      img.src = base + slides[i];
+      img.alt = `${deckTitle} — ${i + 1} / ${slides.length}`;
+      if (curEl) curEl.textContent = String(i + 1);
+      if (bar) bar.style.width = ((i + 1) / slides.length) * 100 + "%";
+      preload(i + 1); preload(i - 1);
+    };
+    const next = () => show(i + 1);
+    const prev = () => show(i - 1);
+
+    const stopAuto = () => {
+      if (timer) { clearInterval(timer); timer = undefined; }
+      playBtn?.setAttribute("aria-pressed", "false");
+    };
+    const toggleAuto = () => {
+      if (timer) { stopAuto(); return; }
+      timer = window.setInterval(next, 4000);
+      playBtn?.setAttribute("aria-pressed", "true");
+    };
+
+    deck.querySelectorAll("[data-next]").forEach((b) => b.addEventListener("click", () => { stopAuto(); next(); }));
+    deck.querySelectorAll("[data-prev]").forEach((b) => b.addEventListener("click", () => { stopAuto(); prev(); }));
+    playBtn?.addEventListener("click", toggleAuto);
+
+    const fsBtn = q<HTMLButtonElement>("[data-fs]");
+    fsBtn?.addEventListener("click", () => {
+      if (document.fullscreenElement) document.exitFullscreen();
+      else deck.requestFullscreen?.();
+    });
+
+    // 鍵盤:只在滑鼠/焦點在這個 deck 範圍時接管,避免攔截整頁。
+    deck.tabIndex = 0;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "ArrowRight" || e.key === " " || e.key === "PageDown") { e.preventDefault(); stopAuto(); next(); }
+      else if (e.key === "ArrowLeft" || e.key === "PageUp") { e.preventDefault(); stopAuto(); prev(); }
+      else if (e.key === "Home") { e.preventDefault(); stopAuto(); show(0); }
+      else if (e.key === "End") { e.preventDefault(); stopAuto(); show(slides.length - 1); }
+      else if (e.key.toLowerCase() === "f") { e.preventDefault(); fsBtn?.click(); }
+    };
+    deck.addEventListener("keydown", onKey);
+
+    fetch(deck.dataset.src || "/slides/deck/manifest.json")
+      .then((r) => r.json())
+      .then((m: { title?: string; slides?: string[]; ratio?: string }) => {
+        slides = Array.isArray(m.slides) ? m.slides : [];
+        if (!slides.length) { if (msg) msg.textContent = "（尚無投影片 / no slides yet）"; return; }
+        const titleEl = q<HTMLElement>("[data-title]");
+        deckTitle = m.title || titleEl?.textContent || "";
+        if (m.title && titleEl) titleEl.textContent = m.title;
+        // 讓 manifest 的 ratio(如 "16:9" / "4:3")驅動舞台比例,換不同比例的 deck 也合身。
+        const stage = q<HTMLElement>("[data-stage]");
+        if (m.ratio && /^\d+:\d+$/.test(m.ratio) && stage) stage.style.aspectRatio = m.ratio.replace(":", " / ");
+        if (totalEl) totalEl.textContent = String(slides.length);
+        if (msg) msg.hidden = true;
+        show(0);
+      })
+      .catch(() => { if (msg) msg.textContent = "（投影片載入失敗 / failed to load）"; });
+  });
+</script>

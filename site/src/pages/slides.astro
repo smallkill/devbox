@@ -1,0 +1,21 @@
+---
+import Base from "../layouts/Base.astro";
+import SlideDeck from "../components/SlideDeck.astro";
+import { UI } from "../i18n/ui";
+const t = UI.zh;
+---
+
+<Base title="面試簡報 · Derek Chen" lang="zh" path="/slides" description={t.slides_intro}>
+  <section class="deck-head">
+    <span class="eyebrow">{t.nav_slides}</span>
+    <h1>{t.slides_title}</h1>
+    <p class="sub">{t.slides_intro}</p>
+  </section>
+  <SlideDeck lang="zh" />
+</Base>
+
+<style>
+  .deck-head { margin: 0.5rem 0 1.4rem; }
+  .deck-head h1 { margin: 0.2rem 0 0.45rem; }
+  .deck-head .sub { color: var(--ink-soft, #667); max-width: 62ch; margin: 0; }
+</style>
