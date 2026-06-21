@@ -15,7 +15,7 @@ export const UI = {
     nav_slides: "面試簡報",
     slides_title: "面試簡報",
     slides_intro:
-      "可以直接在這裡播放我的面試簡報。（此為暫定版，最終版稍後更新）",
+      "可以直接在這裡播放我的面試簡報。",
     slides_hint: "← → 切換 · 空白鍵下一張 · F 全螢幕",
     slides_prev: "上一張",
     slides_next: "下一張",
@@ -110,7 +110,7 @@ export const UI = {
     nav_slides: "Deck",
     slides_title: "Interview Deck",
     slides_intro:
-      "Play through my interview deck right here. (Placeholder version — final to be updated.)",
+      "Play through my interview deck right here.",
     slides_hint: "← → to move · Space for next · F for fullscreen",
     slides_prev: "Prev",
     slides_next: "Next",

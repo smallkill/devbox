@@ -96,6 +96,9 @@ const enUrl = SITE + withSlash(path === "/" ? "/en" : "/en" + path);
       * { box-sizing: border-box; }
       html { scroll-behavior: smooth; }
 
+      /* 全站破版護欄:任何元素溢出時不讓視窗出現水平捲動 */
+      html, body { overflow-x: hidden; }
+
       body {
         margin: 0;
         background: var(--bg);
@@ -150,8 +153,24 @@ const enUrl = SITE + withSlash(path === "/" ? "/en" : "/en" + path);
         gap: 1.3rem;
         font-size: 0.9rem;
       }
-      .site-head nav.main a { color: var(--ink-soft); }
+      .site-head nav.main a { color: var(--ink-soft); white-space: nowrap; }
       .site-head nav.main a:hover { color: var(--accent); text-decoration: none; }
+
+      /* 窄螢幕:導覽改為換行而非水平溢出(最小修補,不做漢堡選單) */
+      @media (max-width: 480px) {
+        .site-head nav.main {
+          flex-wrap: wrap;
+          justify-content: flex-end;
+          gap: 0.4rem 0.9rem;
+          font-size: 0.82rem;
+        }
+        .site-head .row {
+          height: auto;
+          min-height: 56px;
+          padding-top: 0.4rem;
+          padding-bottom: 0.4rem;
+        }
+      }
 
       .site-foot {
         border-top: 1px solid var(--line);
