@@ -1,0 +1,8 @@
+# 投影片播放器已整併到 /slides 本身(原 present 內容上移、取代舊的圖片播放器)。
+# 舊網址一律 301 導回 /slides。
+/slides/web/*      /slides  301
+/slides/web        /slides  301
+/slides/present/*  /slides  301
+/slides/present    /slides  301
+/en/slides/*       /slides  301
+/en/slides         /slides  301

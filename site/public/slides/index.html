@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>面試簡報 · 全螢幕播放 — Derek Chen 陳晉德</title>
+<meta name="description" content="陳晉德 Derek Chen 面試簡報全螢幕播放版:點滑鼠或方向鍵翻頁,支援全螢幕。">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<!--
+  /slides 的播放器(就是本頁;已取代舊的圖片播放器,無自動播放)。混合:
+  - 開頭(定位/技能/時間軸)與結尾(差異化/聯絡)沿用原本的中文投影片圖(/slides/deck 的 webp)。
+  - 工作專案 + 個人專案整段改成「英文 HTML 投影片」,刻意比照原本投影片的淺色風格
+    (淺底、深藍標題、藍色 eyebrow pill、藍色 Key result 框、Derek Chen · Edge → Cloud 頁尾)。
+  - 已移除「自駕 HMI 介紹頁」與「股票」兩頁。
+  CSP 友善:只用 inline script + Google Fonts(站台 _headers 已放行);全螢幕靠 fullscreen=(self)。
+  ⚠ SLIDES 陣列就是頁序;rich 頁是 HTML、img 頁讀 /slides/deck 原圖。
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0b1020;
+    --stage: #070b16;
+    --text: #e8e4d8;
+    --dim: #8b93a7;
+    --accent: #d4a73a;
+    --line: rgba(200,180,140,0.14);
+    --font: 'Noto Sans TC', system-ui, sans-serif;
+    --mono: 'JetBrains Mono', 'Noto Sans TC', monospace;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    background: var(--bg); color: var(--text); font-family: var(--font);
+    overflow: hidden; display: flex; flex-direction: column; height: 100dvh;
+  }
+
+  /* ===== top bar ===== */
+  .topbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: clamp(10px,1.6vh,16px) clamp(14px,2.4vw,28px); flex-shrink: 0; }
+  .topbar .left { display: flex; align-items: center; gap: 14px; min-width: 0; }
+  .back { font-family: var(--mono); font-size: 12px; letter-spacing: 0.5px; text-decoration: none; color: var(--dim); border: 1px solid var(--line); border-radius: 99px; padding: 6px 13px; white-space: nowrap; transition: color .15s, border-color .15s; }
+  .back:hover { color: var(--accent); border-color: var(--accent); }
+  .title { font-weight: 600; color: var(--text); font-size: clamp(13px,1.6vw,17px); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+  .counter { font-family: var(--mono); font-size: clamp(12px,1.4vw,15px); color: var(--dim); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .counter b { color: var(--accent); }
+
+  /* ===== stage ===== */
+  .stage { position: relative; flex: 1; min-height: 0; background: var(--stage); display: flex; align-items: center; justify-content: center; overflow: hidden; cursor: pointer; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+  .stage img { max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain; display: block; user-select: none; -webkit-user-drag: none; box-shadow: 0 18px 60px rgba(0,0,0,0.5); transition: opacity .18s ease; }
+  .stage img.swapping { opacity: 0; }
+  .msg { position: absolute; inset: 0; display: grid; place-items: center; color: var(--dim); font-size: 0.95rem; font-family: var(--mono); }
+  .msg[hidden] { display: none; }
+
+  /* ===== rich slide:比照原本投影片的「淺色 16:9 投影片」,置中於深色舞台(與原圖同尺寸) ===== */
+  .rich { position: absolute; inset: 0; z-index: 2; display: flex; align-items: center; justify-content: center; padding: clamp(6px,1.2vh,16px); }
+  .rich[hidden] { display: none; }
+  .rich__card {
+    position: relative; height: 100%; aspect-ratio: 16 / 9; max-width: 100%;
+    container-type: inline-size;
+    background: linear-gradient(140deg, #f5f8fd 0%, #e9eef8 100%);
+    color: #16284a; border-radius: 6px; box-shadow: 0 18px 60px rgba(0,0,0,0.5);
+    padding: 4.4cqw 5.6cqw; display: flex; flex-direction: column; overflow: hidden;
+  }
+  /* 頁尾移到左下,避開右下角的頁碼 pill */
+  .rich__card .rc-foot { position: absolute; left: 5.6cqw; bottom: 2.2cqw; font-family: var(--mono); font-size: 1.25cqw; color: #9aa6bb; letter-spacing: .3px; }
+  .rc-eyebrow { align-self: flex-start; background: #2f64d8; color: #fff; font-size: 1.5cqw; font-weight: 600; letter-spacing: .3px; padding: 0.7cqw 1.4cqw; border-radius: 99px; margin-bottom: 1.8cqw; }
+  .rc-title { font-size: 3.3cqw; font-weight: 900; line-height: 1.12; letter-spacing: -0.3px; color: #14223f; margin-bottom: 1.4cqw; }
+  .rc-patent { align-self: flex-start; display: inline-flex; align-items: center; gap: 0.8cqw; background: #eaf1fc; border: 1px solid #2f64d8; color: #1d47a8; border-radius: 6px; padding: 0.7cqw 1.3cqw; font-size: 1.5cqw; font-weight: 700; margin-bottom: 1.2cqw; }
+
+  /* flow */
+  .rc-flow { flex: 1; min-height: 0; display: flex; align-items: stretch; gap: 0; margin: 0.6cqw 0 1.4cqw; }
+  .rc-step { flex: 1; min-width: 0; background: #fff; border: 1px solid #d7e0ee; border-top: 3px solid var(--c,#2f64d8); border-radius: 8px; padding: 1.6cqw 1.3cqw; display: flex; flex-direction: column; gap: 0.7cqw; overflow: hidden; }
+  .rc-step__n { font-family: var(--mono); font-size: 1.25cqw; font-weight: 600; color: var(--c,#2f64d8); letter-spacing: .5px; }
+  .rc-step__name { font-size: 1.95cqw; font-weight: 700; line-height: 1.15; color: #14223f; }
+  .rc-step__desc { font-size: 1.4cqw; line-height: 1.4; color: #54627a; flex: 1; }
+  .rc-step__tag { align-self: flex-start; font-family: var(--mono); font-size: 1.15cqw; color: var(--c,#2f64d8); background: color-mix(in srgb, var(--c,#2f64d8) 12%, transparent); padding: 0.4cqw 0.9cqw; border-radius: 5px; }
+  .rc-arrow { display: flex; align-items: center; padding: 0 0.7cqw; color: #9fb1cf; flex-shrink: 0; }
+  .rc-arrow svg { width: 2.4cqw; height: 2.4cqw; }
+
+  /* photo grid */
+  .rc-grid { flex: 1; min-height: 0; display: grid; gap: 1.4cqw; margin: 0.4cqw 0 1.4cqw; }
+  .rc-grid-3 { grid-template-columns: repeat(3, 1fr); }
+  .rc-grid-4 { grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(2, 1fr); }
+  /* 4 直列並排:單列 4 欄,每欄是高的直式框,直式照片可放更大 */
+  .rc-grid-4col { grid-template-columns: repeat(4, 1fr); }
+  .rc-shot { margin: 0; display: flex; flex-direction: column; min-height: 0; min-width: 0; }
+  .rc-shot img { width: 100%; flex: 1; min-height: 0; object-fit: contain; background: #0a0f1e; border: 1px solid #cdd8ea; border-radius: 6px; display: block; }
+  .rc-shot figcaption { font-size: 1.3cqw; line-height: 1.3; color: #54627a; padding-top: 0.7cqw; text-align: center; }
+
+  /* key result */
+  .rc-key { background: #e7f0fc; border-left: 4px solid #2f64d8; border-radius: 0 6px 6px 0; padding: 1.3cqw 1.7cqw; font-size: 1.55cqw; line-height: 1.45; color: #1f3358; }
+  .rc-key b { color: #1d47a8; font-weight: 700; }
+
+  /* divider */
+  .rc-divider { justify-content: center; }
+  .rc-num { font-size: 11cqw; font-weight: 900; line-height: 0.8; color: #c3d2ea; letter-spacing: -2px; }
+  .rc-rule { display: block; width: 7cqw; height: 0.6cqw; background: #2f64d8; border-radius: 2px; margin: 1.4cqw 0 1.8cqw; }
+  .rc-title-xl { font-size: 6.4cqw; font-weight: 900; line-height: 1.0; color: #14223f; letter-spacing: -1px; }
+  .rc-sub { font-size: 2cqw; color: #54627a; margin: 1.2cqw 0 2.2cqw; }
+  .rc-bullets { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 1.1cqw; }
+  .rc-bullets li { position: relative; padding-left: 2.4cqw; font-size: 1.9cqw; color: #2a3a57; line-height: 1.3; }
+  .rc-bullets li::before { content: ''; position: absolute; left: 0; top: 0.7cqw; width: 1cqw; height: 1cqw; border-radius: 50%; background: #2f64d8; }
+
+  /* arrow buttons */
+  .nav { position: absolute; top: 50%; transform: translateY(-50%); width: clamp(48px,6vw,72px); height: clamp(64px,16vh,120px); display: flex; align-items: center; justify-content: center; border: none; cursor: pointer; z-index: 5; background: transparent; color: #fff; opacity: 0.45; font-size: clamp(34px,5vw,56px); line-height: 1; transition: opacity .15s; }
+  .nav:hover { opacity: 1; }
+  .nav.prev { left: 0; background: linear-gradient(90deg, rgba(0,0,0,0.45), transparent); }
+  .nav.next { right: 0; background: linear-gradient(270deg, rgba(0,0,0,0.45), transparent); }
+  .nav:focus-visible { opacity: 1; outline: 2px solid var(--accent); outline-offset: -4px; }
+  .nav[disabled] { opacity: 0.12; cursor: default; }
+
+  .hint { position: absolute; bottom: clamp(10px,2vh,18px); left: 50%; transform: translateX(-50%); font-family: var(--mono); font-size: 11px; color: var(--dim); background: color-mix(in srgb, var(--bg) 70%, transparent); padding: 6px 13px; border-radius: 99px; z-index: 5; backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); transition: opacity .5s ease; white-space: nowrap; }
+  .hint.faded { opacity: 0; pointer-events: none; }
+
+  /* 每頁頁碼:壓在舞台右下角,深色半透明 pill,在淺色卡片與深色原圖上都看得清 */
+  .pagenum {
+    position: absolute; right: clamp(10px,1.6vw,22px); bottom: clamp(9px,1.5vh,16px); z-index: 5;
+    font-family: var(--mono); font-size: clamp(11px,1.3vw,14px); font-variant-numeric: tabular-nums;
+    color: #fff; background: rgba(7,11,22,0.66); padding: 4px 11px; border-radius: 99px;
+    backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); pointer-events: none; letter-spacing: .5px;
+  }
+
+  /* ===== bottom bar ===== */
+  .bottombar { display: flex; align-items: center; justify-content: center; gap: clamp(8px,1.2vw,14px); padding: clamp(10px,1.6vh,16px); flex-shrink: 0; flex-wrap: wrap; }
+  .bottombar button { font: inherit; font-size: clamp(13px,1.4vw,15px); font-weight: 600; padding: 9px 16px; cursor: pointer; border-radius: 8px; background: #141b30; color: var(--text); border: 1px solid var(--line); transition: border-color .15s, color .15s, background .15s; }
+  .bottombar button:hover { border-color: var(--accent); color: var(--accent); }
+  .bottombar button[disabled] { opacity: 0.35; cursor: default; }
+  .bottombar button[disabled]:hover { border-color: var(--line); color: var(--text); }
+
+  .progress { height: 3px; background: rgba(255,255,255,0.06); flex-shrink: 0; }
+  .progress span { display: block; height: 100%; width: 0; background: var(--accent); transition: width .3s ease; }
+
+  /* ===== 頁面縮圖列(非全螢幕時顯示;點選跳頁;兩側有捲動箭頭) ===== */
+  .thumbwrap { display: flex; align-items: stretch; flex-shrink: 0; background: #0a0e17; border-top: 1px solid var(--line); }
+  .thumbnav {
+    flex: 0 0 auto; width: clamp(30px,3.4vw,42px); border: none; cursor: pointer;
+    background: #0a0e17; color: var(--dim); font-size: clamp(20px,2.4vw,26px); line-height: 1;
+    display: flex; align-items: center; justify-content: center;
+    transition: color .15s, background .15s;
+  }
+  .thumbnav:hover { color: var(--accent); background: #11161f; }
+  .thumbnav[disabled] { opacity: 0.28; cursor: default; }
+  .thumbnav[disabled]:hover { color: var(--dim); background: #0a0e17; }
+  .thumbnav.prev { box-shadow: 8px 0 10px -8px rgba(0,0,0,0.6); }
+  .thumbnav.next { box-shadow: -8px 0 10px -8px rgba(0,0,0,0.6); }
+  .thumbstrip {
+    flex: 1 1 auto; min-width: 0; display: flex; gap: 8px; overflow-x: auto; overflow-y: hidden;
+    padding: 9px clamp(6px,1.2vw,12px); scroll-behavior: smooth;
+    scrollbar-width: thin; scrollbar-color: var(--line) transparent;
+    cursor: grab; user-select: none; -webkit-user-select: none;
+  }
+  .thumbstrip.grabbing { cursor: grabbing; scroll-behavior: auto; }
+  .thumb img { -webkit-user-drag: none; user-drag: none; }
+  .thumbstrip::-webkit-scrollbar { height: 7px; }
+  .thumbstrip::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
+  .thumb {
+    position: relative; flex: 0 0 auto; width: clamp(92px,11vw,138px); aspect-ratio: 16/9;
+    border: 2px solid transparent; border-radius: 6px; overflow: hidden; cursor: pointer;
+    padding: 0; background: #06080f; transition: border-color .15s, transform .15s; outline: none;
+  }
+  .thumb:hover { transform: translateY(-2px); }
+  .thumb:focus-visible { border-color: var(--dim); }
+  .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .thumb .tn {
+    position: absolute; top: 3px; left: 4px; font-family: var(--mono); font-size: 10px; font-weight: 600;
+    background: rgba(7,11,22,.72); color: #fff; padding: 1px 6px; border-radius: 99px; line-height: 1.45;
+  }
+  .thumb.active { border-color: var(--accent); }
+  .thumb.active .tn { background: var(--accent); color: #0b1020; }
+  /* 全螢幕時隱藏縮圖列(:fullscreen 對應 documentElement;body.fs 為 JS 後備) */
+  :fullscreen .thumbwrap, body.fs .thumbwrap { display: none; }
+  @media (max-height: 520px) { .thumbwrap { display: none; } }
+
+  @media (max-width: 760px) {
+    .title { display: none; }
+    .rc-grid-3, .rc-grid-4, .rc-grid-4col { grid-template-columns: 1fr; grid-template-rows: none; grid-auto-rows: 1fr; }
+    .rc-flow { flex-direction: column; }
+    .rc-arrow { transform: rotate(90deg); }
+  }
+</style>
+</head>
+<body>
+
+  <div class="topbar">
+    <div class="left">
+      <a class="back" href="/">‹ 返回首頁</a>
+      <span class="title" id="title">面試簡報</span>
+    </div>
+    <span class="counter" id="counter" aria-live="polite"><b id="cur">–</b> / <span id="total">–</span></span>
+  </div>
+
+  <div class="stage" id="stage" tabindex="0" aria-label="投影片舞台,點左側上一頁、右側下一頁">
+    <img id="img" alt="投影片" draggable="false">
+    <div class="rich" id="rich" hidden></div>
+    <button class="nav prev" id="prev" type="button" aria-label="上一頁">‹</button>
+    <button class="nav next" id="next" type="button" aria-label="下一頁">›</button>
+    <p class="msg" id="msg">投影片載入中…</p>
+    <span class="hint" id="hint">點左／右翻頁 · ← → 方向鍵 · F 全螢幕</span>
+    <span class="pagenum" id="pagenum" aria-hidden="true"></span>
+  </div>
+
+  <div class="bottombar">
+    <button id="bprev" type="button">‹ 上一頁</button>
+    <button id="bfs" type="button"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:5px;"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3m13-5v3a2 2 0 0 1-2 2h-3"/></svg>全螢幕</button>
+    <button id="bnext" type="button">下一頁 ›</button>
+  </div>
+  <div class="progress"><span id="bar"></span></div>
+  <div class="thumbwrap">
+    <button class="thumbnav prev" id="thprev" type="button" aria-label="縮圖往左捲動">‹</button>
+    <div class="thumbstrip" id="thumbs" aria-label="頁面縮圖,點選跳到該頁"></div>
+    <button class="thumbnav next" id="thnext" type="button" aria-label="縮圖往右捲動">›</button>
+  </div>
+
+<script>
+(function () {
+  var DECK = '/slides/deck/';
+  var PHOTOS = '/slides/photos/';
+  var $ = function (id) { return document.getElementById(id); };
+  var stage = $('stage'), img = $('img'), rich = $('rich'), msg = $('msg'), hint = $('hint');
+  var curEl = $('cur'), totalEl = $('total'), bar = $('bar'), pagenum = $('pagenum');
+  var prevBtn = $('prev'), nextBtn = $('next');
+  var bprev = $('bprev'), bnext = $('bnext'), bfs = $('bfs');
+  var thumbs = $('thumbs'), thprev = $('thprev'), thnext = $('thnext');
+  var i = 0, autoTimer = null;
+
+  /* ---------- rich-slide builders(淺色,比照原本投影片風格,英文) ---------- */
+  var ARROW = '<div class="rc-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-4-4l4 4-4 4"/></svg></div>';
+  function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function foot() { return '<div class="rc-foot">Derek Chen · Edge → Cloud</div>'; }
+  function flow(steps) {
+    var h = '<div class="rc-flow">';
+    for (var k = 0; k < steps.length; k++) {
+      var s = steps[k];
+      h += '<div class="rc-step"' + (s.c ? ' style="--c:' + s.c + '"' : '') + '>'
+        + '<div class="rc-step__n">' + esc(s.n) + '</div>'
+        + '<div class="rc-step__name">' + esc(s.name) + '</div>'
+        + '<div class="rc-step__desc">' + esc(s.desc) + '</div>'
+        + (s.tag ? '<div class="rc-step__tag">' + esc(s.tag) + '</div>' : '')
+        + '</div>';
+      if (k < steps.length - 1) h += ARROW;
+    }
+    return h + '</div>';
+  }
+  function photos(cols, items) {
+    var h = '<div class="rc-grid rc-grid-' + cols + '">';
+    for (var k = 0; k < items.length; k++) {
+      h += '<figure class="rc-shot"><img src="' + PHOTOS + items[k][0] + '" alt="' + esc(items[k][1]) + '" loading="lazy"><figcaption>' + esc(items[k][1]) + '</figcaption></figure>';
+    }
+    return h + '</div>';
+  }
+  function head(eyebrow, title) { return '<span class="rc-eyebrow">' + esc(eyebrow) + '</span><h2 class="rc-title">' + esc(title) + '</h2>'; }
+  function keyBox(html) { return '<div class="rc-key">' + html + '</div>'; }
+
+  var BLUE = '#2f64d8', GREEN = '#1f9d6b', RED = '#d9534f';
+
+  var RICH = {
+    dividerWork: function () {
+      return '<div class="rich__card rc-divider">'
+        + '<span class="rc-num">01</span><span class="rc-rule"></span>'
+        + '<h2 class="rc-title-xl">Work Projects</h2>'
+        + '<p class="rc-sub">Representative work, in timeline order: car vision → self-driving cloud → automotive DevSecOps</p>'
+        + '<ul class="rc-bullets">'
+        + '<li>Whetron — 3D surround view (AVM) &amp; self-driving HMI</li>'
+        + '<li>Turing Drive — self-driving fleet OCC &amp; RSU intersection warning</li>'
+        + '<li>Moxa — firmware CI/CD + Shift-Left security</li>'
+        + '</ul>' + foot() + '</div>';
+    },
+    avmArch: function () {
+      return '<div class="rich__card">' + head('Whetron · 2015–2020', '3D Surround View (AVM) + Parking Detection')
+        + flow([
+          { n: '01 / INPUT', name: 'Four fisheye cameras', desc: 'Front / rear / left / right wide-angle views.', c: BLUE },
+          { n: '02 / CALIBRATE', name: 'Undistort & align', desc: 'Undistortion, alignment, projection to one frame.', c: BLUE },
+          { n: '03 / REBUILD', name: '3D surround view', desc: 'Stitching + real-time 3D render, no blind spots.', tag: 'OpenCV + OpenGL ES' },
+          { n: '04 / EXTEND', name: 'Parking detection (PLD)', desc: 'Marks free slots, sends auto-park signal.', c: GREEN }
+        ])
+        + keyBox('<b>Two production deliveries</b> — early Fujitsu platform → Thailand carmaker (Tier 1); later self-developed → Whetron China (Suzhou). Portable across Fujitsu / Nvidia.')
+        + foot() + '</div>';
+    },
+    avmPhotos: function () {
+      return '<div class="rich__card">' + head('Whetron · 2015–2020 · Real footage', '3D Surround View / Parking Detection / Fujitsu Ranging')
+        + photos(3, [
+          ['avm_3d.webp', 'Self-developed 3D surround view'],
+          ['avm_fujitsu.webp', 'Surround view + rear ranging — Fujitsu, Thailand'],
+          ['avm_pld.webp', 'Parking-slot detection (PLD)']
+        ])
+        + keyBox('Production-grade software, proven on real vehicles in the Tier-1 supply chain.')
+        + foot() + '</div>';
+    },
+    hmiPhotos: function () {
+      return '<div class="rich__card">' + head('Whetron · Thailand shuttle · 2019–2020 · Real footage', 'Self-Driving Shuttle HMI')
+        + photos(3, [
+          ['hmi_bus.webp', 'Night run in Thailand, Auto mode'],
+          ['hmi_driver.webp', 'Engineering view: radar fan + camera boxes'],
+          ['hmi_passenger.webp', 'Passenger screen: speed / route / Auto']
+        ])
+        + keyBox('Radar + camera fused over <b>ROS-on-WebSocket</b>, processed at the edge; deployed and running in Thailand.')
+        + foot() + '</div>';
+    },
+    fleetArch: function () {
+      return '<div class="rich__card">' + head('Turing Drive · 2020–2023', 'Fleet Monitoring & Teleoperation Platform')
+        + flow([
+          { n: '01 / EDGE', name: '13 vehicles · 4 types', desc: 'On-board ROS / Autoware, live status.', tag: 'MQTT to cloud', c: BLUE },
+          { n: '02 / INGEST', name: 'AWS IoT Core', desc: 'Subscribes ROS topics, streams over MQTT.' },
+          { n: '03 / CLOUD', name: 'EC2 · Lambda · S3', desc: 'API Gateway backend, live + history.' },
+          { n: '04 / OCC', name: 'Full-stack dashboard', desc: 'Vue control center, remote takeover.', tag: 'reverse control → ROS', c: GREEN }
+        ])
+        + keyBox('Built on AWS <b>from scratch</b>; sub-second two-way control. Founded and led the Cloud Operations Team.')
+        + foot() + '</div>';
+    },
+    occPhotos: function () {
+      return '<div class="rich__card">' + head('Turing Drive · 2020–2023 · Real footage', 'Fleet Operations Center (OCC)')
+        + photos('4col', [
+          ['occ_dashboard.webp', 'Live dashboard'],
+          ['occ_golf.webp', 'Golf-cart fleet'],
+          ['occ_port.webp', 'Port vehicles · geofencing'],
+          ['occ_patrol.webp', 'Patrol · route nav']
+        ])
+        + keyBox('One platform serving many OCC types across 13 vehicles and 4 vehicle models.')
+        + foot() + '</div>';
+    },
+    rsuArch: function () {
+      return '<div class="rich__card"><span class="rc-eyebrow">Turing Drive · Qingpu pilot · 2021–2023</span>'
+        + '<h2 class="rc-title">Intersection Collision Warning (RSU) + Patent</h2>'
+        + '<span class="rc-patent">Granted patent TWI844132B · Traffic-signal recognition system (sole inventor)</span>'
+        + flow([
+          { n: '01 / SOURCE', name: 'Unsignalized junction', desc: 'Detect cars & pedestrians early.', c: RED },
+          { n: '02 / EDGE', name: 'Nvidia NX · YOLO', desc: 'Real-time detection, collision-risk check.', c: BLUE },
+          { n: '03 / V2X', name: 'Warn early → slow down', desc: 'Alerts the bus to brake in time.', tag: 'MQTT / V2X' },
+          { n: '04 / CLOUD', name: 'AWS KVS · Lambda · S3', desc: 'Streaming, storage & alert management.', c: GREEN }
+        ])
+        + keyBox('Qingpu: <b>7 junctions · 11 cameras</b>. Telemetry: speed dropped <b>~14 → ~7 km/h</b> on each warning.')
+        + foot() + '</div>';
+    },
+    rsuPhotos: function () {
+      return '<div class="rich__card">' + head('Turing Drive · Qingpu · 2021–2023 · Real footage', 'Intersection RSU / YOLO Detection / Telemetry')
+        + photos(4, [
+          ['rsu_intersection.webp', 'Qingpu junction · RSU site'],
+          ['rsu_yolo1.webp', 'YOLO: cars / pedestrians'],
+          ['rsu_yolo2.webp', 'Detection at another junction'],
+          ['rsu_telemetry.webp', 'Telemetry: speed 14→7 km/h on warning']
+        ])
+        + keyBox('Public pilot: <b>1,000+ riders</b> in trial runs, <b>90%+</b> satisfaction.')
+        + foot() + '</div>';
+    },
+    cicd: function () {
+      return '<div class="rich__card">' + head('Moxa · 2023–2026', 'Firmware CI/CD + Shift-Left Security')
+        + flow([
+          { n: '01', name: 'Build firmware', desc: 'Reproducible builds across hardware.' },
+          { n: '02 · SAST', name: 'Coverity', desc: 'Static analysis at build time.', tag: 'Shift-Left', c: RED },
+          { n: '03', name: 'Artifact → deploy', desc: 'Upload to SCM, auto-deploy.' },
+          { n: '04 · DAST', name: 'Nessus', desc: 'Dynamic scan after deploy.', c: RED },
+          { n: '05', name: 'BVT + Regression', desc: 'RDLAB + SQA on-device tests.', c: GREEN }
+        ])
+        + keyBox('One GitLab CI for <b>5 series / 9 router models</b>, ~160 commits/month. Catches issues <b>up to 7 days earlier</b>. Follows ISO 26262.')
+        + foot() + '</div>';
+    },
+    dividerPersonal: function () {
+      return '<div class="rich__card rc-divider">'
+        + '<span class="rc-num">02</span><span class="rc-rule"></span>'
+        + '<h2 class="rc-title-xl">Personal Projects</h2>'
+        + '<p class="rc-sub">Full-stack self-hosted DevOps + AI · the whole Cloudflare stack</p>'
+        + '<ul class="rc-bullets">'
+        + '<li>Self-hosted SaaS &amp; observability</li>'
+        + '<li>AI / RAG — &ldquo;Ask my resume&rdquo;</li>'
+        + '<li>Security + cost guardrails on every project</li>'
+        + '</ul>' + foot() + '</div>';
+    },
+    rag: function () {
+      return '<div class="rich__card">' + head('Personal project · try it at /ask', 'Resume RAG — “Ask my resume”')
+        + flow([
+          { n: '01 / ASK', name: 'Visitor question', desc: 'Wrapped in a question fence.', tag: 'injection-safe', c: RED },
+          { n: '02 / EMBED', name: 'bge-m3', desc: 'Multilingual embedding, 1024-dim.', c: BLUE },
+          { n: '03 / RETRIEVE', name: 'Vectorize', desc: 'Top-k resume chunks.', c: BLUE },
+          { n: '04 / GENERATE', name: 'Llama 3.3', desc: 'Streams answer with sources.', tag: 'grounded', c: GREEN }
+        ])
+        + keyBox('Whole pipeline on Cloudflare. Says &ldquo;no info&rdquo; if not found, <b>never guesses</b>. Daily cap + per-IP limit. Public, unauthenticated, production-ready.')
+        + foot() + '</div>';
+    }
+  };
+
+  /* ---------- slide list(頁序);img 讀原圖、rich 是 HTML ---------- */
+  // 2026-06-20 併入 Blueprint v3(英文 NotebookLM 設計頁,bpNN.webp);用 v3 取代開頭/結尾/架構頁,
+  // 保留實照頁(HTML),依時間序排列。舊資產(01–20.webp、avmArch/fleetArch/... rich)都還在,可隨時還原/換順序。
+  var SLIDES = [
+    { img: 'bp01.webp' },        // 1  Title(v3)
+    { img: 'bp02.webp' },        // 2  Summary / highlights(v3)
+    { img: 'bp03.webp' },        // 3  Technical Stack(v3)
+    { img: 'bp04.webp' },        // 4  Career Timeline(v3)
+    { rich: 'dividerWork' },     // 5  Work Projects 分隔
+    { img: 'bp08.webp' },        // 6  3D AVM architecture(v3)— Whetron
+    { rich: 'avmPhotos' },       // 7  AVM 實照
+    { rich: 'hmiPhotos' },       // 8  HMI 實照 — Whetron
+    { img: 'bp05.webp' },        // 9  Fleet platform(v3)— Turing
+    { rich: 'occPhotos' },       // 10 OCC 實照(4 直列)
+    { img: 'bp06.webp' },        // 11 RSU warning + patent(v3)— Turing
+    { rich: 'rsuPhotos' },       // 12 RSU 實照
+    { img: 'bp07.webp' },        // 13 Firmware CI/CD(v3)— Moxa
+    { rich: 'dividerPersonal' }, // 14 Personal Projects 分隔
+    { img: 'bp09.webp' },        // 15 Resume RAG(v3)
+    { img: 'bp10.webp' }         // 16 Thank You / contact(v3)
+  ];
+  var total = SLIDES.length;
+
+  function preload(n) { if (n >= 0 && n < total && SLIDES[n].img) { var im = new Image(); im.src = DECK + SLIDES[n].img; } }
+
+  function show(n) {
+    i = Math.max(0, Math.min(n, total - 1));
+    var s = SLIDES[i];
+    if (s.rich) {
+      rich.innerHTML = RICH[s.rich]();
+      rich.hidden = false;
+      img.style.display = 'none';
+      img.classList.remove('swapping');
+      img.alt = '';
+    } else {
+      rich.hidden = true;
+      img.style.display = '';
+      img.classList.add('swapping');
+      var next = new Image();
+      next.onload = function () { img.src = next.src; img.classList.remove('swapping'); };
+      // 載入失敗時清掉舊圖,別讓上一張殘留誤導(原圖都在,正常不會觸發,純防呆)
+      next.onerror = function () { img.classList.remove('swapping'); img.removeAttribute('src'); img.alt = '投影片載入失敗'; };
+      next.src = DECK + s.img;
+      img.alt = '投影片 — ' + (i + 1) + ' / ' + total;
+    }
+    curEl.textContent = String(i + 1);
+    pagenum.textContent = (i + 1) + ' / ' + total;
+    bar.style.width = ((i + 1) / total * 100) + '%';
+    updateEdges();
+    setActiveThumb();
+    preload(i + 1); preload(i - 1);
+  }
+
+  // 縮圖列:建立 1~total 縮圖(左上角顯示頁碼),點選跳到該頁。
+  // ⚠ thumbs/NN.webp 需與 SLIDES 頁數同步;改 deck/換頁序時要重生縮圖,否則會出現破圖。
+  function buildThumbs() {
+    var h = '';
+    for (var k = 0; k < total; k++) {
+      var nn = (k + 1 < 10 ? '0' : '') + (k + 1);
+      h += '<button class="thumb" type="button" data-i="' + k + '" title="第 ' + (k + 1) + ' 頁" aria-label="跳到第 ' + (k + 1) + ' 頁">'
+        + '<img src="thumbs/' + nn + '.webp" alt="" loading="lazy">'
+        + '<span class="tn">' + (k + 1) + '</span></button>';
+    }
+    thumbs.innerHTML = h;
+    thumbs.addEventListener('click', function (e) {
+      var b = e.target.closest('.thumb'); if (!b) return;
+      fadeHint(); stopAuto(); show(parseInt(b.dataset.i, 10)); b.blur();
+    });
+    // 兩側捲動箭頭:一次捲約 80% 可見寬度;捲到底自動停用
+    thprev.addEventListener('click', function () { thumbs.scrollBy({ left: -thumbs.clientWidth * 0.8, behavior: 'smooth' }); });
+    thnext.addEventListener('click', function () { thumbs.scrollBy({ left: thumbs.clientWidth * 0.8, behavior: 'smooth' }); });
+    thumbs.addEventListener('scroll', updateThumbNav);
+    window.addEventListener('resize', updateThumbNav);
+    // 滑鼠拖曳捲動整條(觸控用原生 swipe,不另接以免重複捲動)。
+    // 不用 setPointerCapture:它會把後續 click 的 target 改成 thumbs,害縮圖點擊失效;
+    // 改在 document 上掛 move/up,拖到框外也能繼續,且 click target 保持正確。
+    var drag = { on: false, moved: false, x: 0, sl: 0 };
+    function dragMove(e) {
+      if (!drag.on) return;
+      var dx = e.clientX - drag.x;
+      if (Math.abs(dx) > 4) drag.moved = true;
+      thumbs.scrollLeft = drag.sl - dx;
+      e.preventDefault();
+    }
+    function dragEnd() {
+      if (!drag.on) return;
+      drag.on = false; thumbs.classList.remove('grabbing');
+      document.removeEventListener('pointermove', dragMove);
+      document.removeEventListener('pointerup', dragEnd);
+      document.removeEventListener('pointercancel', dragEnd);
+    }
+    thumbs.addEventListener('pointerdown', function (e) {
+      if (e.pointerType !== 'mouse' || e.button !== 0) return;
+      drag.on = true; drag.moved = false; drag.x = e.clientX; drag.sl = thumbs.scrollLeft;
+      thumbs.classList.add('grabbing');
+      document.addEventListener('pointermove', dragMove);
+      document.addEventListener('pointerup', dragEnd);
+      document.addEventListener('pointercancel', dragEnd);  // 拖到視窗外放開等狀況,避免卡在拖曳狀態
+      e.preventDefault();
+    });
+    // 拖曳後攔掉接著的 click,避免放開時誤跳頁(capture 階段先於導覽 click)
+    thumbs.addEventListener('click', function (e) { if (drag.moved) { e.stopPropagation(); drag.moved = false; } }, true);
+    updateThumbNav();
+  }
+  function updateThumbNav() {
+    var max = thumbs.scrollWidth - thumbs.clientWidth;
+    thprev.disabled = thumbs.scrollLeft <= 1;
+    thnext.disabled = thumbs.scrollLeft >= max - 1;
+  }
+  function setActiveThumb() {
+    if (!thumbs.children.length) return;
+    var els = thumbs.children, cur = els[i];
+    for (var k = 0; k < els.length; k++) els[k].classList.toggle('active', k === i);
+    if (cur) thumbs.scrollTo({ left: cur.offsetLeft - (thumbs.clientWidth - cur.offsetWidth) / 2, behavior: 'smooth' });
+    updateThumbNav();
+  }
+  function next() { if (i < total - 1) show(i + 1); }
+  function prev() { if (i > 0) show(i - 1); }
+  function updateEdges() {
+    var atStart = i === 0, atEnd = i === total - 1;
+    prevBtn.disabled = atStart; bprev.disabled = atStart;
+    nextBtn.disabled = atEnd; bnext.disabled = atEnd;
+  }
+
+  function stopAuto() { if (autoTimer) { clearInterval(autoTimer); autoTimer = null; } }
+
+  var hintTimer = setTimeout(function () { hint.classList.add('faded'); }, 4500);
+  function fadeHint() { clearTimeout(hintTimer); hint.classList.add('faded'); }
+
+  stage.addEventListener('click', function (e) {
+    if (e.target.closest('.nav')) return;
+    fadeHint(); stopAuto();
+    var r = stage.getBoundingClientRect();
+    (e.clientX - r.left < r.width * 0.32) ? prev() : next();
+  });
+  prevBtn.addEventListener('click', function (e) { e.stopPropagation(); fadeHint(); stopAuto(); prev(); });
+  nextBtn.addEventListener('click', function (e) { e.stopPropagation(); fadeHint(); stopAuto(); next(); });
+  bprev.addEventListener('click', function () { fadeHint(); stopAuto(); prev(); });
+  bnext.addEventListener('click', function () { fadeHint(); stopAuto(); next(); });
+
+  var wheelLock = false;
+  stage.addEventListener('wheel', function (e) {
+    e.preventDefault();
+    if (wheelLock) return;
+    wheelLock = true; setTimeout(function () { wheelLock = false; }, 450);
+    fadeHint(); stopAuto();
+    (e.deltaY > 0 || e.deltaX > 0) ? next() : prev();
+  }, { passive: false });
+
+  document.addEventListener('keydown', function (e) {
+    if (e.target.closest('input,textarea,[contenteditable]')) return;
+    var k = e.key;
+    if ((k === ' ' || k === 'Enter') && e.target.closest('button, a')) return;
+    if (['ArrowRight', 'ArrowDown', ' ', 'PageDown'].indexOf(k) > -1) { e.preventDefault(); stopAuto(); next(); }
+    else if (['ArrowLeft', 'ArrowUp', 'PageUp'].indexOf(k) > -1) { e.preventDefault(); stopAuto(); prev(); }
+    else if (k === 'Home') { e.preventDefault(); stopAuto(); show(0); }
+    else if (k === 'End') { e.preventDefault(); stopAuto(); show(total - 1); }
+    else if (k === 'f' || k === 'F') { e.preventDefault(); toggleFs(); }
+    fadeHint();
+  });
+
+  var tX = null, tY = null;
+  stage.addEventListener('touchstart', function (e) { tX = e.touches[0].clientX; tY = e.touches[0].clientY; }, { passive: true });
+  stage.addEventListener('touchend', function (e) {
+    if (tX === null) return;
+    var dx = e.changedTouches[0].clientX - tX, dy = e.changedTouches[0].clientY - tY;
+    if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy)) { fadeHint(); stopAuto(); dx < 0 ? next() : prev(); }
+    tX = tY = null;
+  });
+
+  function toggleFs() {
+    if (document.fullscreenElement) { if (document.exitFullscreen) document.exitFullscreen(); return; }
+    if (document.fullscreenEnabled && document.documentElement.requestFullscreen) { document.documentElement.requestFullscreen().catch(function () {}); }
+  }
+  bfs.addEventListener('click', toggleFs);
+  if (!document.fullscreenEnabled) bfs.style.display = 'none';
+  // 全螢幕時隱藏縮圖列(body.fs 作為 :fullscreen 的後備)
+  document.addEventListener('fullscreenchange', function () {
+    document.body.classList.toggle('fs', !!document.fullscreenElement);
+  });
+
+  // init
+  totalEl.textContent = String(total);
+  msg.hidden = true;
+  buildThumbs();
+  show(0);
+  stage.focus();
+})();
+</script>
+
+</body>
+</html>

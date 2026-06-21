@@ -10,3 +10,8 @@ dist/
 ask/.cache/
 .cf_ingest_token
 *.orig
+
+# 私人講者腳本(網址保密,不放進公開 repo;仍會部署到站上)
+site/public/talk-*/
+# 本機 share/verify 產物
+outputs/
