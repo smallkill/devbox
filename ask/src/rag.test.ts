@@ -121,6 +121,26 @@ describe("buildPrompt", () => {
     expect(system).not.toContain("make up");
   });
 
+  it("english system prompt strongly forces English output (and against Chinese)", () => {
+    const { system } = buildPrompt("What did you do?", chunks, "en");
+    expect(system).toMatch(/answer in English/i);
+    expect(system).toMatch(/do not answer in chinese/i);
+  });
+
+  it("answer-language directive is the first line of the system prompt", () => {
+    expect(buildPrompt("hi", chunks, "en").system.split("\n")[0]).toMatch(/English/);
+    expect(buildPrompt("嗨", chunks, "zh").system.split("\n")[0]).toContain("回答語言");
+  });
+
+  it("no-info fallback phrase follows the answer language", () => {
+    // en gets an English no-info instruction (the Chinese phrase still appears inside a
+    // separate "don't wrongly refuse" rule, which is fine — that's guidance, not the output template).
+    const en = buildPrompt("What did you do?", chunks, "en").system;
+    expect(en).toContain("I don't have that information in my resume");
+    const zh = buildPrompt("你做過什麼?", chunks, "zh").system;
+    expect(zh).toContain("我的履歷裡沒有這個資訊");
+  });
+
   it("user prompt numbers the chunks and includes the question", () => {
     const { user } = buildPrompt("你做過什麼?", chunks, "zh");
     expect(user).toContain("Built a URL shortener.");
