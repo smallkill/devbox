@@ -67,7 +67,12 @@ const projectSlugs = [
         {l.label} ↗
       </a>
     ))}
-    <button class="pdf-btn" type="button" onclick="window.print()">{t.download_pdf} ↓</button>
+    <a
+      class="pdf-btn"
+      href={lang === "en" ? "/resume/Derek_Chen_Resume_en.pdf" : "/resume/Derek_Chen_Resume_zh.pdf"}
+      download
+      aria-label={`${t.download_pdf} (${lang === "en" ? "English" : "中文"})`}
+    >{t.download_pdf} ↓</a>
   </nav>
 
   <script>
@@ -213,6 +218,7 @@ const projectSlugs = [
 
   .links { display: flex; flex-wrap: wrap; align-items: center; gap: 1.1rem; font-family: var(--mono); font-size: 0.85rem; }
   .pdf-btn {
+    display: inline-block; line-height: normal; text-decoration: none;
     font-family: var(--mono); font-size: 0.82rem; cursor: pointer;
     color: var(--accent); background: var(--accent-soft);
     border: 1px solid color-mix(in srgb, var(--accent) 30%, var(--line));
