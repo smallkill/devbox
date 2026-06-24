@@ -11,6 +11,11 @@ const projects = defineCollection({
     period: z.string().optional(),
     tech: z.array(z.string()).default([]),
     cover: z.string().optional(),
+    // 選用:Impact 數字卡(顯示在 hero 下方)。只放內文已有的事實數字,
+    // 不可發明/誇大;value 為主數字、label 為說明。
+    stats: z
+      .array(z.object({ value: z.string(), label: z.string() }))
+      .default([]),
     gallery: z
       .array(z.object({ src: z.string(), caption: z.string().optional() }))
       .default([]),

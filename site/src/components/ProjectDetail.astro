@@ -83,6 +83,17 @@ const projectSlugs = isAsk
       </div>
     )}
 
+    {d.stats.length > 0 && (
+      <ul class="statcards" aria-label={t.impact_stats}>
+        {d.stats.map((s) => (
+          <li>
+            <span class="val">{s.value}</span>
+            <span class="lbl">{s.label}</span>
+          </li>
+        ))}
+      </ul>
+    )}
+
     <div class="prose">
       <Content />
     </div>
@@ -264,6 +275,42 @@ const projectSlugs = isAsk
       border-radius: 4px; padding: 0.05rem 0.35rem;
     }
     .gallery { margin-top: 1rem; }
+
+    /* Impact 數字卡:把埋在內文的硬事實抽到 hero 下方,招募方一眼掃到。
+       自適應網格、用站上輕色系與等寬字,桌機一排、手機自動收成 2 欄。 */
+    .statcards {
+      list-style: none;
+      margin: 1.4rem 0 0;
+      padding: 0;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 0.7rem;
+    }
+    .statcards li {
+      background: var(--bg-elev);
+      border: 1px solid var(--line);
+      border-left: 3px solid var(--accent);
+      border-radius: 9px;
+      padding: 0.85rem 0.95rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+    }
+    .statcards .val {
+      font-family: var(--mono);
+      font-size: 1.05rem;
+      font-weight: 700;
+      line-height: 1.25;
+      color: var(--ink);
+    }
+    .statcards .lbl {
+      font-size: 0.78rem;
+      line-height: 1.45;
+      color: var(--muted);
+    }
+    @media (max-width: 560px) {
+      .statcards { grid-template-columns: 1fr 1fr; }
+    }
 
     /* 示範影片(頁面下方) */
     .videowrap { margin: 1.6rem 0 0; }
