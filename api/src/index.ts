@@ -19,6 +19,17 @@ const CLICKS_DATASET = "devbox_clicks";
 const SLUG_RE = /^\/[0-9a-zA-Z]{6}$/;
 const MAX_URL_LEN = 2048;
 
+// /api/stats 邊緣快取設定。
+// 同步跑 D1 + 兩個 Analytics Engine SQL fetch 很慢且不穩(0.6s~6s 跳動),
+// 前端會誤判 offline。用 Cache API 快取「純資料」120 秒,CORS 每次重套。
+const STATS_CACHE_TTL = 120;
+// 降級資料(AE/訪客查詢失敗回 null)只短快取,避免一次暫時性故障把
+// 「點擊/訪客缺失」的儀表板釘住 2 分鐘;下次請求很快就能撿回復原的後端。
+const STATS_CACHE_TTL_DEGRADED = 15;
+// 固定內部 cache key——刻意不含真實 Origin,避免不同來源互相汙染快取;
+// 也讓 CORS header 不會被存進快取(快取的是資料、不是 CORS)。
+const STATS_CACHE_KEY = "https://cache.internal/api-stats";
+
 /**
  * CORS:只 echo 給自家站台(derek-chen.pages.dev,含 preview 子網域)與本機開發,
  * 非允許來源不帶 allow-origin。/api/stats、/api/visit 皆公開唯讀 GET,收斂只是不讓
@@ -42,7 +53,11 @@ function cors(req: Request): Record<string, string> {
 }
 
 export default {
-  async fetch(req: Request, env: Env): Promise<Response> {
+  async fetch(
+    req: Request,
+    env: Env,
+    ctx: ExecutionContext,
+  ): Promise<Response> {
     const url = new URL(req.url);
     const path = url.pathname;
 
@@ -71,24 +86,52 @@ export default {
       );
     }
 
-    // 統計(MVP:先回連結總數;點擊聚合於 Phase 6 接 Analytics Engine SQL API)
-    // CORS:儀表板頁在 pages.dev,跨網域讀此端點;用 cors() echo 自家來源(含 preview)。
+    // 統計儀表板資料。D1 + 兩個 Analytics Engine SQL 查詢很慢且不穩,
+    // 用 Cache API(caches.default)在邊緣快取「純資料 JSON」120 秒。
+    // 命中與否,CORS header 一律用當下 origin 重套(快取裡不含 CORS)。
     if (req.method === "GET" && path === "/api/stats") {
+      const cacheKey = new Request(STATS_CACHE_KEY);
+      const cached = await caches.default.match(cacheKey);
+      if (cached) {
+        // 命中:取快取的純資料 body,重新套 CORS(ACAO 要 echo 當下 origin,
+        // 不能沿用快取的)。debug header 方便驗證命中。
+        const body = await cached.text();
+        return new Response(body, {
+          headers: {
+            ...cors(req),
+            "content-type": "application/json",
+            "x-cache": "HIT",
+          },
+        });
+      }
+
+      // 未命中:照舊算(D1 + AE)。AE 未設定或查詢失敗時欄位為 null,前端自行降級。
       const total = await env.DB.prepare(
         "SELECT count(*) AS n FROM links",
       ).first<{ n: number }>();
-      // 真實點擊指標;AE 未設定或查詢失敗時為 null,前端自行降級。
       const clicks = await fetchClickStats(env, CLICKS_DATASET);
       const visitors = await fetchVisitStats(env);
-      return Response.json(
-        {
-          links: total?.n ?? 0,
-          clicks24h: clicks?.clicks24h ?? null,
-          topLinks: clicks?.topLinks ?? [],
-          visitors,
-        },
-        { headers: cors(req) },
-      );
+      const data = {
+        links: total?.n ?? 0,
+        clicks24h: clicks?.clicks24h ?? null,
+        topLinks: clicks?.topLinks ?? [],
+        visitors,
+      };
+
+      // 寫入快取的是「純資料」(不含 CORS header,帶 Cache-Control: max-age=N);
+      // 用 clone 寫,原 response 直接回給使用者。waitUntil 讓寫快取不阻塞回應。
+      // 降級(AE 或訪客查詢回 null)→ 短 TTL,讓後端復原後很快撿回完整資料。
+      const degraded = clicks === null || visitors === null;
+      const ttl = degraded ? STATS_CACHE_TTL_DEGRADED : STATS_CACHE_TTL;
+      const toCache = Response.json(data, {
+        headers: { "cache-control": `max-age=${ttl}` },
+      });
+      ctx.waitUntil(caches.default.put(cacheKey, toCache.clone()));
+
+      // 回給使用者:同一份資料 + 當下 origin 的 CORS + debug header。
+      return Response.json(data, {
+        headers: { ...cors(req), "x-cache": "MISS" },
+      });
     }
 
     // 訪客埋點 beacon:寫一筆訪問,一律回 204(fire-and-forget,不可報錯)。

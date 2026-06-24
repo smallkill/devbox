@@ -101,6 +101,38 @@ describe("CORS allowlist", () => {
   });
 });
 
+describe("GET /api/stats 邊緣快取不汙染 CORS", () => {
+  it("先以自家來源暖快取(MISS),不同來源命中(HIT)時 ACAO 仍正確、不沿用快取", async () => {
+    // 第一次:自家來源,寫快取(MISS)。
+    const first = await SELF.fetch("https://x/api/stats", {
+      headers: { origin: "https://derek-chen.pages.dev" },
+    });
+    expect(first.status).toBe(200);
+    expect(first.headers.get("access-control-allow-origin")).toBe(
+      "https://derek-chen.pages.dev",
+    );
+
+    // 第二次:換成釣魚來源,即使可能命中快取,ACAO 也不能被 echo
+    // (快取的是純資料,CORS 每次用當下 origin 重套)。
+    const evil = await SELF.fetch("https://x/api/stats", {
+      headers: { origin: "https://evil.example" },
+    });
+    expect(evil.status).toBe(200);
+    expect(evil.headers.get("access-control-allow-origin")).toBe(null);
+    // 資料仍在(命中或重算都應有 links 欄位)。
+    const body = await evil.json<{ links: number }>();
+    expect(typeof body.links).toBe("number");
+
+    // 第三次:換另一個合法 preview 子網域,應 echo 它自己的 origin。
+    const preview = await SELF.fetch("https://x/api/stats", {
+      headers: { origin: "https://feat.derek-chen.pages.dev" },
+    });
+    expect(preview.headers.get("access-control-allow-origin")).toBe(
+      "https://feat.derek-chen.pages.dev",
+    );
+  });
+});
+
 describe("GET /api/stats visitors 區塊", () => {
   it("埋點後 visitors 不為 null 且有 views", async () => {
     await SELF.fetch("https://x/api/visit?path=/");

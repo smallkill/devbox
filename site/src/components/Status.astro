@@ -285,7 +285,7 @@ const txt = {
 
   async function tick() {
     try {
-      const r = await fetch(`${apiUrl}/api/stats`, { signal: AbortSignal.timeout(10000) });
+      const r = await fetch(`${apiUrl}/api/stats`, { signal: AbortSignal.timeout(25000) });
       if (!r.ok) throw new Error(String(r.status));
       const d = await r.json();
       countTo($("links"), Number(d.links) || 0);
