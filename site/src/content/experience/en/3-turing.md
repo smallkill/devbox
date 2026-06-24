@@ -10,7 +10,7 @@ stats:
   - Patent · sole inventor
   - Edge↔cloud sub-second latency
 highlights:
-  - '<strong>Granted invention patent</strong> (sole inventor), <a href="https://patents.google.com/patent/TW202416236A/en" target="_blank" rel="noopener">Traffic Signal Recognition System and Method, TWI844132B</a>: fuses GPS, HD maps, vision recognition and multi-layer AI decisioning to improve traffic-signal recognition accuracy and reduce misjudgements.'
+  - '<strong>Granted invention patent</strong> (sole inventor), <a href="https://patents.google.com/patent/TWI844132B/en" target="_blank" rel="noopener">Traffic Signal Recognition System and Method, TWI844132B</a>: fuses GPS, HD maps, vision recognition and multi-layer AI decisioning to improve traffic-signal recognition accuracy and reduce misjudgements.'
   - Built a Vehicle Monitoring System on AWS (EC2 / S3 / Lambda) from scratch, integrating 13 autonomous vehicles (4 types) for real-time tracking and remote control.
   - Founded and led the Cloud Operations Team, establishing development workflows, ops standards, and engineer mentorship.
   - Integrated edge (ROS / Autoware) with cloud services over MQTT for sub-second-latency real-time fleet management.
