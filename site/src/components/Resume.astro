@@ -44,9 +44,23 @@ const projectSlugs = [
   </div>
   <p class="intro">{RESUME.intro[lang]}</p>
 
-  <ul class="traits">
-    {RESUME.traits[lang].map((tr) => <li>{tr}</li>)}
+  <ul class="stats" aria-label={t.hero_stats_aria}>
+    {RESUME.stats[lang].map((s) => (
+      <li>
+        {s.href ? (
+          <a href={s.href} target="_blank" rel="noopener noreferrer">{s.label} ↗</a>
+        ) : (
+          s.label
+        )}
+      </li>
+    ))}
   </ul>
+
+  <p class="hero-ask">
+    <a class="hero-ask-btn" href={base + "/#ask"}>
+      <span class="dot" aria-hidden="true"></span>{t.hero_ask_cta}
+    </a>
+  </p>
 
   <div class="email">
     <span class="addr">{RESUME.email}</span>
@@ -96,7 +110,7 @@ const projectSlugs = [
 
 <section id="ask" class="ask-callout reveal" style="animation-delay: 60ms">
   <div class="ask-card">
-    <span class="eyebrow">{t.home_ask_eyebrow}</span>
+    <span class="eyebrow ask-eyebrow"><span class="live-dot" aria-hidden="true"></span>{t.home_ask_eyebrow}</span>
     <h2 class="ask-title">{t.home_ask_title}</h2>
     <p class="ask-sub">{t.home_ask_intro}</p>
     <AskChat lang={lang} projectSlugs={projectSlugs} embedded />
@@ -189,16 +203,61 @@ const projectSlugs = [
   .hero-top h1 { font-size: clamp(2.2rem, 7vw, 3.2rem); font-weight: 800; margin: 0.3rem 0 0; }
   .hero h1 { font-size: clamp(2.2rem, 7vw, 3.2rem); font-weight: 800; margin: 0.5rem 0 0.7rem; }
   .intro { font-size: 1.1rem; color: var(--ink-soft); max-width: 56ch; margin: 0 0 1.2rem; }
-  .traits {
-    list-style: none; margin: 0 0 1.4rem; padding: 0;
-    display: flex; flex-wrap: wrap; gap: 0.5rem;
+
+  /* Hero 硬事實列:單列、可 wrap、小尺寸,讓招募方 30 秒抓到數字。
+     用 mono + 細分隔線做出「終端機規格列」質感,手機自動換行。 */
+  .stats {
+    list-style: none; margin: 0 0 1.3rem; padding: 0;
+    display: flex; flex-wrap: wrap; align-items: center;
+    column-gap: 1.1rem; row-gap: 0.5rem;
+    font-family: var(--mono); font-size: 0.8rem;
   }
-  .traits li {
-    font-size: 0.84rem; color: var(--ink-soft);
-    background: var(--accent-soft); border: 1px solid color-mix(in srgb, var(--accent) 18%, var(--line));
-    border-radius: 999px; padding: 0.3rem 0.8rem;
+  .stats li {
+    position: relative; color: var(--ink-soft);
+    padding-left: 1.1rem;
   }
-  .traits li::before { content: "✦ "; color: var(--accent); }
+  /* 每顆前面一個 accent 小方點當項目符號 */
+  .stats li::before {
+    content: ""; position: absolute; left: 0; top: 50%;
+    width: 5px; height: 5px; margin-top: -2.5px;
+    background: var(--accent); border-radius: 1px;
+  }
+  .stats a {
+    color: var(--ink-soft); text-decoration: none;
+    border-bottom: 1px dotted color-mix(in srgb, var(--accent) 55%, transparent);
+  }
+  .stats a:hover { color: var(--accent); text-decoration: none; border-bottom-color: var(--accent); }
+
+  /* Hero 主要 CTA:把「會動的真功能」(RAG 問答)推成顯眼按鈕,帶 LIVE 脈動點 */
+  .hero-ask { margin: 0 0 1.2rem; }
+  .hero-ask-btn {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: var(--accent); color: #fff;
+    border: 1px solid var(--accent);
+    border-radius: 999px; padding: 0.5rem 1.1rem;
+    font-weight: 700; font-size: 0.92rem; text-decoration: none;
+    box-shadow: 0 10px 26px -14px color-mix(in srgb, var(--accent) 80%, transparent);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .hero-ask-btn:hover {
+    text-decoration: none; transform: translateY(-1px);
+    box-shadow: 0 14px 30px -14px color-mix(in srgb, var(--accent) 85%, transparent);
+  }
+  .hero-ask-btn .dot {
+    width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+    background: #86efac; animation: livepulse 1.8s infinite;
+  }
+  @keyframes livepulse {
+    0% { box-shadow: 0 0 0 0 rgba(134, 239, 172, 0.7); }
+    70% { box-shadow: 0 0 0 7px rgba(134, 239, 172, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(134, 239, 172, 0); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .hero-ask-btn { transition: none; }
+    .hero-ask-btn .dot, .ask-eyebrow .live-dot { animation: none; }
+  }
+  /* 互動 CTA 不進列印/PDF */
+  @media print { .hero-ask { display: none !important; } }
 
   .email {
     display: flex; align-items: center; gap: 0.6rem;
@@ -234,6 +293,12 @@ const projectSlugs = [
     border-radius: 14px;
     padding: 1.3rem 1.4rem 1.15rem;
     box-shadow: 0 12px 32px -26px rgba(35, 71, 214, 0.5);
+  }
+  /* eyebrow 上的 LIVE 脈動點:呼應 hero CTA,凸顯這是會動的真功能 */
+  .ask-eyebrow { display: inline-flex; align-items: center; gap: 0.45rem; }
+  .ask-eyebrow .live-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: #22c55e; animation: livepulse 1.8s infinite;
   }
   .ask-title {
     font-size: clamp(1.3rem, 4vw, 1.55rem);

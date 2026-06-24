@@ -3,6 +3,8 @@ export const UI = {
     role: "Software / DevOps Engineer",
     meta_desc:
       "Derek Chen,Software / DevOps 工程師,在 edge 與 cloud 之間搭橋:車用電腦視覺(3D AVM、ADAS)、自駕車隊雲端平台、韌體 CI/CD 與 DevSecOps。附 AI 履歷問答與自架 SaaS 即時儀表板。",
+    hero_stats_aria: "重點資歷",
+    hero_ask_cta: "直接問我的履歷 →",
     home_ask_eyebrow: "AI 履歷問答 · LIVE",
     home_ask_title: "別只看履歷,直接問",
     home_ask_intro:
@@ -98,6 +100,8 @@ export const UI = {
     role: "Software / DevOps Engineer",
     meta_desc:
       "Derek Chen: Software / DevOps engineer bridging edge and cloud: automotive computer vision (3D AVM, ADAS), AV fleet cloud platforms, firmware CI/CD and DevSecOps. With an AI resume Q&A and a live self-hosted SaaS dashboard.",
+    hero_stats_aria: "Key facts",
+    hero_ask_cta: "Ask my résumé →",
     home_ask_eyebrow: "ask my resume · LIVE",
     home_ask_title: "Don't just read it, ask it",
     home_ask_intro:
