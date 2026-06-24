@@ -52,13 +52,32 @@ const { href, title, role, period, tech = [], cover, fallbackLabel } =
     transform: translateY(-2px);
     box-shadow: 0 12px 30px -22px rgba(35, 71, 214, 0.55);
   }
+  /* 統一封面容器:所有卡片同一比例(16:10)、同一輕色背景與留白,
+     用 object-fit: contain 讓各張示意圖完整置中(不裁切),
+     整片 grid 掃下來像同一套模板。 */
   .thumb {
-    aspect-ratio: 16 / 9;
-    background: var(--bg);
+    aspect-ratio: 16 / 10;
+    background: var(--accent-soft);
     border-bottom: 1px solid var(--line);
     overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem;
   }
-  .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+    border-radius: 6px;
+    transition: transform 0.3s ease;
+  }
+  .card:hover .thumb img { transform: scale(1.02); }
+  @media (prefers-reduced-motion: reduce) {
+    .thumb img { transition: none; }
+    .card:hover .thumb img { transform: none; }
+  }
   .body { padding: 1rem 1.1rem 1.1rem; }
   .top { display: flex; align-items: baseline; gap: 0.6rem; }
   .top h3 { margin: 0; font-size: 1.05rem; color: var(--ink); }

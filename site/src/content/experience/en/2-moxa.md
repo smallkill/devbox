@@ -5,6 +5,10 @@ period: Jun 2023 – Apr 2026
 location: New Taipei
 logo: /logos/moxa.png
 tech: [GitLab CI/CD, Coverity, Nessus, Python, Shell, DevSecOps]
+stats:
+  - 9 routers · 5 series
+  - Issues caught 7 days earlier
+  - Coverity + Nessus in CI
 highlights:
   - Designed and managed scalable GitLab CI pipelines for 9 router products across 5 series, ensuring build consistency and reproducibility across hardware architectures.
   - Automated build and integration workflows, surfacing integration issues up to 7 days earlier than the manual process.

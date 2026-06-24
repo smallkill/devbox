@@ -5,6 +5,10 @@ period: Jun 2015 – Jun 2020
 location: New Taipei
 logo: /logos/whetron.png
 tech: [OpenCV, OpenGL ES, ROS, C++, Nvidia, Fujitsu]
+stats:
+  - 3D AVM · mass-production grade
+  - Fujitsu version in Tier 1 supply chain
+  - Cross-platform Fujitsu / Nvidia
 highlights:
   - "Developed 3D Around View Monitoring (3D AVM) algorithms: a Fujitsu-platform version delivered to a Thai car manufacturer (Tier 1 supply chain), and a self-developed version handed off via technology transfer to Whetron China (Suzhou subsidiary), both automotive mass-production grade."
   - Built parking-space detection on top of 3D AVM, integrated into automatic-parking products.

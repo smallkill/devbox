@@ -5,6 +5,10 @@ period: 2015.06 – 2020.06
 location: 新北
 logo: /logos/whetron.png
 tech: [OpenCV, OpenGL ES, ROS, C++, Nvidia, Fujitsu]
+stats:
+  - 3D AVM · 車規量產交付
+  - 富士通版進 Tier 1 供應鏈
+  - 跨平台 Fujitsu / Nvidia
 highlights:
   - 開發 3D Around View Monitoring(3D AVM)演算法:富士通平台版交付泰國車廠、進入 Tier 1 供應鏈;自主研發版以技術轉移交付中國輝創(Whetron 蘇州子公司)(皆車規量產級交付)。
   - 基於 3D AVM 的停車格偵測,整合進自動停車產品。

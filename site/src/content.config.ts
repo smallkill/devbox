@@ -63,6 +63,9 @@ const experience = defineCollection({
     location: z.string().optional(),
     logo: z.string().optional(),
     tech: z.array(z.string()).default([]),
+    // 該段經歷的關鍵數字 chips(只放該段 highlights 內既有的事實數字,
+    // 不可發明/誇大;沒有可靠數字的段落留空即可)。
+    stats: z.array(z.string()).default([]),
     highlights: z.array(z.string()).default([]),
     order: z.number().default(99),
   }),

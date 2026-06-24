@@ -2,6 +2,7 @@
 import LangToggle from "../components/LangToggle.astro";
 import ShareButton from "../components/ShareButton.astro";
 import { UI, type Locale } from "../i18n/ui";
+import { RESUME } from "../lib/resume";
 
 interface Props {
   title: string;
@@ -39,6 +40,26 @@ const canonical = SITE + Astro.url.pathname;
 const withSlash = (p: string) => (p.endsWith("/") ? p : p + "/");
 const zhUrl = SITE + withSlash(path);
 const enUrl = SITE + withSlash(path === "/" ? "/en" : "/en" + path);
+
+// Person JSON-LD(結構化資料):資料全來自站上既有 RESUME,不另編造。
+// 只在會被索引的頁輸出,避免 404/noindex 頁混入結構化資料。
+const personLd = {
+  "@context": "https://schema.org",
+  "@type": "Person",
+  name: RESUME.name,
+  jobTitle: "Software / DevOps Engineer",
+  email: `mailto:${RESUME.email}`,
+  url: SITE,
+  image: SITE + RESUME.avatar,
+  sameAs: RESUME.links.map((l) => l.href),
+  knowsAbout: [
+    "DevOps",
+    "CI/CD",
+    "Cloud Infrastructure",
+    "Computer Vision",
+    "RAG / LLM",
+  ],
+};
 ---
 
 <!doctype html>
@@ -69,6 +90,10 @@ const enUrl = SITE + withSlash(path === "/" ? "/en" : "/en" + path);
         <meta name="twitter:title" content={title} />
         <meta name="twitter:description" content={desc} />
         <meta name="twitter:image" content={SITE + ogImage} />
+        <script
+          type="application/ld+json"
+          set:html={JSON.stringify(personLd)}
+        />
       </>
     )}
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />

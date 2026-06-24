@@ -5,6 +5,10 @@ period: 2023.06 – 2026.04
 location: 新北
 logo: /logos/moxa.png
 tech: [GitLab CI/CD, Coverity, Nessus, Python, Shell, DevSecOps]
+stats:
+  - 9 款路由器 · 5 系列
+  - 整合問題提前 7 天發現
+  - Coverity + Nessus 進 CI
 highlights:
   - 設計並管理可擴展的 GitLab CI 流程,支援 5 個產品系列共 9 款路由器,確保跨硬體架構的建置一致性與可重現性。
   - 自動化建置與整合工作流,比傳統手動流程提前最多 7 天發現整合問題。
