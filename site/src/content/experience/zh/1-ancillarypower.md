@@ -1,6 +1,6 @@
 ---
 org: 安瑟樂威 AncillaryPower
-role: DevOps 工程師
+role: 資深 DevOps / 雲端基礎設施工程師
 period: 2026.04 – 現在
 location: 新北
 logo: /logos/ancillarypower.png

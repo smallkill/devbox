@@ -1,6 +1,6 @@
 ---
 org: AncillaryPower
-role: DevOps Engineer
+role: DevOps / Cloud Infrastructure Senior Engineer
 period: Apr 2026 – Present
 location: New Taipei
 logo: /logos/ancillarypower.png
