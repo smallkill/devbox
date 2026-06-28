@@ -2,6 +2,11 @@ import { makeSlug, isValidUrl } from "./slug";
 import { fetchClickStats } from "./stats";
 import { recordVisit, fetchVisitStats } from "./visits";
 
+// Cloudflare 原生 Rate Limiting binding 介面(miniflare 測試環境不提供,故 optional)。
+interface RateLimiter {
+  limit(opts: { key: string }): Promise<{ success: boolean }>;
+}
+
 export interface Env {
   DB: D1Database;
   CLICKS: AnalyticsEngineDataset;
@@ -12,6 +17,19 @@ export interface Env {
   AE_API_TOKEN?: string;
   // 訪客 IP 雜湊 salt,用 `wrangler secret put VISIT_SALT` 設(防止彩虹表反推原始 IP)。
   VISIT_SALT?: string;
+  // /api/visit 的 per-IP 速率護欄(原生 Rate Limiting binding)。未鑑權的公開寫入,
+  // 沒有它單一來源可無限灌 D1(denial-of-wallet + 假數據)。測試環境缺 binding 時放行。
+  RL_VISIT_IP?: RateLimiter;
+}
+
+// 速率檢查;無 binding(測試/本機)或拋錯時 fail-open(beacon 寧可漏記也不擋)。
+async function rlOk(rl: RateLimiter | undefined, key: string): Promise<boolean> {
+  if (!rl) return true;
+  try {
+    return (await rl.limit({ key })).success;
+  } catch {
+    return true;
+  }
 }
 
 const CLICKS_DATASET = "devbox_clicks";
@@ -138,11 +156,16 @@ export default {
     if (req.method === "GET" && path === "/api/visit") {
       try {
         const ip = req.headers.get("cf-connecting-ip") ?? "0.0.0.0";
-        const country = (req as unknown as { cf?: { country?: string } }).cf?.country ?? "";
-        // path 只收集不顯示(fetchVisitStats 不 select、前端不渲染);
-        // 日後若要顯示務必跳脫。長度上限避免膨脹 D1 row。
-        const visitedPath = (url.searchParams.get("path") ?? "").slice(0, 256);
-        await recordVisit(env, ip, country, visitedPath);
+        // per-IP 速率護欄:超過就略過 D1 寫入(仍回 204,不揭露限流存在)。
+        // 擋掉單一來源無限灌 visits 表的 denial-of-wallet / 假數據;cf-connecting-ip
+        // 由 CF edge 設定、不可偽造,所以是有效的單源上限。分散式來源仍靠 CF DDoS 層。
+        if (await rlOk(env.RL_VISIT_IP, ip)) {
+          const country = (req as unknown as { cf?: { country?: string } }).cf?.country ?? "";
+          // path 只收集不顯示(fetchVisitStats 不 select、前端不渲染);
+          // 日後若要顯示務必跳脫。長度上限避免膨脹 D1 row。
+          const visitedPath = (url.searchParams.get("path") ?? "").slice(0, 256);
+          await recordVisit(env, ip, country, visitedPath);
+        }
       } catch {
         /* 寧可漏記一筆,不報錯 */
       }

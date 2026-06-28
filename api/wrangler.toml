@@ -18,6 +18,13 @@ database_id = "fe0a2a4d-e1f5-4365-b9ac-90774d68dfe1"
 binding = "CLICKS"
 dataset = "devbox_clicks"
 
+# /api/visit 的 per-IP 速率限制(原生 Rate Limiting binding)。未鑑權的公開寫入,
+# 沒有它單一來源可無限灌 D1。30/分對真實訪客很寬鬆,卻能擋掉腳本洪水。
+[[ratelimits]]
+name = "RL_VISIT_IP"
+namespace_id = "2001"
+simple = { limit = 30, period = 60 }
+
 # 必要 secret(勿寫在此檔,用指令設定):
 #   wrangler secret put CREATE_TOKEN   # 建立短網址的 bearer token
 #   wrangler secret put AE_API_TOKEN   # 查 Analytics Engine SQL API(需 Account Analytics Read)
