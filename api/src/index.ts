@@ -82,10 +82,11 @@ export default {
     ctx: ExecutionContext,
   ): Promise<Response> {
     const start = Date.now();
-    const path = new URL(req.url).pathname;
+    const url = new URL(req.url);
+    const path = url.pathname;
     let status = 500;
     try {
-      const res = await handleRequest(req, env, ctx);
+      const res = await handleRequest(req, url, env, ctx);
       status = res.status;
       return res;
     } finally {
@@ -103,12 +104,13 @@ export default {
   },
 };
 
+// url 由 fetch 包裝解析一次後傳入,避免同一個請求 parse 兩次 `new URL(req.url)`。
 async function handleRequest(
   req: Request,
+  url: URL,
   env: Env,
   ctx: ExecutionContext,
 ): Promise<Response> {
-  const url = new URL(req.url);
   const path = url.pathname;
 
   // 建立短網址 — 需 bearer 鑑權,擋掉公開濫用(open-redirect 釣魚)。

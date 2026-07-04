@@ -28,6 +28,30 @@ describe("REQUESTS 側錄 wrapper", () => {
     expect(typeof body.links).toBe("number");
   });
 
+  it("正常回應仍側錄一筆 status/latency 到 REQUESTS(finding: 只測過拋錯路徑,漏了成功路徑)", async () => {
+    const ctx = createExecutionContext();
+    const writeDataPoint = vi.fn();
+    const spiedEnv = { ...env, REQUESTS: { writeDataPoint } } as unknown as Env;
+
+    const res = await worker.fetch(
+      new Request("https://x/api/stats"),
+      spiedEnv,
+      ctx,
+    );
+    await waitOnExecutionContext(ctx);
+
+    expect(res.status).toBe(200);
+    expect(writeDataPoint).toHaveBeenCalledTimes(1);
+    const point = writeDataPoint.mock.calls[0][0] as {
+      blobs: string[];
+      doubles: number[];
+    };
+    expect(point.blobs).toEqual(["/api/stats"]);
+    expect(point.doubles[0]).toBe(200); // status
+    expect(point.doubles[1]).toBeGreaterThanOrEqual(0); // latency ms
+    expect(Number.isFinite(point.doubles[1])).toBe(true);
+  });
+
   it("handleRequest 拋錯時例外仍往外拋,且嘗試側錄一筆 status=500", async () => {
     const ctx = createExecutionContext();
     const writeDataPoint = vi.fn();

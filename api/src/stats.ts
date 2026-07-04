@@ -1,5 +1,13 @@
 // Analytics Engine 查詢走 Cloudflare SQL API(HTTP),非 D1。
-// 純函式(query 組裝 + 回應解析)可單元測試;HTTP 在 fetchClickStats 做,失敗優雅降級。
+// HTTP client(parseRows/runQuery)抽到 ../../shared/analytics-engine,跟 watchdog 共用
+// 同一份,避免各自維護的 client 行為漂移(code review 抓到的問題)。
+// 純函式(query 組裝)可單元測試;HTTP 在 fetchClickStats 做,失敗優雅降級。
+
+import {
+  parseRows,
+  runAnalyticsEngineQuery,
+  type AnalyticsEngineEnv,
+} from "../../shared/analytics-engine";
 
 export interface TopLink {
   slug: string;
@@ -33,17 +41,7 @@ export function buildTotalClicksQuery(dataset: string): string {
 }
 
 /** 安全取出 AE SQL API 回應的 data 陣列(格式:{ data: [...] })。 */
-export function parseRows(json: unknown): Array<Record<string, unknown>> {
-  if (
-    typeof json === "object" &&
-    json !== null &&
-    "data" in json &&
-    Array.isArray((json as { data: unknown }).data)
-  ) {
-    return (json as { data: Array<Record<string, unknown>> }).data;
-  }
-  return [];
-}
+export { parseRows };
 
 /** 把一列 {slug, clicks} 正規化(AE 數值欄位回字串)。 */
 export function toTopLinks(rows: Array<Record<string, unknown>>): TopLink[] {
@@ -53,29 +51,7 @@ export function toTopLinks(rows: Array<Record<string, unknown>>): TopLink[] {
   }));
 }
 
-export interface StatsEnv {
-  CF_ACCOUNT_ID?: string;
-  AE_API_TOKEN?: string;
-}
-
-async function runQuery(
-  env: StatsEnv,
-  sql: string,
-): Promise<Array<Record<string, unknown>>> {
-  const res = await fetch(
-    `https://api.cloudflare.com/client/v4/accounts/${env.CF_ACCOUNT_ID}/analytics_engine/sql`,
-    {
-      method: "POST",
-      headers: { authorization: `Bearer ${env.AE_API_TOKEN}` },
-      body: sql,
-      // 逾時 → throw → 落入 fetchClickStats 的 catch → 回 null 降級,
-      // 不讓 AE 不健康時拖垮 /api/stats。
-      signal: AbortSignal.timeout(3000),
-    },
-  );
-  if (!res.ok) throw new Error(`AE SQL API ${res.status}`);
-  return parseRows(await res.json());
-}
+export type StatsEnv = AnalyticsEngineEnv;
 
 /**
  * 查真實點擊指標。未設定 token/account 或查詢失敗時回 null,
@@ -88,8 +64,8 @@ export async function fetchClickStats(
   if (!env.CF_ACCOUNT_ID || !env.AE_API_TOKEN) return null;
   try {
     const [topRows, totalRows] = await Promise.all([
-      runQuery(env, buildTopLinksQuery(dataset)),
-      runQuery(env, buildTotalClicksQuery(dataset)),
+      runAnalyticsEngineQuery(env, buildTopLinksQuery(dataset)),
+      runAnalyticsEngineQuery(env, buildTotalClicksQuery(dataset)),
     ]);
     return {
       clicks24h: Number(totalRows[0]?.clicks ?? 0),

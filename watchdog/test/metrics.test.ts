@@ -9,7 +9,6 @@ describe("buildMetricsQuery", () => {
     const sql = buildMetricsQuery("devbox_requests");
     expect(sql).toContain("devbox_requests");
     expect(sql).toContain("30");
-    expect(sql.toLowerCase()).toContain("quantile(0.95)");
     expect(sql).not.toContain("GROUP BY");
   });
 
@@ -17,6 +16,29 @@ describe("buildMetricsQuery", () => {
     const sql = buildMetricsQuery("devbox_requests");
     expect(sql).toContain(">= 500");
     expect(sql).not.toMatch(/>=\s*400/);
+  });
+
+  // AE SQL 方言沒有 CASE WHEN、也沒有無參數的 quantile()——這兩個是原本會讓查詢
+  // 被 API 直接拒絕(400)的語法錯誤(code review 抓到的問題)。鎖死用的是官方文件
+  // 確認過的函式:quantileExactWeighted、sumIf、sum(見
+  // developers.cloudflare.com/analytics/analytics-engine/sql-reference/aggregate-functions/)。
+  it("不使用 AE SQL 不支援的 CASE WHEN / 無參數 quantile()", () => {
+    const sql = buildMetricsQuery("devbox_requests");
+    expect(sql.toUpperCase()).not.toContain("CASE WHEN");
+    // 舊語法錯誤是 `quantile(0.95)(double2)`——不是合法函式,AE 會直接拒絕查詢。
+    expect(sql).not.toContain("quantile(0.95)(double2)");
+  });
+
+  it("p95 用 quantileExactWeighted 依 _sample_interval 加權", () => {
+    const sql = buildMetricsQuery("devbox_requests");
+    expect(sql).toContain("quantileExactWeighted(0.95)(double2, _sample_interval)");
+  });
+
+  it("errors / total 都依 _sample_interval 加權,而非用 COUNT(*)(抽樣啟動後才準)", () => {
+    const sql = buildMetricsQuery("devbox_requests");
+    expect(sql).toContain("sumIf(_sample_interval, double1 >= 500)");
+    expect(sql).toContain("sum(_sample_interval) AS total");
+    expect(sql).not.toMatch(/COUNT\(\*\)/i);
   });
 });
 
