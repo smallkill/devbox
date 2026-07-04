@@ -13,12 +13,16 @@ export interface Env {
 
 const ERROR_THRESHOLD = 0.05;
 const P95_THRESHOLD_MS = 1000;
+// 30 分鐘窗至少要有這麼多請求才評估告警:流量稀疏時單一冷啟動請求就會
+// 成為 p95(2026-07-04 部署當天 4 個測試請求含一次冷啟動 → p95=1293ms 誤報)。
+const MIN_SAMPLES = 20;
 
 // 必須與 api/wrangler.toml 的 REQUESTS binding 的 dataset 名稱完全一致。
 const REQUESTS_DATASET = "devbox_requests";
 
-/** 純函式:依門檻判斷是否該告警。 */
+/** 純函式:樣本足夠時依門檻判斷是否該告警;樣本不足一律不告警。 */
 export function shouldAlert(m: Metrics): boolean {
+  if (m.total < MIN_SAMPLES) return false;
   return m.errorRate > ERROR_THRESHOLD || m.p95ms > P95_THRESHOLD_MS;
 }
 
@@ -43,7 +47,7 @@ export default {
     if (shouldAlert(m)) {
       await notify(
         env,
-        `⚠️ devbox 異常:errorRate=${m.errorRate}, p95=${m.p95ms}ms`,
+        `⚠️ devbox 異常:errorRate=${m.errorRate}, p95=${m.p95ms}ms, n=${m.total}`,
       );
     }
   },

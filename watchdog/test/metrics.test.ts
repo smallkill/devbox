@@ -60,7 +60,7 @@ describe("fetchMetrics", () => {
     const fetchSpy = vi.fn();
     vi.stubGlobal("fetch", fetchSpy);
     const m = await fetchMetrics({}, "devbox_requests");
-    expect(m).toEqual({ errorRate: 0, p95ms: 0 });
+    expect(m).toEqual({ errorRate: 0, p95ms: 0, total: 0 });
     expect(fetchSpy).not.toHaveBeenCalled();
   });
 
@@ -78,7 +78,7 @@ describe("fetchMetrics", () => {
       { CF_ACCOUNT_ID: "a", AE_API_TOKEN: "t" },
       "devbox_requests",
     );
-    expect(m).toEqual({ errorRate: 0.05, p95ms: 250 });
+    expect(m).toEqual({ errorRate: 0.05, p95ms: 250, total: 100 });
   });
 
   it("total=0(無流量)回安全值,不當成錯誤", async () => {
@@ -94,7 +94,7 @@ describe("fetchMetrics", () => {
       { CF_ACCOUNT_ID: "a", AE_API_TOKEN: "t" },
       "devbox_requests",
     );
-    expect(m).toEqual({ errorRate: 0, p95ms: 0 });
+    expect(m).toEqual({ errorRate: 0, p95ms: 0, total: 0 });
   });
 
   it("fetch 拋錯回安全值,不 throw", async () => {
@@ -103,7 +103,7 @@ describe("fetchMetrics", () => {
       { CF_ACCOUNT_ID: "a", AE_API_TOKEN: "t" },
       "devbox_requests",
     );
-    expect(m).toEqual({ errorRate: 0, p95ms: 0 });
+    expect(m).toEqual({ errorRate: 0, p95ms: 0, total: 0 });
   });
 
   it("非 2xx 回安全值", async () => {
@@ -115,7 +115,7 @@ describe("fetchMetrics", () => {
       { CF_ACCOUNT_ID: "a", AE_API_TOKEN: "t" },
       "devbox_requests",
     );
-    expect(m).toEqual({ errorRate: 0, p95ms: 0 });
+    expect(m).toEqual({ errorRate: 0, p95ms: 0, total: 0 });
   });
 
   it("回應解析不出數字回安全值", async () => {
@@ -131,7 +131,7 @@ describe("fetchMetrics", () => {
       { CF_ACCOUNT_ID: "a", AE_API_TOKEN: "t" },
       "devbox_requests",
     );
-    expect(m).toEqual({ errorRate: 0, p95ms: 0 });
+    expect(m).toEqual({ errorRate: 0, p95ms: 0, total: 0 });
   });
 
   it("安全值不誤觸 shouldAlert", async () => {

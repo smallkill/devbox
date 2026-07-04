@@ -15,6 +15,8 @@ import {
 export interface Metrics {
   errorRate: number;
   p95ms: number;
+  /** 30 分鐘窗內的真實請求數(_sample_interval 加權),供告警端判斷樣本是否足夠。 */
+  total: number;
 }
 
 /**
@@ -63,7 +65,7 @@ export async function fetchMetrics(
 ): Promise<Metrics> {
   if (!env.CF_ACCOUNT_ID || !env.AE_API_TOKEN) {
     console.error("fetchMetrics: 缺 CF_ACCOUNT_ID 或 AE_API_TOKEN,回安全值");
-    return { errorRate: 0, p95ms: 0 };
+    return { errorRate: 0, p95ms: 0, total: 0 };
   }
   try {
     const rows = await runAnalyticsEngineQuery(env, buildMetricsQuery(dataset));
@@ -74,11 +76,11 @@ export async function fetchMetrics(
       console.error(
         `fetchMetrics: 回應解析不出數字,回安全值(row=${JSON.stringify(rows[0])})`,
       );
-      return { errorRate: 0, p95ms: 0 };
+      return { errorRate: 0, p95ms: 0, total: 0 };
     }
-    return { errorRate: total > 0 ? errors / total : 0, p95ms };
+    return { errorRate: total > 0 ? errors / total : 0, p95ms, total };
   } catch (e) {
     console.error(`fetchMetrics: 查詢失敗,回安全值(${e})`);
-    return { errorRate: 0, p95ms: 0 };
+    return { errorRate: 0, p95ms: 0, total: 0 };
   }
 }
