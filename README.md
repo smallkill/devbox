@@ -94,4 +94,4 @@ cd site && npm install && npm run dev   # 前端
 
 ## 已知範圍
 
-- `watchdog` 的 `fetchMetrics` 目前回安全值;真實 error rate / p95 告警需在 `api` 把 status/延遲一併寫入 Analytics Engine(後續)。
+- `watchdog` 的 `fetchMetrics` 查真實指標:`api` 每筆請求把 status/延遲寫進獨立的 `devbox_requests` Analytics Engine dataset,`watchdog` 用同一套 AE SQL API(HTTP)算近 30 分鐘 error rate(5xx/總數)與 p95 延遲;查詢失敗一律回安全值,不誤觸告警。

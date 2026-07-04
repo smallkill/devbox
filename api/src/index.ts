@@ -10,6 +10,8 @@ interface RateLimiter {
 export interface Env {
   DB: D1Database;
   CLICKS: AnalyticsEngineDataset;
+  // 每筆請求的 status/延遲側錄,供 watchdog 查 error rate / p95(見 fetch 包裝)。
+  REQUESTS: AnalyticsEngineDataset;
   // 建立短網址所需的 bearer token,用 `wrangler secret put CREATE_TOKEN` 設。
   CREATE_TOKEN: string;
   // Analytics Engine SQL API 用(account id 是 var,token 是 secret)。
@@ -70,128 +72,157 @@ function cors(req: Request): Record<string, string> {
   return h;
 }
 
+// 全站請求觀測性側錄(供 watchdog 算 error rate / p95),不可影響回應內容或延遲。
+// export 的 fetch 只做計時 + 側錄,實際邏輯都在 handleRequest;用 try/finally
+// 確保 handleRequest 拋錯時仍記到 500,且錯誤原樣往外拋(只吞 writeDataPoint 本身的錯)。
 export default {
   async fetch(
     req: Request,
     env: Env,
     ctx: ExecutionContext,
   ): Promise<Response> {
-    const url = new URL(req.url);
-    const path = url.pathname;
-
-    // 建立短網址 — 需 bearer 鑑權,擋掉公開濫用(open-redirect 釣魚)。
-    if (req.method === "POST" && path === "/api/links") {
-      const auth = req.headers.get("authorization");
-      // fail-closed:未設 CREATE_TOKEN 或 token 不符一律拒絕。
-      if (!env.CREATE_TOKEN || auth !== `Bearer ${env.CREATE_TOKEN}`) {
-        return Response.json({ error: "unauthorized" }, { status: 401 });
-      }
-      const { url: target } = await req
-        .json<{ url?: string }>()
-        .catch(() => ({ url: undefined }));
-      if (!target || target.length > MAX_URL_LEN || !isValidUrl(target)) {
-        return Response.json({ error: "invalid url" }, { status: 400 });
-      }
-      const slug = makeSlug();
-      await env.DB.prepare(
-        "INSERT INTO links (slug, url, created_at) VALUES (?,?,?)",
-      )
-        .bind(slug, target, Date.now())
-        .run();
-      return Response.json(
-        { slug, shortUrl: `${url.origin}/${slug}` },
-        { status: 201 },
-      );
-    }
-
-    // 統計儀表板資料。D1 + 兩個 Analytics Engine SQL 查詢很慢且不穩,
-    // 用 Cache API(caches.default)在邊緣快取「純資料 JSON」120 秒。
-    // 命中與否,CORS header 一律用當下 origin 重套(快取裡不含 CORS)。
-    if (req.method === "GET" && path === "/api/stats") {
-      const cacheKey = new Request(STATS_CACHE_KEY);
-      const cached = await caches.default.match(cacheKey);
-      if (cached) {
-        // 命中:取快取的純資料 body,重新套 CORS(ACAO 要 echo 當下 origin,
-        // 不能沿用快取的)。debug header 方便驗證命中。
-        const body = await cached.text();
-        return new Response(body, {
-          headers: {
-            ...cors(req),
-            "content-type": "application/json",
-            "x-cache": "HIT",
-          },
+    const start = Date.now();
+    const path = new URL(req.url).pathname;
+    let status = 500;
+    try {
+      const res = await handleRequest(req, env, ctx);
+      status = res.status;
+      return res;
+    } finally {
+      // writeDataPoint 本身是同步 fire-and-forget(不回 Promise),但仍包 try/catch——
+      // 側錄失敗不該讓真正的回應/例外受影響。
+      try {
+        env.REQUESTS.writeDataPoint({
+          blobs: [path],
+          doubles: [status, Date.now() - start],
         });
-      }
-
-      // 未命中:照舊算(D1 + AE)。AE 未設定或查詢失敗時欄位為 null,前端自行降級。
-      const total = await env.DB.prepare(
-        "SELECT count(*) AS n FROM links",
-      ).first<{ n: number }>();
-      const clicks = await fetchClickStats(env, CLICKS_DATASET);
-      const visitors = await fetchVisitStats(env);
-      const data = {
-        links: total?.n ?? 0,
-        clicks24h: clicks?.clicks24h ?? null,
-        topLinks: clicks?.topLinks ?? [],
-        visitors,
-      };
-
-      // 寫入快取的是「純資料」(不含 CORS header,帶 Cache-Control: max-age=N);
-      // 用 clone 寫,原 response 直接回給使用者。waitUntil 讓寫快取不阻塞回應。
-      // 降級(AE 或訪客查詢回 null)→ 短 TTL,讓後端復原後很快撿回完整資料。
-      const degraded = clicks === null || visitors === null;
-      const ttl = degraded ? STATS_CACHE_TTL_DEGRADED : STATS_CACHE_TTL;
-      const toCache = Response.json(data, {
-        headers: { "cache-control": `max-age=${ttl}` },
-      });
-      ctx.waitUntil(caches.default.put(cacheKey, toCache.clone()));
-
-      // 回給使用者:同一份資料 + 當下 origin 的 CORS + debug header。
-      return Response.json(data, {
-        headers: { ...cors(req), "x-cache": "MISS" },
-      });
-    }
-
-    // 訪客埋點 beacon:寫一筆訪問,一律回 204(fire-and-forget,不可報錯)。
-    if (req.method === "GET" && path === "/api/visit") {
-      try {
-        const ip = req.headers.get("cf-connecting-ip") ?? "0.0.0.0";
-        // per-IP 速率護欄:超過就略過 D1 寫入(仍回 204,不揭露限流存在)。
-        // 擋掉單一來源無限灌 visits 表的 denial-of-wallet / 假數據;cf-connecting-ip
-        // 由 CF edge 設定、不可偽造,所以是有效的單源上限。分散式來源仍靠 CF DDoS 層。
-        if (await rlOk(env.RL_VISIT_IP, ip)) {
-          const country = (req as unknown as { cf?: { country?: string } }).cf?.country ?? "";
-          // path 只收集不顯示(fetchVisitStats 不 select、前端不渲染);
-          // 日後若要顯示務必跳脫。長度上限避免膨脹 D1 row。
-          const visitedPath = (url.searchParams.get("path") ?? "").slice(0, 256);
-          await recordVisit(env, ip, country, visitedPath);
-        }
-      } catch {
-        /* 寧可漏記一筆,不報錯 */
-      }
-      return new Response(null, { status: 204, headers: cors(req) });
-    }
-
-    // 轉址
-    if (req.method === "GET" && SLUG_RE.test(path)) {
-      const slug = path.slice(1);
-      const row = await env.DB.prepare("SELECT url FROM links WHERE slug = ?")
-        .bind(slug)
-        .first<{ url: string }>();
-      if (!row) return new Response("Not found", { status: 404 });
-      // 埋點為盡力而為,失敗不可阻擋轉址。
-      try {
-        env.CLICKS.writeDataPoint({ blobs: [slug], indexes: [slug] });
       } catch {
         /* ignore */
       }
-      // 直接設 Location,保留儲存的原始 URL(Response.redirect 會正規化加尾斜線)。
-      return new Response(null, {
-        status: 302,
-        headers: { Location: row.url },
+    }
+  },
+};
+
+async function handleRequest(
+  req: Request,
+  env: Env,
+  ctx: ExecutionContext,
+): Promise<Response> {
+  const url = new URL(req.url);
+  const path = url.pathname;
+
+  // 建立短網址 — 需 bearer 鑑權,擋掉公開濫用(open-redirect 釣魚)。
+  if (req.method === "POST" && path === "/api/links") {
+    const auth = req.headers.get("authorization");
+    // fail-closed:未設 CREATE_TOKEN 或 token 不符一律拒絕。
+    if (!env.CREATE_TOKEN || auth !== `Bearer ${env.CREATE_TOKEN}`) {
+      return Response.json({ error: "unauthorized" }, { status: 401 });
+    }
+    const { url: target } = await req
+      .json<{ url?: string }>()
+      .catch(() => ({ url: undefined }));
+    if (!target || target.length > MAX_URL_LEN || !isValidUrl(target)) {
+      return Response.json({ error: "invalid url" }, { status: 400 });
+    }
+    const slug = makeSlug();
+    await env.DB.prepare(
+      "INSERT INTO links (slug, url, created_at) VALUES (?,?,?)",
+    )
+      .bind(slug, target, Date.now())
+      .run();
+    return Response.json(
+      { slug, shortUrl: `${url.origin}/${slug}` },
+      { status: 201 },
+    );
+  }
+
+  // 統計儀表板資料。D1 + 兩個 Analytics Engine SQL 查詢很慢且不穩,
+  // 用 Cache API(caches.default)在邊緣快取「純資料 JSON」120 秒。
+  // 命中與否,CORS header 一律用當下 origin 重套(快取裡不含 CORS)。
+  if (req.method === "GET" && path === "/api/stats") {
+    const cacheKey = new Request(STATS_CACHE_KEY);
+    const cached = await caches.default.match(cacheKey);
+    if (cached) {
+      // 命中:取快取的純資料 body,重新套 CORS(ACAO 要 echo 當下 origin,
+      // 不能沿用快取的)。debug header 方便驗證命中。
+      const body = await cached.text();
+      return new Response(body, {
+        headers: {
+          ...cors(req),
+          "content-type": "application/json",
+          "x-cache": "HIT",
+        },
       });
     }
 
-    return new Response("devbox api", { status: 200 });
-  },
-};
+    // 未命中:照舊算(D1 + AE)。AE 未設定或查詢失敗時欄位為 null,前端自行降級。
+    const total = await env.DB.prepare(
+      "SELECT count(*) AS n FROM links",
+    ).first<{ n: number }>();
+    const clicks = await fetchClickStats(env, CLICKS_DATASET);
+    const visitors = await fetchVisitStats(env);
+    const data = {
+      links: total?.n ?? 0,
+      clicks24h: clicks?.clicks24h ?? null,
+      topLinks: clicks?.topLinks ?? [],
+      visitors,
+    };
+
+    // 寫入快取的是「純資料」(不含 CORS header,帶 Cache-Control: max-age=N);
+    // 用 clone 寫,原 response 直接回給使用者。waitUntil 讓寫快取不阻塞回應。
+    // 降級(AE 或訪客查詢回 null)→ 短 TTL,讓後端復原後很快撿回完整資料。
+    const degraded = clicks === null || visitors === null;
+    const ttl = degraded ? STATS_CACHE_TTL_DEGRADED : STATS_CACHE_TTL;
+    const toCache = Response.json(data, {
+      headers: { "cache-control": `max-age=${ttl}` },
+    });
+    ctx.waitUntil(caches.default.put(cacheKey, toCache.clone()));
+
+    // 回給使用者:同一份資料 + 當下 origin 的 CORS + debug header。
+    return Response.json(data, {
+      headers: { ...cors(req), "x-cache": "MISS" },
+    });
+  }
+
+  // 訪客埋點 beacon:寫一筆訪問,一律回 204(fire-and-forget,不可報錯)。
+  if (req.method === "GET" && path === "/api/visit") {
+    try {
+      const ip = req.headers.get("cf-connecting-ip") ?? "0.0.0.0";
+      // per-IP 速率護欄:超過就略過 D1 寫入(仍回 204,不揭露限流存在)。
+      // 擋掉單一來源無限灌 visits 表的 denial-of-wallet / 假數據;cf-connecting-ip
+      // 由 CF edge 設定、不可偽造,所以是有效的單源上限。分散式來源仍靠 CF DDoS 層。
+      if (await rlOk(env.RL_VISIT_IP, ip)) {
+        const country = (req as unknown as { cf?: { country?: string } }).cf?.country ?? "";
+        // path 只收集不顯示(fetchVisitStats 不 select、前端不渲染);
+        // 日後若要顯示務必跳脫。長度上限避免膨脹 D1 row。
+        const visitedPath = (url.searchParams.get("path") ?? "").slice(0, 256);
+        await recordVisit(env, ip, country, visitedPath);
+      }
+    } catch {
+      /* 寧可漏記一筆,不報錯 */
+    }
+    return new Response(null, { status: 204, headers: cors(req) });
+  }
+
+  // 轉址
+  if (req.method === "GET" && SLUG_RE.test(path)) {
+    const slug = path.slice(1);
+    const row = await env.DB.prepare("SELECT url FROM links WHERE slug = ?")
+      .bind(slug)
+      .first<{ url: string }>();
+    if (!row) return new Response("Not found", { status: 404 });
+    // 埋點為盡力而為,失敗不可阻擋轉址。
+    try {
+      env.CLICKS.writeDataPoint({ blobs: [slug], indexes: [slug] });
+    } catch {
+      /* ignore */
+    }
+    // 直接設 Location,保留儲存的原始 URL(Response.redirect 會正規化加尾斜線)。
+    return new Response(null, {
+      status: 302,
+      headers: { Location: row.url },
+    });
+  }
+
+  return new Response("devbox api", { status: 200 });
+}

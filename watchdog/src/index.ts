@@ -1,27 +1,25 @@
-export interface Metrics {
-  errorRate: number;
-  p95ms: number;
-}
+import { fetchMetrics, type Metrics } from "./metrics";
+
+export type { Metrics };
 
 export interface Env {
   TELEGRAM_TOKEN: string;
   TELEGRAM_CHAT_ID: string;
+  // Analytics Engine SQL API 用(查 REQUESTS_DATASET),同 api Worker 的 secret 名稱慣例,
+  // 一組 `wrangler secret put` 可複製貼到兩個 Worker。
+  CF_ACCOUNT_ID?: string;
+  AE_API_TOKEN?: string;
 }
 
 const ERROR_THRESHOLD = 0.05;
 const P95_THRESHOLD_MS = 1000;
 
+// 必須與 api/wrangler.toml 的 REQUESTS binding 的 dataset 名稱完全一致。
+const REQUESTS_DATASET = "devbox_requests";
+
 /** 純函式:依門檻判斷是否該告警。 */
 export function shouldAlert(m: Metrics): boolean {
   return m.errorRate > ERROR_THRESHOLD || m.p95ms > P95_THRESHOLD_MS;
-}
-
-/**
- * 取得近期指標。Phase 6 接 Analytics Engine SQL API;
- * 在此之前回安全值(不誤觸告警)。
- */
-async function fetchMetrics(): Promise<Metrics> {
-  return { errorRate: 0, p95ms: 0 };
 }
 
 async function notify(env: Env, text: string): Promise<void> {
@@ -41,7 +39,7 @@ async function notify(env: Env, text: string): Promise<void> {
 
 export default {
   async scheduled(_ctrl: ScheduledController, env: Env): Promise<void> {
-    const m = await fetchMetrics();
+    const m = await fetchMetrics(env, REQUESTS_DATASET);
     if (shouldAlert(m)) {
       await notify(
         env,

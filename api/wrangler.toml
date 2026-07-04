@@ -18,6 +18,12 @@ database_id = "fe0a2a4d-e1f5-4365-b9ac-90774d68dfe1"
 binding = "CLICKS"
 dataset = "devbox_clicks"
 
+# Analytics Engine — 每筆請求 status/延遲,供 watchdog 算 error rate / p95。
+# 獨立 dataset(不與 CLICKS 共用):CLICKS 是點擊事件、這個是全站請求,schema 不同。
+[[analytics_engine_datasets]]
+binding = "REQUESTS"
+dataset = "devbox_requests"
+
 # /api/visit 的 per-IP 速率限制(原生 Rate Limiting binding)。未鑑權的公開寫入,
 # 沒有它單一來源可無限灌 D1。30/分對真實訪客很寬鬆,卻能擋掉腳本洪水。
 [[ratelimits]]
