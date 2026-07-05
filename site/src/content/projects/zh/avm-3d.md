@@ -2,7 +2,7 @@
 title: 3D 環景監控 + 停車格偵測(3D AVM)
 role: 電腦視覺 / ADAS 演算法工程師
 org: 輝創電子 WHETRON
-period: 2015 – 2020
+period: 2015 – 2018
 tech: [OpenCV, OpenGL ES, 3D 重建, 魚眼校正, C++, Nvidia, Fujitsu]
 cover: /projects/avm-3d/cover.webp
 slideshows:

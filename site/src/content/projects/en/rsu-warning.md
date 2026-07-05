@@ -2,7 +2,7 @@
 title: Roadside Unit (RSU) Intersection Warning System
 role: Edge computing + cloud integration
 org: TURING DRIVE
-period: 2021 – 2023
+period: 2020 – 2022
 tech: [Nvidia NX, YOLO, AWS KVS, Lambda, S3, MQTT, V2X]
 cover: /projects/rsu-warning/cover.webp
 slideshows:

@@ -2,7 +2,7 @@
 title: 路側單元(RSU)路口警示系統
 role: 邊緣運算 + 雲端整合
 org: 台灣智慧駕駛 TURING DRIVE
-period: 2021 – 2023
+period: 2020 – 2022
 tech: [Nvidia NX, YOLO, AWS KVS, Lambda, S3, MQTT, V2X]
 cover: /projects/rsu-warning/cover.webp
 slideshows:

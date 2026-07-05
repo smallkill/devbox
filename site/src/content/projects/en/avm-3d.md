@@ -2,7 +2,7 @@
 title: 3D Around View Monitoring + Parking Detection (3D AVM)
 role: Computer Vision / ADAS algorithm engineer
 org: WHETRON
-period: 2015 – 2020
+period: 2015 – 2018
 tech: [OpenCV, OpenGL ES, 3D Reconstruction, Fisheye Calibration, C++, Nvidia, Fujitsu]
 cover: /projects/avm-3d/cover.webp
 slideshows:
