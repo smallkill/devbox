@@ -48,6 +48,7 @@ export const RESUME = {
         "Embeddings · bge-m3 (multilingual)",
         "Vector DB · Vectorize",
         "Prompt engineering · anti-hallucination",
+        "Agent workflows & AI-assisted development · Claude Code, custom automation harness (hooks/subagents/skills), LINE/Telegram LLM bots",
       ],
     },
     {
