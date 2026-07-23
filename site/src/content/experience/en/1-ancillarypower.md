@@ -14,5 +14,6 @@ highlights:
   - Built zero-downtime CI/CD pipelines with canary deployments and reproducible release management, improving deployment reliability and operational efficiency.
   - Implemented DevSecOps practices through integrated security scanning, private networking, secret management, and application-layer authentication.
   - Established unified monitoring and alerting, cross-cloud disaster recovery, and database backup strategies that improved platform resilience while reducing cloud operating costs.
+  - Deploy cloud platform services with Docker.
 order: 1
 ---

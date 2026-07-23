@@ -67,6 +67,7 @@ export const RESUME = {
         "GitLab CI/CD",
         "GitHub Actions",
         "Jenkins",
+        "Docker / Containerization",
         "DevSecOps · Coverity / Nessus",
         "TDD",
       ],

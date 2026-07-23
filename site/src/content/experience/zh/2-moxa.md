@@ -14,5 +14,6 @@ highlights:
   - 自動化建置與整合工作流,比傳統手動流程提前最多 7 天發現整合問題。
   - 導入 Shift-Left Security,將 Coverity 與 Nessus 整合進日常 CI,主動偵測漏洞且不拖慢開發。
   - 以 Python / Shell 開發內部自動化工具,並建置穩定的 VM 與網路測試環境支援自動化測試。
+  - 建置容器化網路測試框架(pytest/scapy + Docker),整合 GitLab CI 實現路由器韌體自動化驗證。
 order: 2
 ---

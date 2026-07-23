@@ -14,5 +14,6 @@ highlights:
   - Automated build and integration workflows, surfacing integration issues up to 7 days earlier than the manual process.
   - "Introduced Shift-Left Security: integrated Coverity and Nessus into daily CI to detect vulnerabilities early without slowing development."
   - Built internal automation tools in Python / Shell and stable VM + network test environments for continuous automated testing.
+  - Built containerized network testing framework (pytest/scapy + Docker) integrated with GitLab CI for automated router firmware validation.
 order: 2
 ---
