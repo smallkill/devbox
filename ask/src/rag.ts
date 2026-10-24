@@ -260,6 +260,7 @@ export interface AskLogRow {
   lang: string;
   question: string;
   answer: string;
+  model?: string | null;
 }
 
 /**
@@ -303,13 +304,14 @@ export function renderAdminPage(rows: AskLogRow[]): string {
   };
   const body =
     rows.length === 0
-      ? `<tr><td colspan="4" class="empty">尚無記錄</td></tr>`
+      ? `<tr><td colspan="5" class="empty">尚無記錄</td></tr>`
       : rows
           .map(
             (r) => `<tr>
   <td class="t">${escapeHtml(fmtTs(r.ts))}</td>
   <td class="c">${escapeHtml(r.country || "?")}<span class="lg">${escapeHtml(r.lang || "")}</span></td>
   <td class="q">${escapeHtml(r.question)}</td>
+  <td class="m">${escapeHtml(r.model || "llama")}</td>
   <td class="a">${escapeHtml(r.answer)}</td>
 </tr>`,
           )
@@ -331,6 +333,7 @@ export function renderAdminPage(rows: AskLogRow[]): string {
   td.c{white-space:nowrap;font-family:ui-monospace,monospace;font-size:.82rem}
   td.c .lg{margin-left:6px;color:var(--accent);font-size:.72rem}
   td.q{font-weight:600;max-width:24ch}
+  td.m{white-space:nowrap;font-family:ui-monospace,monospace;font-size:.72rem;color:var(--muted)}
   td.a{color:var(--soft);max-width:60ch;white-space:pre-wrap}
   tr:last-child td{border-bottom:none}
   .empty{text-align:center;color:var(--muted);padding:24px}
@@ -338,7 +341,7 @@ export function renderAdminPage(rows: AskLogRow[]): string {
 <h1>Ask my resume — 問答記錄</h1>
 <p class="sub">最新 ${rows.length} 筆・僅存 問題/答案/時間/國家,不含 IP</p>
 <table>
-<thead><tr><th>時間(台灣)</th><th>國家</th><th>問題</th><th>回答</th></tr></thead>
+<thead><tr><th>時間(台灣)</th><th>國家</th><th>問題</th><th>模型</th><th>回答</th></tr></thead>
 <tbody>
 ${body}
 </tbody></table>

@@ -7,6 +7,12 @@ compatibility_date = "2025-09-06"
 enabled = true
 head_sampling_rate = 1
 
+# 回答模型 Claude Haiku 每日呼叫上限(超過/出錯自動退回 llama);"0"=強制備援。
+# 注意:全域 DAILY_CAP=250 會先擋,所以實際有效上限 = min(此值, 250)。
+# secret ANTHROPIC_API_KEY 另設:wrangler secret put ANTHROPIC_API_KEY < ~/.config/anthropic/api_key
+[vars]
+HAIKU_DAILY_CAP = "300"
+
 [ai]
 binding = "AI"
 

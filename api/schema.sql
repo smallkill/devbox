@@ -22,6 +22,8 @@ CREATE TABLE IF NOT EXISTS ask_log (
   country  TEXT,
   lang     TEXT,
   question TEXT,
-  answer   TEXT
+  answer   TEXT,
+  model    TEXT   -- haiku | llama(舊列 NULL = llama)
 );
+-- 既有 DB(2026-10-24 前建立)需先手動執行:ALTER TABLE ask_log ADD COLUMN model TEXT;(prod 已執行)
 CREATE INDEX IF NOT EXISTS idx_ask_log_ts ON ask_log(ts);

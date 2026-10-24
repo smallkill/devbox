@@ -14,6 +14,13 @@ import {
   type Turn,
   type AskLogRow,
 } from "./rag";
+import {
+  callHaiku,
+  openHaikuAnswer,
+  haikuDayKey,
+  parseHaikuCap,
+  type AnswerModel,
+} from "./llm";
 
 // Cloudflare Rate Limiting binding(原生、原子)。
 interface RateLimiter {
@@ -31,6 +38,9 @@ export interface Env {
   // 問答記錄(D1)+ /admin 查看頁密碼(secret)。optional:測試環境不提供。
   DB?: D1Database;
   ADMIN_KEY?: string;
+  // 回答模型 Claude Haiku:secret 未設或超過每日上限/出錯 → 自動退回 Workers AI llama。
+  ANTHROPIC_API_KEY?: string;
+  HAIKU_DAILY_CAP?: string; // [vars];"0" = 強制只用 llama(備援演練/緊急關閉)
 }
 
 const LOG_MAX_ANSWER = 4000;   // 記錄答案截斷長度,控 D1 列大小
@@ -94,7 +104,7 @@ function cors(req: Request): Record<string, string> {
   const origin = req.headers.get("origin") ?? "";
   const headers: Record<string, string> = {
     "access-control-allow-headers": "content-type",
-    "access-control-expose-headers": "x-sources",
+    "access-control-expose-headers": "x-sources, x-model",
     "access-control-allow-methods": "POST, OPTIONS",
   };
   if (
@@ -117,6 +127,7 @@ async function logQA(
   question: string,
   country: string,
   lang: string,
+  model: AnswerModel,
 ): Promise<void> {
   if (!env.DB) return;
   try {
@@ -130,9 +141,9 @@ async function logQA(
     }
     const answer = parseSSEAnswer(sse).slice(0, LOG_MAX_ANSWER);
     await env.DB.prepare(
-      "INSERT INTO ask_log (ts, country, lang, question, answer) VALUES (?, ?, ?, ?, ?)",
+      "INSERT INTO ask_log (ts, country, lang, question, answer, model) VALUES (?, ?, ?, ?, ?, ?)",
     )
-      .bind(Date.now(), country, lang, question.slice(0, 500), answer)
+      .bind(Date.now(), country, lang, question.slice(0, 500), answer, model)
       .run();
   } catch {
     /* 記錄失敗不影響使用者,也不噴錯 */
@@ -150,7 +161,7 @@ async function handleAdmin(req: Request, env: Env): Promise<Response> {
   if (env.DB) {
     try {
       const res = await env.DB.prepare(
-        "SELECT ts, country, lang, question, answer FROM ask_log ORDER BY ts DESC LIMIT ?",
+        "SELECT ts, country, lang, question, answer, model FROM ask_log ORDER BY ts DESC LIMIT ?",
       )
         .bind(ADMIN_LIMIT)
         .all<AskLogRow>();
@@ -279,25 +290,48 @@ export default {
 
     const { system, user } = buildPrompt(question!, chunks, lang);
 
-    let stream: ReadableStream;
-    try {
-      stream = (await env.AI.run(LLM_MODEL, {
-        messages: [
-          { role: "system", content: system },
-          ...historyToMessages(turns),   // 多輪對話脈絡
-          { role: "user", content: user },
-        ],
-        stream: true,
-      })) as ReadableStream;
-    } catch {
-      return json({ error: "unavailable" }, 503, req);
+    const messages = [
+      ...historyToMessages(turns), // 多輪對話脈絡
+      { role: "user" as const, content: user },
+    ];
+
+    // 回答模型:先試 Claude Haiku(有 key、未達每日上限),任何失敗退回 Workers AI llama。
+    let stream: ReadableStream | undefined;
+    let model: AnswerModel = "llama";
+    if (env.ANTHROPIC_API_KEY) {
+      try {
+        const hKey = haikuDayKey(date);
+        const hUsed = Number((await env.ASK_KV.get(hKey)) ?? 0);
+        if (hUsed < parseHaikuCap(env.HAIKU_DAILY_CAP)) {
+          // 先計數再呼叫(嘗試即算,失敗也算,避免故障時無限重試燒額度);KV best-effort。
+          await env.ASK_KV.put(hKey, String(hUsed + 1), { expirationTtl: 172800 });
+          const refusal =
+            lang === "zh" ? "這裡只回答與這份履歷相關的問題" : "I only answer questions about this resume";
+          const upstream = await callHaiku(env.ANTHROPIC_API_KEY, system, messages);
+          stream = await openHaikuAnswer(upstream, refusal); // 讀到首段內容才算成功
+          model = "haiku";
+        }
+      } catch (e) {
+        // KV 失敗 / API 錯誤 / 逾時 / 空串流 → 一律退回 llama,網站不壞。
+        console.warn("haiku_fallback", e instanceof Error ? e.message : "error");
+      }
+    }
+    if (!stream) {
+      try {
+        stream = (await env.AI.run(LLM_MODEL, {
+          messages: [{ role: "system", content: system }, ...messages],
+          stream: true,
+        })) as ReadableStream;
+      } catch {
+        return json({ error: "unavailable" }, 503, req);
+      }
     }
 
     // tee:一份回給使用者串流,一份背景讀取以記錄完整答案到 D1(不擋回應)。
     const [toClient, toLog] = stream.tee();
     const country =
       (req as unknown as { cf?: { country?: string } }).cf?.country ?? "";
-    ctx.waitUntil(logQA(env, toLog, question!, country, lang));
+    ctx.waitUntil(logQA(env, toLog, question!, country, lang, model));
 
     return new Response(toClient, {
       headers: {
@@ -305,6 +339,7 @@ export default {
         "content-type": "text/event-stream",
         // encodeURIComponent:HTTP header 只可靠承載 latin1,來源標題含中文
         // 直接放會 mojibake;前端 decodeURIComponent 還原。
+        "x-model": model,
         "x-sources": encodeURIComponent(JSON.stringify(sources)),
       },
     });
