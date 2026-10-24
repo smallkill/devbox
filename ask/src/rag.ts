@@ -150,8 +150,8 @@ export function buildPrompt(
   // 「查無資訊」的固定句也要隨語言走,否則英文問句可能被回一句中文「沒有這個資訊」。
   const noInfoLine =
     lang === "zh"
-      ? "如果提供的片段裡找不到答案,就直接說「我的履歷裡沒有這個資訊」,不要硬湊。"
-      : 'If the answer is not in the provided excerpts, just say "I don\'t have that information in my resume." Do not make anything up.';
+      ? "如果提供的片段裡找不到答案,就直接說「我的履歷裡沒有這個資訊」,不要硬湊。沒有依據時回答要簡短(一兩句):不要列出與問題無關的片段內容;只有在某個相關事實能直接幫到訪客時,才用一句話補充。"
+      : 'If the answer is not in the provided excerpts, just say "I don\'t have that information in my resume." Do not make anything up. When there is no basis, keep it to one or two short sentences: never list unrelated excerpt content, and add at most one sentence of directly relevant fact.';
 
   const system = [
     langLine,

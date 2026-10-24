@@ -5,6 +5,15 @@ title: 關於我與技能
 ## 自我介紹
 我在 edge 與 cloud 之間搭橋,而且橫跨三個產業。從車用電腦視覺(3D AVM、ADAS)、自駕車隊的雲端平台,到現在的韌體 CI/CD 與 DevSecOps——主軸始終如一:把雜亂的 edge 系統(車、路由器、感測器)變得可觀測、安全、能規模化交付。
 
+## 現職與年資
+- 現職(目前任職):安瑟樂威 AncillaryPower,資深 DevOps / 雲端基礎設施工程師,2026.04 – 現在。主要用 GCP、Terraform、GitLab CI/CD、DevSecOps 與 Docker。
+- 前一份工作:四零四科技 Moxa,資深軟體工程師,2023.06 – 2026.04(已結束,不是現職)。
+- 任職最久的一份:輝創 WHETRON,2015.06 – 2020.06,約 5 年(電腦視覺與 ADAS 演算法)。其次依序為台灣智慧駕駛 TURING DRIVE(2020.07 – 2023.06,約 3 年)、Moxa(約 2 年 10 個月)。
+
+## 基本資料與學歷
+- 中文本名:陳晉德;英文名:Derek Chen。
+- 學歷:國立高雄第一科技大學 電腦與通訊工程系 碩士(2011.09 – 2015.01,約 3.5 年);同校同系 學士(2007.09 – 2011.06);中正高工 電子科(2004.07 – 2007.06)。
+
 ## 聯絡方式
 - Email:chinte.cheng@gmail.com
 - LinkedIn:linkedin.com/in/dereklovetw
@@ -35,6 +44,7 @@ title: 關於我與技能
 - GitLab CI/CD
 - GitHub Actions
 - Jenkins
+- Docker / Containerization
 - DevSecOps · Coverity / Nessus
 - TDD
 
